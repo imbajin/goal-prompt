@@ -1,0 +1,33 @@
+name: Validate
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Validate installation for Codex and Claude Code
+        env:
+          HOME: /tmp/goal-prompt-home
+        run: |
+          mkdir -p "$HOME"
+          npx --yes skills@1.5.20 add . -g -a codex -a claude-code -y --copy
+          test -f "$HOME/.agents/skills/goal-prompt/SKILL.md"
+          test -f "$HOME/.claude/skills/goal-prompt/SKILL.md"
+
+      - name: Validate eval definitions
+        run: python3 -m json.tool evals/evals.json >/dev/null
+
+      - name: Check bundled references
+        run: |
+          test -f references/scenarios.md
+          test -f references/long-goal-execution.md
+          test -f references/long-goal-learning.md
+          test -f references/fusion-notes.md

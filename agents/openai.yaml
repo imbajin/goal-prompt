@@ -1,0 +1,6 @@
+policy:
+  allow_implicit_invocation: true
+interface:
+  display_name: "Goal Prompt"
+  short_description: "Create a focused, verifiable /goal prompt"
+  default_prompt: "Use $goal-prompt to research my task, confirm the core goal with me, then create an efficient, comprehensive, reasonably sized /goal prompt that resists scope drift."
