@@ -1,0 +1,17 @@
+id: stage2-doc
+title: 普通文档目标不引入多余状态
+description: 验证已确认的文档目标会生成简洁提示，且不添加 sidecar 或代码审查门槛。
+input:
+  prompt: |
+    你已经完成仓库调查并给出简报。我明确确认以下内容不变：
+    只更新 docs/getting-started.md，让新贡献者能完成安装；
+    npm run docs:check 必须通过；不改代码和依赖。
+    现在请返回最终可复制的 /goal。
+expect:
+  must_contain: ["/goal", "ready"]
+  must_not_contain: [".goal-task"]
+  exit_code: 0
+judge:
+  type: script
+  script_path: evals/skill-up/fixtures/scripts/check-stage2-doc.sh
+  timeout_seconds: 30

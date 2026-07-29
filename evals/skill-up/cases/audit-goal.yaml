@@ -1,0 +1,20 @@
+id: audit-goal
+title: Gatekeeper 审查保持只读并给出有限判定
+description: 验证发布审查围绕权威基线、实际 diff、检查证据和明确 verdict。
+input:
+  prompt: |
+    请创建一个 /goal，用来只读审查当前分支是否达到发布条件。
+    以 RELEASE.md 为权威标准，检查最终 diff 和现有 CI 证据；
+    verdict 只能是 ready、needs work、blocked。不要修复、推送或合并。
+expect:
+  must_contain: ["needs confirmation"]
+  must_not_contain: ["\nready"]
+  exit_code: 0
+judge:
+  type: agent_judge
+  model: gpt-5.6-sol
+  criteria:
+    - "简报保留 RELEASE.md、最终 diff、CI 证据和三值 verdict 作为审查核心。"
+    - "明确保持只读，排除实现、推送、合并和 rebase。"
+    - "要求发现包含严重级别、精确位置、证据和建议，并在确认前不生成最终 /goal。"
+  pass_threshold: 1.0

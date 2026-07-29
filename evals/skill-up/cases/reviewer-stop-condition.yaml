@@ -1,0 +1,15 @@
+id: reviewer-stop-condition
+title: Reviewer 不可用只能在其余工作完成后阻断
+description: 验证行为变更目标不会因 reviewer 暂不可用而提前停止所有工作。
+input:
+  prompt: |
+    你已经调查并给出简报。我明确确认：
+    修复生产代码中的并发缺陷，完成实现和全部测试后必须由独立只读 reviewer 审查；
+    修复审查发现后必须复审。请生成最终 /goal，并写清 reviewer 暂不可用时的处理。
+expect:
+  must_contain: ["/goal", "ready"]
+  exit_code: 0
+judge:
+  type: script
+  script_path: evals/skill-up/fixtures/scripts/check-reviewer-stop.sh
+  timeout_seconds: 30

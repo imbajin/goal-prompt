@@ -1,0 +1,5 @@
+# Local skill-up snapshots, isolated homes, and run artifacts.
+.eval-work/
+
+# macOS metadata.
+.DS_Store

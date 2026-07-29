@@ -1,0 +1,19 @@
+id: research-goal
+title: 只读研究目标围绕决策和证据
+description: 验证 research 场景强调要支持的决策、证据来源和只读边界。
+input:
+  prompt: |
+    请为一项只读研究创建 /goal：比较仓库现有的两种缓存实现，
+    最终帮助架构负责人决定保留哪一种；必须引用文件、行号和测试证据，不允许修改代码。
+expect:
+  must_contain: ["needs confirmation"]
+  must_not_contain: ["\nready"]
+  exit_code: 0
+judge:
+  type: agent_judge
+  model: gpt-5.6-sol
+  criteria:
+    - "把研究要支持的架构决策和证据标准写清楚，而不是把“研究”本身当作结果。"
+    - "明确只读范围、真实引用要求、缺失证据与用户偏好的区别。"
+    - "没有机械加入行为变更代码所需的独立 reviewer 门槛，也没有提前生成最终 /goal。"
+  pass_threshold: 1.0

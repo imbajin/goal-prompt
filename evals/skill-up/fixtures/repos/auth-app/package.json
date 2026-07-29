@@ -1,0 +1,8 @@
+{
+  "name": "auth-app-fixture",
+  "private": true,
+  "scripts": {
+    "test:auth": "node tests/auth.test.js",
+    "typecheck": "tsc --noEmit"
+  }
+}
