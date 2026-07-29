@@ -47,16 +47,36 @@ scoped work. Never weaken assertions, skip required checks, ignore exit codes, o
 fake responses to obtain green. Required gates must genuinely pass before the
 goal completes.
 
-When one task remains blocked, record its evidence and dependencies in live
-state, move it and its dependent tasks behind independent unblocked tasks, and
-continue the highest-priority work that can still produce goal evidence.
-Re-evaluate deferred tasks at phase boundaries or when their unblock condition
-changes.
+When one task cannot proceed, record its evidence and dependencies in live state,
+mark it waiting or deferred, move it and its dependent tasks behind independent
+work, and continue the highest-priority task that can still produce goal
+evidence. Do not mark the overall goal `blocked` while meaningful scoped work
+remains. Re-evaluate deferred tasks at phase boundaries or when their unblock
+condition changes.
 
-Pause only after bounded recovery and reprioritization show that every meaningful
+Set the overall goal to `blocked` only after bounded recovery, authorized
+alternatives, task splitting or smaller batches within the confirmed scope,
+reordering, and completion of independent work show that every meaningful
 remaining task depends on the same unavailable external requirement or on a user
-decision that cannot be made safely from existing scope. State the evidence,
+decision that cannot be made safely from existing scope. Never remove confirmed
+scope or a completion gate without renewed user confirmation. State the evidence,
 completed work, deferred tasks, and exact condition that would unblock the goal.
+
+## Milestone progress
+
+At every milestone or meaningful phase boundary, publish a concise user-facing
+summary even when live state is also updated:
+
+```text
+Progress [██████░░░░] 60%
+Done: <completed milestone and key evidence>; Remaining: <main open item>.
+Next: <one primary action>.
+```
+
+Derive the percentage from completed scoped milestones, deliverables, and
+completion gates. Use an exact value for a fixed denominator; otherwise use a
+coarse evidence-based estimate labeled `estimate`. Never report `100%` before
+every applicable completion gate passes.
 
 ## Connector and environment preflight
 

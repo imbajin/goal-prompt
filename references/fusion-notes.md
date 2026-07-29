@@ -93,17 +93,23 @@ From `goal-prompt-builder`:
 
 ### Progress reporting
 
-- use phase or enumerable-item checkpoints, not fixed time intervals;
-- report completed, remaining, evidence, review status, and blockers;
-- use percentages only when the total is enumerable.
+- publish a compact progress bar after every milestone or meaningful phase
+  boundary, not at arbitrary time intervals;
+- keep it to three short lines: percentage, completed/remaining items, and one
+  next primary action;
+- derive percentages from scoped milestones, deliverables, and completion gates;
+  use an exact value for a fixed denominator, otherwise label a coarse estimate;
+- reserve `100%` for the point when every applicable completion gate passes.
 
 ### Completion and blocker semantics
 
 - every applicable completion gate is required; satisfying one gate never ends a
   multi-gate goal;
-- a blocked task is recorded and moved behind independent unblocked work;
-- stopping is reserved for severe conditions that block all meaningful remaining
-  work after bounded recovery and reprioritization.
+- an item that cannot proceed is marked waiting or deferred and moved behind
+  independent work; it does not make the overall goal blocked;
+- the overall goal may be marked blocked only when all meaningful remaining work
+  is impossible after bounded recovery, authorized alternatives,
+  reprioritization, and completion of independent work.
 
 ### Long-goal execution and learning loops
 

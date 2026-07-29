@@ -1,6 +1,6 @@
 ---
 name: goal-prompt
-description: Create or review focused /goal prompts for Codex, Claude Code, and compatible agents. Use for comprehensive, reasonably sized goals with verifiable gates that resist scope drift.
+description: Create, write, refine, or review /goal prompts for Codex, Claude Code, and coding agents. Use only when users explicitly request /goal text or ask to turn a task into /goal; never run the goal.
 ---
 
 # Goal Prompt for Codex and Claude Code
@@ -125,6 +125,7 @@ A ready goal must state:
 - evidence and an honest binary or quantitative success threshold;
 - material scope boundaries;
 - conjunctive completion gates;
+- a concise progress summary at every milestone boundary;
 - exceptional conditions that can stop all remaining work.
 
 Rewrite vague activity goals into observable outcomes. Do not add decorative
@@ -133,23 +134,51 @@ excluded only when demonstrably inapplicable or explicitly waived by the user.
 
 ### 8. Bias execution toward completion
 
-The prompt must tell the executor to continue until all scoped completion gates
-are satisfied. A blocked item is a scheduling signal: record evidence, move it and
-its dependents behind independent unblocked work, and continue the highest-value
-scoped task. Diagnose, fix, or finitely retry actionable failures.
+The prompt must tell the executor to keep the goal active until all scoped
+completion gates are satisfied. One item that cannot proceed is a scheduling
+signal, not permission to mark the whole goal `blocked`: record the evidence,
+mark the item waiting or deferred, move it and its dependents behind independent
+work, and continue the highest-value scoped task. Diagnose, fix, or finitely
+retry actionable failures.
 
 CI queues or failures, API adjustments, transient outages, test failures, and
 quota waits are not reasons to end while meaningful scoped work remains. Avoid
 self-imposed shortcuts, partial-success exits, arbitrary time limits, and new stop
 conditions not grounded in the confirmed brief.
 
-Stop only when every remaining scoped task is blocked by a requirement conflict,
-safety boundary, unauthorized scope expansion, unavailable mandatory independent
-review, or a verified external dependency after bounded recovery and
-reprioritization. State completed work, evidence, deferred items, and the exact
-decision or external change required.
+Do not set the overall goal to `blocked` because of a recoverable failure, a
+missing optional dependency, a non-material ambiguity, or a decision that can be
+handled with a safe reversible assumption. Before using `blocked`, perform
+bounded recovery, try authorized alternatives, split work or narrow the next
+action without changing the confirmed scope, reorder work, finish all independent
+scoped work, and ask the user only for a decision that materially changes the
+goal. Never remove confirmed scope or a completion gate without renewed user
+confirmation.
 
-### 9. Require independent review for behavior changes
+Set the overall goal to `blocked` only as an exceptional terminal state when
+every meaningful remaining scoped task depends on the same requirement conflict,
+safety boundary, unauthorized scope expansion, unavailable mandatory independent
+review, or verified external dependency. State completed work, evidence,
+deferred items, and the exact decision or external change required.
+
+### 9. Report milestone progress
+
+After every milestone or meaningful phase boundary, require a compact user-facing
+summary even when durable state is also updated:
+
+```text
+Progress [██████░░░░] 60%
+Done: <completed milestone and key evidence>; Remaining: <main open item>.
+Next: <one primary action>.
+```
+
+Base the percentage on completed scoped milestones, deliverables, and completion
+gates rather than elapsed time or effort spent. Use an exact percentage when the
+denominator is fixed; otherwise use a coarse evidence-based estimate and label it
+`estimate`. Reserve `100%` for the point when every applicable completion gate
+passes. Keep the summary to three short lines.
+
+### 10. Require independent review for behavior changes
 
 For production code, public APIs, tests/test infrastructure, build/CI logic,
 dependencies, migrations, deployment, or behavior-changing configuration, keep
@@ -169,7 +198,7 @@ no unresolved high-severity finding, and the final summary naming the reviewer
 and review/re-review result. Do not force this gate for pure documentation or
 read-only work unless repository policy or the user requires it.
 
-### 10. Render and check
+### 11. Render and check
 
 Return `ready` only after Stage 1 confirmation and when the final prompt passes
 the quality and length gates. Otherwise return `needs confirmation` with the
@@ -188,10 +217,11 @@ The final prompt should contain only:
 - only the minimal active source-of-truth paths, when needed;
 - concise scope and exclusions;
 - core execution constraints, including continue/reprioritize semantics;
+- one compact milestone progress-reporting rule;
 - three to six conjunctive completion gates;
 - one to three exceptional all-work-blocked stop conditions;
 - the independent reviewer gate when behavior changes;
-- optional progress or token-budget lines when justified or requested.
+- an optional token-budget line when justified or requested.
 
 Do not include the research transcript, disposable brief, step-by-step
 implementation, full TODO list, long spec recap, detailed review checklist,
@@ -229,8 +259,14 @@ needs confirmation
 Scope: <included area and material exclusions>.
 
 Constraints:
-- Continue until every applicable completion gate passes; record and defer a
-  blocked item and its dependents behind independent unblocked work.
+- Keep the goal active until every applicable completion gate passes. Record an
+  item that cannot proceed as waiting/deferred, move it and its dependents behind
+  independent work, and never mark the overall goal blocked while meaningful
+  scoped work remains.
+- After each milestone, report a three-line progress bar summary with percentage,
+  completed/remaining items, and one next primary action. Base the percentage on
+  scoped milestones and gates; label it as an estimate when no fixed denominator
+  exists.
 - [If initialization is needed: perform one fresh baseline audit, update the
   minimal live truth, retire stale drafts from the active truth list, then
   continue.]
@@ -243,8 +279,9 @@ Complete only when all applicable conditions are true:
 4. [For code changes: review and any required re-review are complete with no
    unresolved blocker.]
 
-Stop only if every remaining scoped task is blocked after bounded recovery and
-reprioritization by:
+Set the overall goal to blocked only if every meaningful remaining scoped task
+depends, after bounded recovery, authorized alternatives, reprioritization, and
+completion of independent work, on:
 - <confirmed exceptional conflict, boundary, or mandatory dependency>.
 - [For code changes: independent review remains unavailable after all
   review-independent work is complete.]

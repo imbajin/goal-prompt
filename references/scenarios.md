@@ -47,7 +47,8 @@ Use when processing a known or externally enumerable set of similar items.
   `/goal`.
 - Add a separate progress file only when a long batch cannot be resumed safely
   from the live-state file; report at item-count checkpoints.
-- Use percentages only when the denominator is fixed.
+- Use an exact percentage when the item count is fixed. If membership can change,
+  report a coarse estimate based on verified items and label it `estimate`.
 - Define what happens when an item disappears, changes, or cannot be reproduced.
 - Review the final aggregate diff independently when code behavior changes.
 - Form implementation batches by shared module, root cause, or validation surface;

@@ -1,0 +1,82 @@
+[
+  {
+    "query": "Use $goal-prompt to turn the authentication migration in this repository into a durable /goal prompt.",
+    "should_trigger": true
+  },
+  {
+    "query": "/goal-prompt review this draft and make its completion gates verifiable: /goal modernize the API layer.",
+    "should_trigger": true
+  },
+  {
+    "query": "Write a /goal prompt for the two-phase database cutover we just agreed on; do not start it.",
+    "should_trigger": true
+  },
+  {
+    "query": "Convert this task into a concise Codex /goal with scope, evidence, and honest blocker handling.",
+    "should_trigger": true
+  },
+  {
+    "query": "I need a Claude Code /goal for a long-running refactor that must survive CI waits and session resets.",
+    "should_trigger": true
+  },
+  {
+    "query": "Shorten my existing /goal prompt without losing its acceptance criteria or independent review gate.",
+    "should_trigger": true
+  },
+  {
+    "query": "Help me define the final /goal text for this audit, but ask me to confirm the key assumptions first.",
+    "should_trigger": true
+  },
+  {
+    "query": "把当前迁移任务整理成一份可直接复制的 /goal，先调查仓库并让我确认范围。",
+    "should_trigger": true
+  },
+  {
+    "query": "审阅这份 /goal，重点检查是否会提前结束、是否缺少可验证的完成条件。",
+    "should_trigger": true
+  },
+  {
+    "query": "请用 /goal-prompt 为这个跨会话任务生成目标提示词，只生成文本，不要执行。",
+    "should_trigger": true
+  },
+  {
+    "query": "Plan the implementation of a settings page, then start coding and run the tests.",
+    "should_trigger": false
+  },
+  {
+    "query": "Help our product team define quarterly goals and measurable OKRs.",
+    "should_trigger": false
+  },
+  {
+    "query": "Debug why the CI job is blocked on the integration test and fix it.",
+    "should_trigger": false
+  },
+  {
+    "query": "Review this pull request for scope drift and leave inline comments.",
+    "should_trigger": false
+  },
+  {
+    "query": "Write a reusable ChatGPT prompt that summarizes customer interviews.",
+    "should_trigger": false
+  },
+  {
+    "query": "Create an implementation plan with milestones and acceptance criteria for the billing feature.",
+    "should_trigger": false
+  },
+  {
+    "query": "Run the existing /goal now and keep working until it is complete.",
+    "should_trigger": false
+  },
+  {
+    "query": "Resume the active goal from its state file and tell me the current progress.",
+    "should_trigger": false
+  },
+  {
+    "query": "Update the project status with a progress bar, completed items, and next steps.",
+    "should_trigger": false
+  },
+  {
+    "query": "为这个功能编写需求、设计和任务拆解，然后直接开始实现。",
+    "should_trigger": false
+  }
+]
