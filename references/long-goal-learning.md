@@ -1,39 +1,57 @@
-# Long-Goal Learning Loop
+# Long-Goal Learning
 
-Use this optional contract only when the user requests durable learning or the
-confirmed brief identifies repeated, evidence-backed workflow learning as a
-deliverable. Do not create a lessons file merely because a goal is complex or
-long-running. When selected, use the available reflection workflow and keep
-learning separate from live execution state.
+In deep mode, summarize learning briefly after every productive loop without
+mechanically creating `lessons.md`. Create or update it only when
+evidence-backed, potentially reusable content exists.
 
-## Capture
+Fast mode creates no learning file by default. Add one only when the user asks or
+the task exposes an attributable failure, false assumption, or effective
+recovery strategy.
 
-Capture only evidence-backed lessons from user corrections, avoidable blockers,
-failed assumptions, effective recovery strategies, repeated workflow friction,
-and rules whose effect was validated. Keep one-off chronology out of the file.
+## Capture scope
 
-## Classify
+Capture only:
 
-- **Repository rule**: stable behavior specific to one repository; candidate for
-  that repository's `AGENTS.md`.
-- **Global preference**: stable cross-project collaboration preference; candidate
-  for the global `AGENTS.md`.
-- **Reusable fact or experience**: candidate for Memory, subject to the platform's
-  explicit authorization rules.
-- **One-off observation**: retain in the selected learning record; do not
-  promote.
+- user corrections that were validated;
+- avoidable failures or blockers;
+- material assumptions that evidence disproved;
+- effective, reproducible recovery methods;
+- repeated workflow friction;
+- practices whose effect was validated by examples or tests.
 
-Do not create `USER.md`; it would duplicate global instructions and Memory.
+Exclude one-off chronology, ordinary completed work, unvalidated impressions, and
+live execution state.
+
+## Classification
+
+- **Repository rule**: stable for one repository; candidate for its `AGENTS.md`.
+- **Global preference**: stable across projects; candidate for global
+  `AGENTS.md`.
+- **Reusable fact or experience**: candidate for Memory, subject to explicit
+  platform authorization.
+- **Pending candidate**: has evidence but unproven reuse value; retain as
+  `pending`.
+
+Do not create `USER.md`; it duplicates global instructions and Memory. Keep an
+ordinary one-off observation in the current progress summary or `state.md`, not
+in `lessons.md`.
 
 ## Promotion gate
 
-Candidate generation may be automatic at goal completion. Promotion may not.
-Each candidate must state the proposed rule, scope, target, evidence, counterexample
-or non-applicable case, validation method, and status. Keep it `pending` until the
-user explicitly accepts or rejects it.
+At goal completion, candidates may be organized automatically but cannot be
+promoted automatically. Each candidate states:
 
-After acceptance, inspect the destination for duplicates and conflicts, apply the
-smallest change, and validate with a representative example or eval. Mark the
-candidate `promoted` only after validation. Memory updates require separate,
-explicit user authorization. Rejected or unstable candidates remain recorded but
-must not influence future rules as if accepted.
+- proposed rule;
+- applicable scope and non-applicable cases;
+- supporting evidence;
+- validation method;
+- current status.
+
+Keep it `pending` until the user explicitly accepts it. After acceptance, inspect
+the destination for duplicates or conflicts, make the smallest change, and
+validate it with a representative example or eval. Mark it `promoted` only after
+validation.
+
+Changing repository or global `AGENTS.md`, or writing Memory, requires separate
+explicit authorization. Rejected or unstable candidates may remain recorded but
+cannot act as established rules in future work.

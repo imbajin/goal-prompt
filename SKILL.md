@@ -1,231 +1,323 @@
 ---
 name: goal-prompt
-description: Create, write, refine, or review /goal prompts for Codex, Claude Code, and coding agents. Use only when users explicitly request /goal text or ask to turn a task into /goal; never run the goal.
+description: Create, rewrite, shorten, or review /goal prompts for Codex, Claude Code, and other coding agents. Use only when the user explicitly requests /goal text or asks to convert a task into /goal; never start the goal automatically.
 ---
 
 # Goal Prompt for Codex and Claude Code
 
-Build a short `/goal` control entrypoint through two distinct stages:
+Turn a task into a concise, verifiable, persistent `/goal`. Use two stages:
 
-1. research and confirm a disposable goal brief;
-2. only after confirmation, render the final `/goal` prompt.
+1. investigate context, recommend fast or deep mode, and ask the user to confirm the goal and initialization plan;
+2. prepare the approved Markdown files, then render the final `/goal`.
 
-The skill produces prompt text only. Do not call goal tools, start the goal, or
-create source-of-truth files.
+This skill does not start or execute the goal. In deep mode, after confirmation,
+it may create approved Markdown files under `.goal-task/<task-slug>/`; other
+environment changes still require explicit authorization.
 
-## Non-negotiable interaction contract
+## Core interaction contract
 
-- Do not jump from the user's first description directly to a final prompt.
-- Investigate available context before asking the user to confirm the goal. Fast
-  completion is acceptable only when the task is genuinely simple and already
-  grounded; speed is never evidence that the investigation was sufficient.
-- Get explicit confirmation of the core outcome, scope, and proof of completion.
-  A user-provided existing prompt may count as a draft, but not as confirmation of
-  assumptions introduced by the assistant.
-- Ask only questions whose answers can materially change the goal. Combine
-  tightly related questions and normally ask one to three at a time.
-- Keep initialization work out of the final prompt except for one compact
-  one-time baseline rule when durable state is actually needed.
+- Do not render the final prompt from the user's first description.
+- Investigate real context that can affect the result before asking the user to
+  confirm the outcome, scope, and completion evidence.
+- Ask only questions whose answers materially change the goal. Do not interrupt
+  early for questions that evidence, a safe reversible assumption, or later
+  execution can resolve.
+- Recommend fast or deep mode, but let the user confirm it. Do not ask again when
+  the user already selected a mode.
+- Keep one-time preparation in initialization, not in the enduring `/goal`. Put
+  unfinished preparation directly in `state.md`; after completion, remove the
+  steps and retain only results that still matter.
+- Do not create `goal.md`; the objective already lives in `/goal`.
+- Do not mark the whole goal `blocked` because of an ordinary failure, missing
+  permission, resource limit, or possible question.
 
-## Stage 1: research and confirm
+## Stage 1: investigate and confirm
 
 ### 1. Confirm the requested artifact
 
-Continue only when the user wants `/goal` prompt text generated, rewritten,
-shortened, or reviewed. Do not turn an ordinary task into goal-backed work.
+Continue only when the user explicitly wants `/goal` prompt text generated,
+rewritten, shortened, or reviewed. Do not turn an ordinary task into goal-backed
+work or execute the goal inside this skill.
+
+When rewriting, shortening, or reviewing a draft, separately check whether it
+defines an observable after-state and whether its evidence covers the full scope.
+Activity-only language such as "improve", "polish", "optimize", or "refactor" is
+not verifiable. Test success alone does not prove completion when the task also
+includes behavior, compatibility, migration, documentation, deployment, or
+review requirements.
 
 ### 2. Investigate the real context
 
 Read all user-provided paths, URLs, specs, constraints, and prior decisions that
-can affect the result. When local repository access exists, inspect the nearest
-`AGENTS.md`, contributor guidance, current worktree state, relevant source and
-tests, package/build scripts, CI configuration, and existing task/spec/design
-documents. For remote or time-sensitive claims, use the appropriate live source.
+can affect the goal. When a local repository is available, inspect the nearest
+`AGENTS.md`, contributor guidance, current worktree, relevant source and tests,
+build scripts, CI, and existing issues, TODOs, specs, or design documents. Verify
+remote and time-sensitive information from live sources.
 
-Research must answer, with evidence where available:
+Use evidence where possible to determine:
 
-- what outcome the user is actually trying to make true;
-- current state versus desired state;
-- included scope and material exclusions;
-- validators or observable evidence that can prove completion;
-- unresolved decisions, risks, and dependencies;
-- whether durable state is needed and which existing files are still current.
+- the result the user actually wants;
+- the gap between current and desired state;
+- scope, material exclusions, and invariants;
+- validators or observable evidence that prove completion;
+- unresolved decisions, risks, and external dependencies;
+- whether the task must resume across phases, sessions, or quotas;
+- whether existing truth files remain current;
+- whether the current agent's write, command, network, subagent, Git, and
+  connector permissions could obstruct later execution.
 
-Do not invent commands, paths, dependencies, metrics, or constraints. Do not read
-every file mechanically; stop investigating when further inspection is unlikely
-to change the brief or the material questions.
+Preflight only capabilities this task may need. When a high-risk gap exists,
+state the exact missing capability, affected phase, and suggested adjustment.
+Do not expand permissions or mark the task `blocked` automatically.
 
-### 3. Select and read scenario guidance
+Do not invent commands, paths, dependencies, metrics, or constraints, and do not
+read every file mechanically. Stop when more investigation is unlikely to change
+the brief, mode recommendation, or material questions.
 
-Choose one of refactor, feature, batch, research, audit, gatekeeper review, or
-custom. Read only the matching section in `references/scenarios.md`.
+### 3. Recommend an execution mode
 
-### 4. Present a disposable goal brief
+#### a. Fast / small-task mode
 
-Return `needs confirmation`, not a `/goal` prompt. Summarize:
+Use for focused, lower-risk, well-grounded work that normally fits one continuous
+execution cycle.
+
+- Perform targeted, time-bounded research without unrelated fine-grained
+  inventory.
+- Create no sidecar by default.
+- Create `state.md` only when recovery continuity is genuinely needed.
+- Do not pre-create `todo.md`, `design.md`, or `lessons.md`; add one only after a
+  concrete failure, reusable lesson, or user request triggers it.
+- Put the applicable compact execution rules directly in `/goal`.
+
+#### b. Deep / long-task mode
+
+Use for work spanning phases or subsystems, with many deliverables, repeated
+implementation and validation, remote waits, or cross-session recovery.
+
+- Complete one sufficient baseline investigation of the current revision,
+  existing documents, execution environment, and material risks.
+- After the user confirms initialization, create a non-empty `state.md` and
+  create `todo.md`, `design.md`, or other approved files only when needed.
+- Put the full execution contract in `state.md`; keep only the outcome, scope,
+  gates, truth entrypoint, and essential stop semantics in the final `/goal`.
+- Summarize learning briefly after each productive loop, but create or update
+  `lessons.md` only when evidence-backed reusable content exists.
+
+Complexity does not imply more files. Do not treat deep mode as a mandatory
+four-file bundle.
+
+### 4. Select scenario guidance
+
+Choose the best match from refactor, feature, batch, research, audit, gatekeeper
+review, or custom. Read only that section in `references/scenarios.md`.
+
+For complex long-running work, also read
+`references/long-goal-execution.md`. Read
+`references/long-goal-learning.md` only when a learning record is selected.
+
+### 5. Design the minimum initialization set
+
+Prefer current specs, designs, issues, and task files. A new file must have a
+distinct purpose, reader, and lifecycle; never create an empty placeholder.
+
+Only these four files are candidates under `.goal-task/<task-slug>/`:
+
+| File | Responsibility | Creation condition |
+| --- | --- | --- |
+| `state.md` | Live status, phase, active-truth index, gate evidence, work summary, unfinished initialization, and next action | Always in deep mode; in fast mode only for cross-turn recovery |
+| `todo.md` | Large or frequently changing executable work items | TODO detail would crowd `state.md` or needs independent batch maintenance |
+| `design.md` | Confirmed, durable design decisions, interfaces, and invariants | Material design decisions exist and no more authoritative design already exists |
+| `lessons.md` | Evidence-backed reusable lessons and promotion candidates | In deep mode only when real lessons exist; in fast mode only after a user request or concrete failure |
+
+Do not create overlapping `progress.md`, `blockers.md`, `decisions.md`, or
+`goal.md`. A large evidence report or formal spec may use the task's required
+artifact path, but it is not a default initialization file.
+
+Keep responsibilities separate:
+
+- `state.md` holds current execution truth and links elsewhere. Do not duplicate
+  `/goal` gates, full design, long TODOs, or lesson text. With `todo.md`, keep
+  only item counts, dependency summary, and the link. Unfinished one-time work
+  may appear under "Initialization TODO"; remove its steps after completion and
+  retain only environment results or constraints that still matter.
+- `todo.md` answers "what remains?" When present, item-level state and
+  waiting/deferred markers live only here.
+- `design.md` answers "what was decided and why?" It does not track daily work.
+- `lessons.md` holds validated, reusable lessons, not chronology.
+
+First follow the host agent's instruction priority. Within task materials, use:
+
+```text
+latest user confirmation > authoritative spec/design > issue/todo > state
+```
+
+`state.md` is an active index and execution record; it cannot override
+authoritative product or design truth. Refresh initialization incrementally only
+when scope, repository baseline, key design, or environment materially changes.
+
+### 6. Present the confirmation brief
+
+Stage 1 returns `needs confirmation`, not `/goal`. Include:
 
 - proposed outcome;
 - scope and exclusions;
 - completion evidence;
-- likely source-of-truth set, if any;
-- unresolved material assumptions.
+- recommended mode and rationale;
+- existing files to reuse and new files to create;
+- initialization actions, permission risks, and their effects;
+- only unresolved questions that materially change the goal.
 
-Ask the smallest set of material questions needed, and explicitly ask the user to
-confirm or correct the brief. This brief is initialization context, not durable
-truth. Do not create it as a file or require the eventual executor to reread it.
+For complex long-running work, also summarize recoverable waits, independent work
+that can continue while waiting, checkpoint or recovery actions, and stop
+conditions valid only when all remaining work is jointly blocked.
 
-If the user's answer changes the outcome materially, update the brief and confirm
-again. Otherwise proceed to Stage 2.
+Confirming deep mode and its initialization plan authorizes creation of the
+listed `.goal-task/<task-slug>/` Markdown files. Worktree or branch changes,
+dependency installation, configuration changes, destructive actions, and remote
+mutations require the exact target and impact to be listed and explicitly
+authorized. Do not ask again when the same confirmation already covers them.
 
-## Stage 2: render the final prompt
+If the user's response materially changes the goal or initialization plan,
+update the brief and confirm again. Otherwise proceed to Stage 2.
 
-### 5. Classify execution needs
+## Stage 2: initialize and render
 
-Treat work as complex when it spans phases or subsystems, has many independent
-deliverables, needs repeated implementation/verification/review cycles, or must
-resume across sessions. Treat it as long-running when it includes slow builds,
-remote CI, external waits, environment startup, or quota/session continuity.
+### 7. Prepare approved files
 
-Complexity does not imply more truth files. It only changes which execution and
-continuity constraints are useful.
+Fast mode skips this step by default. In confirmed deep mode:
 
-### 6. Choose the minimum source of truth
+1. create `.goal-task/<task-slug>/`;
+2. perform only the listed, explicitly authorized one-time environment setup;
+   do not begin implementation within the goal's scope;
+3. create or refresh `state.md` with the baseline, active-truth index, execution
+   contract, and next action;
+4. create non-empty `todo.md`, `design.md`, or `lessons.md` only when its trigger
+   is satisfied;
+5. verify every path that the final `/goal` will reference;
+6. replace or archive stale drafts and remove them from active truth.
 
-Prefer existing current specs, designs, issue descriptions, and task files. Every
-selected file must have a distinct ongoing purpose and expected reader. Merge
-overlapping state instead of creating files by category.
+Initialization files and authorized environment preparation serve later goal
+execution; they do not start the goal. Do not repeat completed one-time actions
+in `/goal`. Put unfinished actions under `state.md`'s "Initialization TODO" and
+simplify or remove them promptly after completion.
 
-Use no sidecar for an ordinary self-contained goal. When durable state is needed,
-default to one `.goal-task/<task-slug>/state.md` containing the live plan, TODOs,
-evidence, blockers, and next action. Add another file only when it has a genuinely
-different lifecycle or authority, for example:
+### 8. Write the execution contract
 
-- an existing product spec or design that must remain authoritative;
-- a large evidence report that would make live state hard to use;
-- a user-required decision log;
-- a learning record explicitly requested or justified for a long-running goal.
+#### Persistent execution and retry
 
-Do not create `goal.md`; the objective already lives in `/goal`.
+- Unless the user specifies otherwise, try one item at most three times. If it
+  still fails, record evidence, defer it, and continue all independent work.
+- Diagnose and repair recoverable failures, narrow the next action, or use an
+  authorized alternative.
+- Under resource pressure, first reduce concurrency or batch size, change
+  validation cadence, or adjust resource use; defer the item only if needed.
+- Deferral is not a waiver. An unmet gate remains active, so progress cannot be
+  reported as `100%`.
+- Mark ordinary permission or authorization gaps `needs input` and continue
+  independent work; do not mark the entire goal `blocked`.
 
-If durable files are missing or stale, keep initialization to one compact rule:
-perform a fresh audit, create or refresh the minimal live truth, mark the baseline
-date/revision, then continue execution from it. Draft inventories and obsolete
-baselines are disposable: replace or archive them and remove them from the active
-truth list so later iterations do not reread stale artifacts.
+Set the overall goal `blocked` only when the user explicitly defines that rule,
+or when bounded recovery, authorized alternatives, task splitting,
+reprioritization, and all independent work are exhausted and every meaningful
+remaining item still depends on the same logical conflict, safety boundary, or
+verified mandatory external dependency.
 
-For a complex long-running goal, read `references/long-goal-execution.md` and use
-only the applicable contract. Read `references/long-goal-learning.md` only when a
-learning record is selected.
+#### Loop progress
 
-### 7. Apply the goal quality bar
-
-A ready goal must state:
-
-- the concrete outcome;
-- evidence and an honest binary or quantitative success threshold;
-- material scope boundaries;
-- conjunctive completion gates;
-- a concise progress summary at every milestone boundary;
-- exceptional conditions that can stop all remaining work.
-
-Rewrite vague activity goals into observable outcomes. Do not add decorative
-metrics. Every applicable completion gate must pass; a conditional gate may be
-excluded only when demonstrably inapplicable or explicitly waived by the user.
-
-### 8. Bias execution toward completion
-
-The prompt must tell the executor to keep the goal active until all scoped
-completion gates are satisfied. One item that cannot proceed is a scheduling
-signal, not permission to mark the whole goal `blocked`: record the evidence,
-mark the item waiting or deferred, move it and its dependents behind independent
-work, and continue the highest-value scoped task. Diagnose, fix, or finitely
-retry actionable failures.
-
-CI queues or failures, API adjustments, transient outages, test failures, and
-quota waits are not reasons to end while meaningful scoped work remains. Avoid
-self-imposed shortcuts, partial-success exits, arbitrary time limits, and new stop
-conditions not grounded in the confirmed brief.
-
-Do not set the overall goal to `blocked` because of a recoverable failure, a
-missing optional dependency, a non-material ambiguity, or a decision that can be
-handled with a safe reversible assumption. Before using `blocked`, perform
-bounded recovery, try authorized alternatives, split work or narrow the next
-action without changing the confirmed scope, reorder work, finish all independent
-scoped work, and ask the user only for a decision that materially changes the
-goal. Never remove confirmed scope or a completion gate without renewed user
-confirmation.
-
-Set the overall goal to `blocked` only as an exceptional terminal state when
-every meaningful remaining scoped task depends on the same requirement conflict,
-safety boundary, unauthorized scope expansion, unavailable mandatory independent
-review, or verified external dependency. State completed work, evidence,
-deferred items, and the exact decision or external change required.
-
-### 9. Report milestone progress
-
-After every milestone or meaningful phase boundary, require a compact user-facing
-summary even when durable state is also updated:
+After every productive execution loop, and when a major milestone review or
+commit spans its own loop, report:
 
 ```text
-Progress [██████░░░░] 60%
-Done: <completed milestone and key evidence>; Remaining: <main open item>.
+Progress [██████░░░░] 60% (3/5 gates)
+This loop: <completed work and key evidence>; Remaining: <main open work>.
 Next: <one primary action>.
 ```
 
-Base the percentage on completed scoped milestones, deliverables, and completion
-gates rather than elapsed time or effort spent. Use an exact percentage when the
-denominator is fixed; otherwise use a coarse evidence-based estimate and label it
-`estimate`. Reserve `100%` for the point when every applicable completion gate
-passes. Keep the summary to three short lines.
+Calculate percentage from scoped milestones, deliverables, and completion gates,
+not elapsed time or effort. Use a coarse evidence-based value labeled `estimate`
+when the denominator is unstable. Never report `100%` before all applicable
+gates pass. Do not report tool calls, waits, or no-change loops separately.
+Combine review and commit when they occur in the same loop.
 
-### 10. Require independent review for behavior changes
+#### Independent review
 
-For production code, public APIs, tests/test infrastructure, build/CI logic,
-dependencies, migrations, deployment, or behavior-changing configuration, keep
-this rule in the prompt:
+- For changes to production code, public APIs, tests or test infrastructure,
+  build/CI, dependencies, migrations, deployment, or behavioral configuration,
+  use exactly 3 independent read-only reviewers at the final major milestone;
+  apply the same rule to intermediate major milestones in deep work.
+- For a large change, all 3 first scan global risk, then focus respectively on
+  correctness/tests, design/boundaries, and security/maintainability.
+- For a small change, all 3 independently review the complete change.
+- Pure documentation, read-only research, or analysis uses 1 independent
+  reviewer by default; the user may increase the count.
+- A reviewer may be a subagent, isolated session, or equivalent independent
+  review tool. The implementation worker cannot substitute for one.
+- Run at most 3 fix/re-review rounds by default. If review still fails, record
+  and defer affected work, continue independent work, and do not claim the gate.
+- If required reviewers are unavailable, raise an early high-risk warning,
+  finish review-independent work, and remain `needs input`; do not self-review
+  or mark the whole goal `blocked` automatically.
 
-```text
-After implementation and verification, an independent read-only reviewer
-subagent must review the final diff against the goal and test evidence. The
-implementation worker must not act as reviewer. After fixes, the independent
-reviewer must re-review affected changes. If no independent reviewer can be
-created, finish all work that does not depend on review, then stop and ask the
-user; do not claim completion.
-```
+#### Milestone commits
 
-Completion also requires all actionable findings fixed or explicitly accepted,
-no unresolved high-severity finding, and the final summary naming the reviewer
-and review/re-review result. Do not force this gate for pure documentation or
-read-only work unless repository policy or the user requires it.
+- When a major milestone produces persistent repository changes, create a local
+  commit promptly after applicable validation and review pass. Do not create
+  empty commits for read-only research, analysis, audits, or gatekeeper reviews.
+- Fix high-severity findings, test failures, and unmet gates before committing by
+  default.
+- If current changes are a required baseline for later work, an intermediate
+  checkpoint commit may record the risks and unmet gates. It does not mean review
+  passed or complete those gates.
+- Do not push by default. Pushes, PRs, releases, and deployments require explicit
+  authorization.
 
-### 11. Render and check
+#### Learning
 
-Return `ready` only after Stage 1 confirmation and when the final prompt passes
-the quality and length gates. Otherwise return `needs confirmation` with the
-updated brief and material question. Never use a pseudo-precise audit score.
+At the end of each productive deep-mode loop, briefly summarize disproven
+assumptions, effective recovery, and potentially reusable rules. Write to
+`lessons.md` only when the content is evidence-backed and reusable.
+
+Learning may propose candidates for repository rules, global rules, or Memory,
+but cannot promote them automatically. Changing AGENTS instructions or Memory
+requires separate explicit authorization.
+
+### 9. Render the final `/goal`
+
+An executable goal must state:
+
+- a concrete observable outcome;
+- scope and material exclusions;
+- honest binary or quantitative evidence;
+- conjunctive completion gates;
+- applicable persistence, progress, review, and commit rules;
+- stop conditions valid only when they affect all remaining work.
+
+Fast mode compresses applicable rules into `/goal`. Deep mode references the full
+execution contract in `state.md` instead of repeating initialization detail,
+complete TODOs, long specs, or review checklists.
+
+Return the final `/goal` only after Stage 1 is confirmed, initialization is
+complete, and all referenced paths are verified. Otherwise return an updated
+brief ending in `needs confirmation`.
 
 ## Length contract
 
-- Ordinary prompt: target 12-25 lines and no more than about 450 tokens.
-- Complex prompt: hard limit about 700 tokens.
-- Move details into already-selected truth files; do not create extra files only
-  to satisfy the prompt length.
+- Keep fast-mode `/goal` near 450 tokens when possible. Preserve outcome, scope,
+  gates, and required execution semantics even when that exceeds the target.
+- Keep deep-mode `/goal` concise. Near 700 tokens, reference the full contract in
+  `state.md` instead of repeating it.
+- Do not create files merely to shorten the prompt; every truth file needs a
+  distinct responsibility.
 
-The final prompt should contain only:
+The final `/goal` contains only:
 
-- one or two sentences for the confirmed outcome;
-- only the minimal active source-of-truth paths, when needed;
+- the confirmed outcome;
+- minimum active-truth paths;
 - concise scope and exclusions;
-- core execution constraints, including continue/reprioritize semantics;
-- one compact milestone progress-reporting rule;
-- three to six conjunctive completion gates;
-- one to three exceptional all-work-blocked stop conditions;
-- the independent reviewer gate when behavior changes;
-- an optional token-budget line when justified or requested.
-
-Do not include the research transcript, disposable brief, step-by-step
-implementation, full TODO list, long spec recap, detailed review checklist,
-repeated document content, or unverified assumptions.
+- core persistence and reprioritization semantics;
+- all conjunctive completion gates;
+- exceptional stop conditions that genuinely affect all remaining work;
+- a token budget only when the user requested it.
 
 ## Output templates
 
@@ -236,71 +328,73 @@ Proposed goal brief
 - Outcome: <observable after-state>.
 - Scope: <included area>; excludes <material exclusions>.
 - Completion evidence: <validators or observable proof>.
-- Minimal truth: <none, existing paths, or one proposed live-state path>.
+- Recommended mode: <fast/deep>; rationale: <task properties>.
+- Active truth: <existing paths to reuse>.
+- Proposed initialization: <no files, or each file and its purpose>.
+- Permission risks: <none, or exact capability, affected phase, and adjustment>.
 - Open assumptions: <only material uncertainties>.
 
 Questions:
-1. <one to three material questions>.
+<only necessary questions that materially change the goal>.
 
-Please confirm or correct this brief. I will generate the final `/goal` only
-after confirmation.
+Please confirm or correct the goal brief, execution mode, and initialization
+plan. I will prepare the files and generate the final `/goal` only after
+confirmation.
 
 needs confirmation
 ```
 
-### Stage 2: ready
+### Stage 2: final `/goal`
 
 ```text
-/goal <one or two sentences describing the confirmed, verifiable outcome>.
+/goal <concise confirmed and verifiable outcome>.
 
-[Source of truth, only when needed:
-- <minimal active path(s)>]
+[Active truth, only when needed:
+- <minimum path and responsibility>]
 
 Scope: <included area and material exclusions>.
 
 Constraints:
-- Keep the goal active until every applicable completion gate passes. Record an
-  item that cannot proceed as waiting/deferred, move it and its dependents behind
-  independent work, and never mark the overall goal blocked while meaningful
-  scoped work remains.
-- After each milestone, report a three-line progress bar summary with percentage,
-  completed/remaining items, and one next primary action. Base the percentage on
-  scoped milestones and gates; label it as an estimate when no fixed denominator
-  exists.
-- [If initialization is needed: perform one fresh baseline audit, update the
-  minimal live truth, retire stale drafts from the active truth list, then
-  continue.]
-- [For code changes: independent read-only reviewer; no worker self-review.]
+- Keep the goal active until all applicable gates pass. After three failed
+  attempts by default, defer one item and continue independent work. Mark
+  permission or authorization gaps `needs input`, not automatically `blocked`.
+- After each productive loop, report a three-line summary with gate-based
+  percentage, this-loop/remaining work, and one primary next action. Report a
+  review or commit that spans its own loop; combine them within one loop.
+- [Behavior change: exactly 3 independent read-only reviewers at major
+  milestones; the implementer cannot substitute, and fixes require re-review.]
+- [Persistent repository changes: create a local commit after applicable
+  validation and review pass; do not push by default.]
+- [Deep mode: use the contract in state.md for active truth, review, commits,
+  and learning.]
 
 Complete only when all applicable conditions are true:
 1. <observable outcome or artifact>.
-2. <required validators and recorded evidence>.
+2. <required validators and evidence>.
 3. <remaining confirmed gates>.
-4. [For code changes: review and any required re-review are complete with no
-   unresolved blocker.]
+4. [Behavior change: required independent review and re-review are complete with
+   no unresolved high-severity finding.]
 
-Set the overall goal to blocked only if every meaningful remaining scoped task
-depends, after bounded recovery, authorized alternatives, reprioritization, and
-completion of independent work, on:
-- <confirmed exceptional conflict, boundary, or mandatory dependency>.
-- [For code changes: independent review remains unavailable after all
-  review-independent work is complete.]
+Set the overall goal `blocked` only when every meaningful remaining item, after
+recovery, reprioritization, and completion of independent work, still jointly
+depends on <confirmed logical conflict, safety boundary, or mandatory external
+dependency>.
 
-[Optional only when requested: Use a token budget of <N> tokens.]
+[Only when requested: Use a budget of <N> tokens.]
 ```
 
 ## Final response
 
-During Stage 1, return only the disposable brief, material questions, and
+During Stage 1, return only the goal brief, material questions, and
 `needs confirmation`; do not include a `/goal` code block.
 
 During Stage 2, return:
 
-1. one Markdown code block containing the copy-pasteable `/goal` prompt;
-2. no more than eight short lines explaining grounded choices and active truth;
-3. one line containing `ready`.
+1. one Markdown code block containing the copy-pasteable `/goal`;
+2. a short explanation limited to mode, initialization files, and grounded
+   tradeoffs.
 
-Do not start the goal or create referenced files.
+Do not start the goal.
 
-When maintaining this skill, read `references/fusion-notes.md` for source lineage
-and the rationale behind retained, modified, omitted, and locally added rules.
+When maintaining this skill, read `references/fusion-notes.md` for rule lineage
+and local design decisions.

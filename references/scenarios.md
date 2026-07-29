@@ -1,106 +1,87 @@
 # Scenario Guidance
 
-Read only the section matching the user's task. These are deltas from the core
-two-stage workflow in `SKILL.md`, not complete prompt templates. Use the points
-below during research to improve the disposable brief; do not render a final
-prompt before the user confirms it.
+Read only the section matching the user's task. These rules extend the two-stage
+flow in `SKILL.md`; they are not complete prompt templates. Use them during
+research to improve the confirmation brief. Do not render `/goal` before the
+user confirms.
 
 ## Refactor
 
-Use when changing one subsystem while preserving externally visible behavior.
-
-- Name the intended after-state and the API or behavior that must stay stable.
-- Inspect current callers, tests, and public contracts before asking for
-  confirmation; do not assume the refactor boundary from a directory name alone.
-- Bound scope to the affected subsystem and identify adjacent exclusions.
+- State the intended after-state and the API or external behavior that must stay
+  stable.
+- Inspect callers, tests, and public contracts before confirmation; do not infer
+  the boundary from a directory name.
+- Bound scope to the affected subsystem and name adjacent exclusions.
 - Use repository-provided targeted tests plus the smallest relevant broader gate.
-- Require the independent reviewer gate because implementation changes code.
-- Defer work requiring an unapproved API, schema, or dependency change; ask only
-  after completing independent in-scope work and only if the decision blocks all
-  meaningful remaining work.
-- For a long refactor, freeze related low-risk edits by shared validation surface,
-  then run the smallest broader gate at phase boundaries rather than after every
-  edit.
+- Apply the 3-independent-reviewer rule when code behavior changes.
+- Defer unapproved API, schema, or dependency changes. Ask only after completing
+  other in-scope work and only when the decision blocks all remaining work.
 
 ## Feature
 
-Use for new user-visible or system behavior, with or without an existing spec.
-
-- Prefer an existing spec, design, and task file as source of truth.
-- Compare the requested behavior with current implementation and tests before
-  drafting the goal brief.
-- If durable state is needed and no current plan exists, prefer one live-state
-  file; split it only when content has a different authority or lifecycle.
-- Map top-level completion gates to observable behavior and repository validators.
-- Require independent review and re-review for implementation changes.
-- Defer conflicting requirements or an unapproved public-surface expansion until
-  independent in-scope work is complete; ask only if it then blocks all remaining
-  meaningful work.
+- Prefer existing specs, designs, and task files.
+- Compare desired behavior, current implementation, and existing tests before
+  drafting the brief.
+- In deep mode create `state.md`; split out `todo.md` or `design.md` only for
+  large TODO volume or durable design decisions.
+- Map top-level gates to observable behavior and repository validators.
+- Use 3 independent reviewers at major behavior-change milestones and re-review
+  after fixes.
 
 ## Batch
 
-Use when processing a known or externally enumerable set of similar items.
-
-- State the source of the set and the exact item count when known.
-- Verify the set and whether membership can change before confirmation.
-- Keep per-item detail in the selected live-state or evidence file, not in
-  `/goal`.
-- Add a separate progress file only when a long batch cannot be resumed safely
-  from the live-state file; report at item-count checkpoints.
-- Use an exact percentage when the item count is fixed. If membership can change,
-  report a coarse estimate based on verified items and label it `estimate`.
+- State the source of the set and its exact size when known.
+- Verify whether membership can change.
+- Keep per-item detail in `todo.md`, `state.md`, or a formal evidence artifact,
+  not in `/goal`.
+- Create a separate `todo.md` only for a large or frequently changing list.
+- Use exact percentages for a fixed denominator. When membership can change, use
+  a coarse evidence-based value labeled `estimate`.
 - Define what happens when an item disappears, changes, or cannot be reproduced.
-- Review the final aggregate diff independently when code behavior changes.
-- Form implementation batches by shared module, root cause, or validation surface;
-  do not use an arbitrary fixed item count.
+- Form batches by shared module, root cause, or validation surface, not an
+  arbitrary item count.
 
 ## Research
 
-Use for read-only investigation, architecture discovery, or decision support.
-
-- Name the decision the research must enable and the evidence standard.
-- Inspect accessible primary sources before asking the user to confirm the
-  question; distinguish missing evidence from a missing user preference.
-- Restrict writable output to named report files when appropriate.
-- Require real citations to files, lines, commands, or primary sources.
-- Do not add the code-review gate unless behavior-changing files will be edited.
-- Exhaust accessible evidence and independent research lanes before stopping on
-  inaccessible required evidence or irreconcilable authoritative sources.
+- Name the decision the research must support and its evidence standard.
+- Inspect accessible primary sources before confirmation; distinguish missing
+  evidence from a missing user preference.
+- Restrict writes to named report files when appropriate.
+- Cite real files, lines, command output, or primary sources.
+- Use 1 independent reviewer by default for pure documentation, read-only
+  research, or analysis.
+- Exhaust accessible evidence and independent research lanes before requesting
+  input because mandatory evidence is inaccessible or authorities conflict.
 
 ## Audit
 
-Use to compare implementation against a documented claim, spec, or expected flow.
-
-- Name the authoritative comparison source and the units being audited.
+- Name the authoritative comparison source and audit units.
 - Inspect both the claimed baseline and a representative implementation slice
-  before confirming the audit boundary.
+  before confirming scope.
 - Separate observed evidence from inference and mark runtime-only questions.
-- Require a compact findings summary and actionable priorities in the report.
-- Keep detailed audit rows in the report file, not in `/goal`.
-- Remain read-only unless the user explicitly expands the goal to remediation.
+- Include a compact findings summary, evidence, and actionable priorities.
+- Put detailed audit rows in the formal report, not `/goal`.
+- Stay read-only unless the user explicitly expands scope to remediation; use
+  1 independent reviewer by default.
 
 ## Gatekeeper review
 
-Use when the goal itself is to decide whether branches, pull requests, or changes
-are ready. This is different from the independent reviewer gate applied after a
-code implementation goal.
+This means the goal itself decides whether a branch, PR, or change is ready. It
+is distinct from independent review after implementation.
 
-- Keep the reviewer read-only: no implementation, push, merge, or rebase.
+- Stay read-only: do not implement, push, merge, or rebase.
 - Review the actual final diff and relevant validation evidence.
-- During Stage 1, verify the target revision and available checks/comments before
-  confirming the review question.
-- Produce findings with severity, precise location, evidence, and recommendation.
-- Use a small explicit verdict set such as `ready`, `needs work`, or `blocked`.
-- Refresh a changed revision and defer unavailable validation while other review
-  work remains; stop only when no valid verdict can be produced after bounded
-  recovery and reprioritization.
+- In Stage 1 verify the target revision, available checks, and comments.
+- Report severity, exact location, evidence, and recommendation.
+- Use a small verdict set such as `ready`, `needs work`, or `blocked`.
+- Refresh when the revision changes. If one validation is unavailable, continue
+  other review work first.
 
 ## Custom
 
-Use only when none of the other scenarios fits.
-
-- Start from the ordinary or complex template in `SKILL.md`.
-- Spend clarification effort on the outcome, evidence, and stop conditions.
-- Add only constraints supported by the user's request or repository evidence.
-- Apply sidecar, progress, and independent-review rules based on task complexity
-  and behavior impact rather than adding them mechanically.
+- Select only when no other scenario applies.
+- Focus clarification on outcome, evidence, and stop conditions that genuinely
+  affect all remaining work.
+- Add only constraints supported by the user or repository evidence.
+- Choose files, progress, and reviewer rules based on task complexity and
+  behavioral risk; do not stack them mechanically.

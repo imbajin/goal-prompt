@@ -1,134 +1,106 @@
-# Fusion Notes
+# Design Lineage and Decisions
 
-This project combines design ideas from two references rather than copying
-either one verbatim.
+This project combines ideas from two references without copying either verbatim:
 
-## Sources
-
-- OpenAI `define-goal`:
-  https://github.com/openai/skills/blob/main/skills/.curated/define-goal/SKILL.md
-- `win4r/goal-prompt-builder`:
-  https://github.com/win4r/goal-prompt-builder
+- OpenAI `define-goal`: <https://github.com/openai/skills/blob/main/skills/.curated/define-goal/SKILL.md>
+- `win4r/goal-prompt-builder`: <https://github.com/win4r/goal-prompt-builder>
 
 ## Retained
 
 From OpenAI `define-goal`:
 
-- concrete outcomes rather than activity descriptions;
-- explicit verification evidence and honest quantitative or binary thresholds;
-- bounded scope and detectable stop-and-ask conditions;
-- clarification only when missing information could change the intended result;
-- the prompt builder itself does not execute goals or manage runtime state.
+- concrete outcomes instead of activity descriptions;
+- explicit evidence and honest binary or quantitative thresholds;
+- bounded scope and conditions that genuinely require stopping to ask;
+- questions only when missing information changes the goal;
+- the prompt builder does not execute the goal.
 
 From `goal-prompt-builder`:
 
-- a copy-pasteable `/goal` artifact;
-- Objective, Scope, Constraints, conjunctive completion gates, and exceptional
-  stop conditions as the core reading flow;
-- context-aware interaction adapted into one research-confirm-render flow;
-- repository-context inspection and scenario-specific guidance;
-- a brief explanation after the generated prompt.
+- a copy-pasteable `/goal`;
+- outcome, scope, constraints, conjunctive gates, and exceptional stop conditions;
+- repository investigation and scenario-specific rules;
+- a brief explanation of grounded decisions after generation.
 
-## Modified
+## Major modifications
 
-- The five-section structure is a compact control entrypoint, not a container for
-  the complete implementation plan.
-- Detailed requirements and TODOs move into source-of-truth Markdown files.
-- Acceptance and stop-condition counts follow actual requirements instead of a
-  fixed minimum or target range.
-- Audit quality is `ready` or `needs confirmation`, not a numeric score.
-- Project commands and constraints come from repository evidence instead of
-  language-specific defaults.
-- Token budgets are included only when the user explicitly requests or confirms
-  one.
+- Replace one-stage generation with "investigate and confirm, then initialize and
+  render."
+- Recommend fast or deep mode automatically, with user confirmation.
+- In deep mode, create approved `.goal-task/<slug>/` Markdown files after
+  confirmation.
+- Keep one-time environment preparation out of the enduring prompt. Put
+  unfinished work under `state.md`'s "Initialization TODO", then simplify or
+  remove it after completion.
+- Derive gate and stop-condition counts from actual requirements.
+- End Stage 1 with `needs confirmation`; use the final `/goal` code block itself
+  as the Stage 2 completion signal, with no extra status suffix.
+- Ground commands, paths, and constraints in repository or user evidence.
+- Include a token budget only when the user explicitly requests it.
 
-## Omitted
+## Initialization file design
 
-- mandatory token budgets and fixed budget ranges;
-- hard-coded Codex versions, simulator names, test commands, or dependency bans;
-- provider-specific invocation language;
-- automatic network probing or automatic recommendation of a spec framework;
-- automatic goal creation or direct creation of sidecar files;
-- `.autonomous/` state semantics.
+Select files by responsibility, not task complexity:
 
-## Added locally
+- fast mode creates no file by default and uses `state.md` only for recovery;
+- deep mode always creates a non-empty `state.md`;
+- use `todo.md` only for large or frequently changing work items;
+- use `design.md` only for confirmed decisions that need durable authority;
+- create `lessons.md` only for evidence-backed reusable learning.
 
-### Prompt length
+Do not create `goal.md` or mechanically add `progress.md`, `blockers.md`, or
+`decisions.md`. A large report or formal spec may be a task artifact, but is not
+a default initialization file.
 
-- ordinary target: 12-25 lines and about 450 tokens or less;
-- complex hard limit: about 700 tokens;
-- detail beyond that limit moves to source-of-truth files.
+`state.md` is live state and an index; it cannot override an authoritative spec
+or design. Within task materials use:
 
-### Sidecar documents
+```text
+latest user confirmation > authoritative spec/design > issue/todo > state
+```
 
-- source-of-truth selection is need-driven rather than complexity-count driven;
-- ordinary goals use no sidecar by default;
-- durable complex work defaults to one `.goal-task/<task-slug>/state.md`, with
-  existing authoritative specs/designs and genuinely separate large reports
-  added only when their lifecycle or authority differs;
-- learning, decision, blocker, and progress files are optional rather than a
-  mechanical minimum;
-- the prompt builder itself does not create these files.
+## Persistent execution and state
 
-### Two-stage interaction and initialization
+- Try an ordinary failed item at most three times by default, then record and
+  defer it while continuing independent work.
+- Mark permission or authorization gaps `needs input`, not overall `blocked`.
+- Address resource limits first by reducing concurrency or batch size, or
+  adjusting resource use.
+- A deferred item's completion gate remains active, so progress cannot be
+  reported as `100%`.
+- Use overall `blocked` only under a user-defined rule or when all remaining work
+  shares one logical conflict, safety boundary, or verified mandatory external
+  dependency.
 
-- the builder must investigate real context and present a disposable goal brief
-  before it renders a final `/goal` prompt;
-- explicit user confirmation of the core outcome, scope, and evidence separates
-  research from finalization;
-- the disposable brief is conversation context, not durable truth;
-- when executor initialization is needed, the final prompt carries only a compact
-  one-time baseline-refresh rule;
-- stale initialization drafts are retired from the active truth list so later
-  goal iterations do not repeatedly consume obsolete artifacts.
+## Progress, review, and commits
 
-### Independent review
+- Report a three-line summary after each productive loop and when a major review
+  or commit spans its own loop; combine them when they occur in one loop.
+- Derive percentage from scoped milestones, deliverables, and gates; label it
+  `estimate` when the denominator is unstable.
+- Use exactly 3 independent reviewers at final behavior-change milestones and at
+  intermediate major milestones in deep work.
+- Use 1 independent reviewer by default for pure documentation, read-only
+  research, or analysis.
+- Run at most 3 fix/re-review rounds by default. Record and defer unresolved
+  work; do not call it complete.
+- After validation and review pass, create a local commit promptly for persistent
+  repository changes. Do not create empty commits for read-only work and do not
+  push by default.
+- A required downstream baseline may be checkpointed with explicit risks, but
+  that does not mean review passed.
 
-- behavior-changing code work requires a separate read-only reviewer subagent;
-- the implementation worker cannot act as reviewer;
-- fixes require independent re-review;
-- an unavailable independent reviewer is a mandatory final blocker, not
-  permission to self-review; finish review-independent work before stopping;
-- pure documentation and read-only research do not require this gate by default.
+## Learning
 
-### Progress reporting
+Deep mode briefly summarizes learning after each productive loop, but writes
+`lessons.md` only for real, reusable, evidence-backed content. Fast mode enables
+it only after a user request or concrete failure.
 
-- publish a compact progress bar after every milestone or meaningful phase
-  boundary, not at arbitrary time intervals;
-- keep it to three short lines: percentage, completed/remaining items, and one
-  next primary action;
-- derive percentages from scoped milestones, deliverables, and completion gates;
-  use an exact value for a fixed denominator, otherwise label a coarse estimate;
-- reserve `100%` for the point when every applicable completion gate passes.
+Learning may become a candidate for repository rules, global rules, or Memory,
+but cannot be promoted automatically. Changing AGENTS instructions or Memory
+requires separate explicit authorization.
 
-### Completion and blocker semantics
-
-- every applicable completion gate is required; satisfying one gate never ends a
-  multi-gate goal;
-- an item that cannot proceed is marked waiting or deferred and moved behind
-  independent work; it does not make the overall goal blocked;
-- the overall goal may be marked blocked only when all meaningful remaining work
-  is impossible after bounded recovery, authorized alternatives,
-  reprioritization, and completion of independent work.
-
-### Long-goal execution and learning loops
-
-- apply the extra machinery only to complex long-running goals, not ordinary
-  tasks;
-- treat CI, transient, API-adjustment, and quota blockers as resumable or
-  deferrable work rather than terminal blockers;
-- batch low-risk fixes by shared validation surface and use a two-minute threshold
-  for useful non-conflicting parallel lanes;
-- keep durable runtime state in the selected live-state file;
-- add a learning file and promotion candidates only when the confirmed goal
-  selects that deliverable, and require explicit user approval before changing
-  AGENTS instructions or Memory.
-
-These rules were added after long-running production work exposed premature CI
-blocking, repeated small-scope validation, idle waits, and missing quota-resume
-behavior. They are generalized around observable task properties rather than a
-specific project.
-
-The two-stage and minimal-truth rules were added after repeated use showed that a
-single-pass renderer could skip investigation, avoid confirmation, overproduce
-sidecars, and leak disposable initialization work into the enduring goal prompt.
+These decisions address premature finalization, repeated initialization,
+overlapping sidecars, premature blocking after ordinary failure, idle waits,
+unstable progress reporting, insufficient independent review, and loss of
+cross-loop learning.
