@@ -1,0 +1,8 @@
+{
+  "name": "slugify-app-fixture",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/slugify.test.js"
+  }
+}

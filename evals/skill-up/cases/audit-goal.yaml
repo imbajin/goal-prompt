@@ -7,8 +7,6 @@ input:
     以 RELEASE.md 为权威标准，检查最终 diff 和现有 CI 证据；
     verdict 只能是 ready、needs work、blocked。不要修复、推送或合并。
 expect:
-  must_contain: ["needs confirmation"]
-  must_not_contain: ["\nready"]
   exit_code: 0
 judge:
   type: agent_judge
@@ -16,5 +14,5 @@ judge:
   criteria:
     - "简报保留 RELEASE.md、最终 diff、CI 证据和三值 verdict 作为审查核心。"
     - "明确保持只读，排除实现、推送、合并和 rebase。"
-    - "要求发现包含严重级别、精确位置、证据和建议，并在确认前不生成最终 /goal。"
+    - "要求发现包含严重级别、精确位置、证据和建议，并在确认前不生成最终 /goal；语义上请用户确认即可，不要求固定状态字符串。"
   pass_threshold: 1.0

@@ -13,7 +13,8 @@ user confirms.
   the boundary from a directory name.
 - Bound scope to the affected subsystem and name adjacent exclusions.
 - Use repository-provided targeted tests plus the smallest relevant broader gate.
-- Apply the 3-independent-reviewer rule when code behavior changes.
+- Apply the review count selected by task scale and risk: 1 reviewer for a
+  focused low-risk fast-mode change, or 3 for deep-mode or major changes.
 - Defer unapproved API, schema, or dependency changes. Ask only after completing
   other in-scope work and only when the decision blocks all remaining work.
 

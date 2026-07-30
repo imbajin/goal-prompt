@@ -7,7 +7,7 @@ input:
     修复生产代码中的并发缺陷，完成实现和全部测试后必须由独立只读 reviewer 审查；
     修复审查发现后必须复审。请生成最终 /goal，并写清 reviewer 暂不可用时的处理。
 expect:
-  must_contain: ["/goal", "ready"]
+  must_contain: ["/goal"]
   exit_code: 0
 judge:
   type: script

@@ -33,8 +33,9 @@ From `goal-prompt-builder`:
   unfinished work under `state.md`'s "Initialization TODO", then simplify or
   remove it after completion.
 - Derive gate and stop-condition counts from actual requirements.
-- End Stage 1 with `needs confirmation`; use the final `/goal` code block itself
-  as the Stage 2 completion signal, with no extra status suffix.
+- End Stage 1 with a clear semantic request for confirmation, without requiring
+  a fixed status string; use the final `/goal` code block itself as the Stage 2
+  completion signal, with no extra status suffix.
 - Ground commands, paths, and constraints in repository or user evidence.
 - Include a token budget only when the user explicitly requests it.
 
@@ -78,8 +79,8 @@ latest user confirmation > authoritative spec/design > issue/todo > state
   or commit spans its own loop; combine them when they occur in one loop.
 - Derive percentage from scoped milestones, deliverables, and gates; label it
   `estimate` when the denominator is unstable.
-- Use exactly 3 independent reviewers at final behavior-change milestones and at
-  intermediate major milestones in deep work.
+- Use 1 independent reviewer for focused low-risk fast-mode behavior changes;
+  use exactly 3 at deep-mode or major behavior-change milestones.
 - Use 1 independent reviewer by default for pure documentation, read-only
   research, or analysis.
 - Run at most 3 fix/re-review rounds by default. Record and defer unresolved

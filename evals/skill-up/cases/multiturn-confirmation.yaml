@@ -6,9 +6,6 @@ input:
     - role: user
       content: |
         请为“把 src/cache 重构为统一缓存适配层，同时保持公开 API 不变”创建 /goal。
-      post_condition:
-        must_contain_all: ["needs confirmation"]
-        on_fail: fail
     - role: user
       content: |
         我确认你刚才简报中的结果、范围、排除项和完成证据，不做修改。请生成最终提示。
@@ -16,14 +13,9 @@ expect:
   must_contain: ["/goal"]
   exit_code: 0
 judge:
-  type: rule_based
-  success:
-    - turn_response_contains:
-        turn: 1
-        contains_any: ["needs confirmation"]
-    - turn_response_contains:
-        turn: 2
-        contains_any: ["/goal"]
-    - turn_response_not_contains:
-        turn: 2
-        not_contains: ["needs confirmation"]
+  type: agent_judge
+  model: gpt-5.6-sol
+  criteria:
+    - "第一轮语义上请用户确认结果、范围和完成证据，没有生成最终 /goal；不要求出现固定状态字符串。"
+    - "第二轮把用户的明确确认视为授权，生成最终可执行 /goal，不重复要求确认。"
+  pass_threshold: 1.0

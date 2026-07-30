@@ -1,0 +1,21 @@
+id: deep-compression-gates
+title: 大任务压缩不得丢失核心门槛
+description: 验证深度任务的简洁最终提示仍保留所有合取完成门槛和全局停止语义。
+input:
+  prompt: |
+    你已经调查并给出简报。我明确确认深度模式及初始化：
+    把 auth、billing、notifications 三个模块迁移到统一事件接口，保持公开兼容；
+    每个模块测试、跨模块集成测试、CI、迁移文档、3 个独立只读 reviewer 及修复后复审都必须完成；
+    .goal-task/event-migration/state.md 是执行契约和实时状态入口。
+    请压缩成简洁的最终 /goal，但不得删除任何完成门槛。
+expect:
+  must_contain: ["/goal", "auth", "billing", "notifications", "state.md", "CI", "3"]
+  exit_code: 0
+judge:
+  type: agent_judge
+  model: gpt-5.6-sol
+  criteria:
+    - "最终 /goal 保留三个模块、公开兼容、逐模块测试、集成测试、CI 和迁移文档的合取门槛。"
+    - "保留恰好 3 个独立只读 reviewer、修复后复审，以及所有门槛通过前不得完成。"
+    - "保留 state.md 真相入口和仅当全部剩余工作共同受阻时才允许整体 blocked 的语义，同时保持简洁。"
+  pass_threshold: 1.0

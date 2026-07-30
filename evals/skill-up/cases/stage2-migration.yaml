@@ -9,7 +9,7 @@ input:
     所有范围内测试和 CI 必须通过，独立 reviewer 是强制门槛。
     请返回最终可复制的 /goal。
 expect:
-  must_contain: ["/goal", ".goal-task/auth-migration/state.md", "ready"]
+  must_contain: ["/goal", ".goal-task/auth-migration/state.md"]
   exit_code: 0
 judge:
   type: script

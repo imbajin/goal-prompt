@@ -1,0 +1,10 @@
+{
+  "name": "import-migration-app-fixture",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:import": "node tests/import.test.js",
+    "test:integration": "node tests/integration.test.js",
+    "typecheck": "node -e \"process.exit(0)\""
+  }
+}

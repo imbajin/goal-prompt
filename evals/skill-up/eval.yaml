@@ -24,6 +24,14 @@ cases:
     - evals/skill-up/cases/audit-goal.yaml
     - evals/skill-up/cases/batch-goal.yaml
     - evals/skill-up/cases/reviewer-stop-condition.yaml
+    - evals/skill-up/cases/skip-investigation.yaml
+    - evals/skill-up/cases/delegated-judgment.yaml
+    - evals/skill-up/cases/no-fabrication.yaml
+    - evals/skill-up/cases/fast-small-task.yaml
+    - evals/skill-up/cases/deep-compression-gates.yaml
+    - evals/skill-up/cases/repository-rule-conflict.yaml
+    - evals/skill-up/cases/existing-spec-plan.yaml
+    - evals/skill-up/cases/existing-requirement-design-todo.yaml
   defaults:
     timeout_seconds: 420
     max_turns: 12

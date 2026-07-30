@@ -1,27 +1,21 @@
 id: multiturn-correction
-title: 用户改口后必须重新确认
-description: 验证第二轮实质改变目标时仍停留在 Stage 1。
+title: 用户明确新范围并要求继续时视为授权
+description: 验证用户实质改变目标但已明确新范围并要求继续时，不重复索取确认。
 input:
   turns:
     - role: user
       content: |
         请为“只重构 src/cache，保持公开 API 不变”创建 /goal。
-      post_condition:
-        must_contain_all: ["needs confirmation"]
-        on_fail: fail
     - role: user
       content: |
         改一下：除了重构缓存，还要更改公开 API，并迁移所有调用方。请按新范围继续。
 expect:
-  must_contain: ["needs confirmation"]
-  must_not_contain: ["\nready"]
+  must_contain: ["/goal"]
   exit_code: 0
 judge:
-  type: rule_based
-  success:
-    - turn_response_contains:
-        turn: 2
-        contains_any: ["needs confirmation"]
-    - turn_response_not_contains:
-        turn: 2
-        not_contains: ["\nready"]
+  type: agent_judge
+  model: gpt-5.6-sol
+  criteria:
+    - "第一轮调查并给出待确认 brief，没有提前生成最终 /goal；只要求语义确认，不要求固定状态字符串。"
+    - "第二轮把用户给出的新范围和“请按新范围继续”视为明确授权，完成必要判断并生成最终 /goal，不重复索取确认。"
+  pass_threshold: 1.0

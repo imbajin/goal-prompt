@@ -5,7 +5,7 @@ input:
   prompt: |
     不要创建或讨论 /goal。只告诉我如何把 README 中的 teh 改成 the，一句话即可。
 expect:
-  must_not_contain: ["needs confirmation", "\nready"]
+  must_not_contain: ["needs confirmation"]
   exit_code: 0
 judge:
   type: script

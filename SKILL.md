@@ -157,7 +157,7 @@ when scope, repository baseline, key design, or environment materially changes.
 
 ### 6. Present the confirmation brief
 
-Stage 1 returns `needs confirmation`, not `/goal`. Include:
+Stage 1 returns a confirmation brief, not `/goal`. Include:
 
 - proposed outcome;
 - scope and exclusions;
@@ -241,13 +241,13 @@ Combine review and commit when they occur in the same loop.
 
 #### Independent review
 
-- For changes to production code, public APIs, tests or test infrastructure,
-  build/CI, dependencies, migrations, deployment, or behavioral configuration,
-  use exactly 3 independent read-only reviewers at the final major milestone;
-  apply the same rule to intermediate major milestones in deep work.
+- For a focused, low-risk behavior change in fast mode, use 1 independent
+  read-only reviewer by default.
+- For deep-mode or major behavior changes, use exactly 3 independent read-only
+  reviewers at the final major milestone; apply the same rule to intermediate
+  major milestones in deep work.
 - For a large change, all 3 first scan global risk, then focus respectively on
   correctness/tests, design/boundaries, and security/maintainability.
-- For a small change, all 3 independently review the complete change.
 - Pure documentation, read-only research, or analysis uses 1 independent
   reviewer by default; the user may increase the count.
 - A reviewer may be a subagent, isolated session, or equivalent independent
@@ -298,7 +298,7 @@ complete TODOs, long specs, or review checklists.
 
 Return the final `/goal` only after Stage 1 is confirmed, initialization is
 complete, and all referenced paths are verified. Otherwise return an updated
-brief ending in `needs confirmation`.
+brief that clearly asks the user to confirm or correct it.
 
 ## Length contract
 
@@ -321,7 +321,7 @@ The final `/goal` contains only:
 
 ## Output templates
 
-### Stage 1: needs confirmation
+### Stage 1: confirmation brief
 
 ```text
 Proposed goal brief
@@ -332,6 +332,8 @@ Proposed goal brief
 - Active truth: <existing paths to reuse>.
 - Proposed initialization: <no files, or each file and its purpose>.
 - Permission risks: <none, or exact capability, affected phase, and adjustment>.
+- Recovery and stop: <checkpoints, bounded retries, and independent work during
+  waits; stop only when all remaining work is jointly blocked>.
 - Open assumptions: <only material uncertainties>.
 
 Questions:
@@ -340,8 +342,6 @@ Questions:
 Please confirm or correct the goal brief, execution mode, and initialization
 plan. I will prepare the files and generate the final `/goal` only after
 confirmation.
-
-needs confirmation
 ```
 
 ### Stage 2: final `/goal`
@@ -361,8 +361,9 @@ Constraints:
 - After each productive loop, report a three-line summary with gate-based
   percentage, this-loop/remaining work, and one primary next action. Report a
   review or commit that spans its own loop; combine them within one loop.
-- [Behavior change: exactly 3 independent read-only reviewers at major
-  milestones; the implementer cannot substitute, and fixes require re-review.]
+- [Independent review: 1 reviewer for a focused low-risk fast-mode change;
+  exactly 3 for deep-mode or major behavior changes; the implementer cannot
+  substitute, and fixes require re-review.]
 - [Persistent repository changes: create a local commit after applicable
   validation and review pass; do not push by default.]
 - [Deep mode: use the contract in state.md for active truth, review, commits,
@@ -385,8 +386,9 @@ dependency>.
 
 ## Final response
 
-During Stage 1, return only the goal brief, material questions, and
-`needs confirmation`; do not include a `/goal` code block.
+During Stage 1, return only the goal brief, material questions, and a clear
+request for confirmation; do not require a fixed status string or include a
+`/goal` code block.
 
 During Stage 2, return:
 

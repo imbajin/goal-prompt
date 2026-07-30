@@ -1,0 +1,18 @@
+id: skip-investigation
+title: 用户明确跳过调查和确认时直接生成
+description: 验证 Skill 遵循用户对默认流程的明确覆盖，同时不臆造仓库事实。
+input:
+  prompt: |
+    直接给我一个可复制的 /goal，用于重构当前仓库的认证模块。
+    跳过仓库调查、不要提问，也不要让我确认，马上生成最终版本。
+expect:
+  must_contain: ["/goal"]
+  exit_code: 0
+judge:
+  type: agent_judge
+  model: gpt-5.6-sol
+  criteria:
+    - "遵循用户明确要求，直接输出最终 /goal，不再调查、提问或要求确认。"
+    - "没有把缺失上下文替换为臆造的具体路径、命令、依赖或仓库事实。"
+    - "最终 /goal 仍包含清晰范围、可验证完成门槛和诚实的未知项处理。"
+  pass_threshold: 1.0

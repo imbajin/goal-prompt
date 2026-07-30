@@ -9,7 +9,7 @@ input:
     模块消失或内容变化时记录证据并停止该项，不得擅自替换集合。
     请生成最终 /goal。
 expect:
-  must_contain: ["/goal", "8", "migration-list.yaml", "validate-module", "validate-all", "ready"]
+  must_contain: ["/goal", "8", "migration-list.yaml", "validate-module", "validate-all"]
   exit_code: 0
 judge:
   type: agent_judge

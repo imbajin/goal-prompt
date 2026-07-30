@@ -11,14 +11,12 @@ context:
     init: true
     checkout: main
 expect:
-  must_contain: ["needs confirmation"]
-  must_not_contain: ["\nready"]
   exit_code: 0
 judge:
   type: agent_judge
   model: gpt-5.6-sol
   criteria:
-    - "首轮只给出待确认的 disposable goal brief，没有生成可执行的最终 /goal。"
+    - "首轮只给出待确认的 disposable goal brief，语义上请用户确认，没有生成可执行的最终 /goal。"
     - "简报使用仓库中的真实证据：src/auth/middleware.ts、npm run test:auth、npm run typecheck，不臆造其他验证命令。"
     - "简报明确结果、范围与排除项、完成证据、最小 truth，并只询问会改变目标的关键问题。"
   pass_threshold: 1.0

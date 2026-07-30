@@ -6,14 +6,12 @@ input:
     请审查并缩短这个草稿：
     /goal 改进整个代码库，测试通过就停止。
 expect:
-  must_contain: ["needs confirmation"]
-  must_not_contain: ["\nready"]
   exit_code: 0
 judge:
   type: agent_judge
   model: gpt-5.6-sol
   criteria:
     - "指出“改进整个代码库”缺少可观察的完成后状态，并且“测试通过”不能单独证明所有范围完成。"
-    - "没有在用户确认结果、范围和完成证据前输出最终 /goal。"
+    - "没有在用户确认结果、范围和完成证据前输出最终 /goal，并在语义上请用户确认或补充决定。"
     - "问题数量保持在一到三个，并且每个问题都会实质改变最终目标。"
   pass_threshold: 1.0

@@ -4,10 +4,8 @@ description: 验证慢 CI、外部 API 和配额等待不会被机械地写成�
 input:
   prompt: |
     请为一个跨实现、测试和 CI 的长期迁移创建 /goal。
-    CI 很慢，外部 API 偶尔不可用，还必须经过独立审查。
+    CI 很慢，外部 API 偶尔不可用，执行配额耗尽后需要从检查点恢复，还必须经过独立审查。
 expect:
-  must_contain: ["needs confirmation"]
-  must_not_contain: ["\nready"]
   exit_code: 0
 judge:
   type: agent_judge
@@ -15,5 +13,5 @@ judge:
   criteria:
     - "简报包含可观察的完成证据和真正可能阻断全部剩余工作的条件。"
     - "慢 CI、暂时 API 故障和配额等待被视为恢复、有限重试或重排信号，而不是自动终止理由。"
-    - "在用户明确确认前没有输出最终 /goal。"
+    - "在用户明确确认前没有输出最终 /goal，并在语义上请用户确认。"
   pass_threshold: 1.0
