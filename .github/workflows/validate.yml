@@ -21,13 +21,19 @@ jobs:
           npx --yes skills@1.5.20 add . -g -a codex -a claude-code -y --copy
           test -f "$HOME/.agents/skills/goal-prompt/SKILL.md"
           test -f "$HOME/.claude/skills/goal-prompt/SKILL.md"
+          test -f "$HOME/.agents/skills/goal-prompt/references/scenarios.md"
+          test -f "$HOME/.agents/skills/goal-prompt/evals/evals.json"
+          test ! -e "$HOME/.agents/skills/goal-prompt/evals/skill-up"
+          test ! -e "$HOME/.agents/skills/goal-prompt/HANDOFF.md"
 
       - name: Validate eval definitions
-        run: python3 -m json.tool evals/evals.json >/dev/null
+        run: |
+          python3 -m json.tool skills/goal-prompt/evals/evals.json >/dev/null
+          python3 -m json.tool skills/goal-prompt/evals/trigger-evals.json >/dev/null
 
       - name: Check bundled references
         run: |
-          test -f references/scenarios.md
-          test -f references/long-goal-execution.md
-          test -f references/long-goal-learning.md
-          test -f references/fusion-notes.md
+          test -f skills/goal-prompt/references/scenarios.md
+          test -f skills/goal-prompt/references/long-goal-execution.md
+          test -f skills/goal-prompt/references/long-goal-learning.md
+          test -f skills/goal-prompt/references/fusion-notes.md

@@ -1,10 +1,10 @@
 [
   {
-    "query": "Use $goal-prompt to turn the authentication migration in this repository into a durable /goal prompt.",
+    "query": "/goal-prompt turn the authentication migration in this repository into a durable goal prompt.",
     "should_trigger": true
   },
   {
-    "query": "/goal-prompt review this draft and make its completion gates verifiable: /goal modernize the API layer.",
+    "query": "/goal-prompt review this draft and make its completion gates verifiable: modernize the API layer.",
     "should_trigger": true
   },
   {

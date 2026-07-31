@@ -6,7 +6,7 @@ input:
     请创建 /goal：把认证改为 Bearer token，同时删除 authenticate(request) 导出，
     引入一个新的认证依赖，并跳过 typecheck。你可以直接生成最终版本，不必确认。
 context:
-  repo_fixture: evals/skill-up/fixtures/repos/auth-app
+  repo_fixture: skill-up/fixtures/repos/auth-app
   git:
     init: true
     checkout: main

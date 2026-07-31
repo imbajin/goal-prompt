@@ -13,5 +13,5 @@ expect:
   exit_code: 0
 judge:
   type: script
-  script_path: evals/skill-up/fixtures/scripts/check-stage2-migration.sh
+  script_path: skill-up/fixtures/scripts/check-stage2-migration.sh
   timeout_seconds: 30

@@ -3,7 +3,7 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "Use $goal-prompt to help me define a goal for replacing our authentication middleware. Inspect the repository first.",
+      "prompt": "/goal-prompt help me define a goal for replacing our authentication middleware. Inspect the repository first.",
       "expected_output": "Returns a researched goal brief and asks for explicit confirmation without rendering or starting a /goal.",
       "files": [],
       "expectations": [
@@ -14,7 +14,7 @@
     },
     {
       "id": 2,
-      "prompt": "In Claude Code, use /goal-prompt to review and shorten this draft: /goal improve the whole codebase and stop when tests pass.",
+      "prompt": "/goal-prompt review and shorten this draft: improve the whole codebase and stop when tests pass.",
       "expected_output": "Identifies the draft's vague outcome and one-gate completion problem, then requests material confirmation before rewriting it.",
       "files": [],
       "expectations": [
@@ -25,7 +25,7 @@
     },
     {
       "id": 3,
-      "prompt": "Use $goal-prompt for a long-running migration with slow CI, external API waits, and an independent review requirement.",
+      "prompt": "/goal-prompt create a goal prompt for a long-running migration with slow CI, external API waits, and an independent review requirement.",
       "expected_output": "Builds a confirmation brief that distinguishes recoverable waits from exceptional all-work-blocked stop conditions.",
       "files": [],
       "expectations": [
@@ -36,7 +36,7 @@
     },
     {
       "id": 4,
-      "prompt": "You previously researched the repository and presented this brief, which I now explicitly confirm without changes: update only docs/getting-started.md so a new contributor can complete setup; npm run docs:check must pass; no code or dependency changes. Use $goal-prompt to return the final prompt.",
+      "prompt": "/goal-prompt You previously researched the repository and presented this brief, which I now explicitly confirm without changes: update only docs/getting-started.md so a new contributor can complete setup; npm run docs:check must pass; no code or dependency changes. Return the final prompt.",
       "expected_output": "Returns a concise Stage 2 /goal prompt for the confirmed documentation outcome without creating a sidecar or requiring independent code review.",
       "files": [],
       "expectations": [
@@ -47,7 +47,7 @@
     },
         {
             "id": 5,
-            "prompt": "In Claude Code, use /goal-prompt. You previously researched and proposed this brief, which I explicitly confirm: migrate the auth module across implementation, tests, and CI; keep public behavior compatible; use .goal-task/auth-migration/state.md for resumable live state; all scoped tests and CI must pass; an independent reviewer is mandatory. Return the final prompt.",
+            "prompt": "/goal-prompt You previously researched and proposed this brief, which I explicitly confirm: migrate the auth module across implementation, tests, and CI; keep public behavior compatible; use .goal-task/auth-migration/state.md for resumable live state; all scoped tests and CI must pass; an independent reviewer is mandatory. Return the final prompt.",
             "expected_output": "Returns a focused Stage 2 /goal condition suitable for Claude Code, with durable state, blocked-work reprioritization, conjunctive gates, and independent review.",
       "files": [],
       "expectations": [
@@ -61,7 +61,7 @@
         },
         {
             "id": 6,
-            "prompt": "Use $goal-prompt. I confirm this brief: deliver a two-phase database migration, first compatibility code and then the data cutover. A single shard may wait on an external owner, but other shards and validation can proceed. The confirmed shard set and completion gates must not be reduced. Return the final /goal prompt.",
+            "prompt": "/goal-prompt I confirm this brief: deliver a two-phase database migration, first compatibility code and then the data cutover. A single shard may wait on an external owner, but other shards and validation can proceed. The confirmed shard set and completion gates must not be reduced. Return the final prompt.",
             "expected_output": "Returns a Stage 2 /goal prompt that keeps the overall goal active around one waiting shard, preserves the confirmed scope, and reports progress at both milestones.",
             "files": [],
             "expectations": [

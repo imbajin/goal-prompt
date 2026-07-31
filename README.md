@@ -70,7 +70,7 @@ npx skills add imbajin/goal-prompt -g -a codex -a claude-code
 Or ask Codex to install it:
 
 ```text
-$skill-installer install the repository-root skill from https://github.com/imbajin/goal-prompt as goal-prompt
+$skill-installer install goal-prompt from https://github.com/imbajin/goal-prompt
 ```
 
 For another agent, run the command below and choose the target platform:
@@ -86,13 +86,13 @@ npx skills add imbajin/goal-prompt
 /goal-prompt help me define a goal for implementing the authentication design in this repository
 ```
 
-The agent can select the skill automatically when the request matches, or you can invoke it manually. Either way, it generates the prompt but does not start `/goal`.
+The agent can select the skill automatically when the request matches, or you can invoke it manually with `/goal-prompt`. Either way, it generates the prompt but does not execute it.
 
 ## Compatibility
 
-The core skill uses the shared [Agent Skills](https://agentskills.io/) layout. Codex reads its entrypoint metadata from `agents/openai.yaml`; Claude Code uses the standard skill frontmatter. Both allow automatic selection and manual invocation.
+The core skill uses the shared [Agent Skills](https://agentskills.io/) layout under `skills/goal-prompt/`. Codex reads its entrypoint metadata from `skills/goal-prompt/agents/openai.yaml`; Claude Code uses the standard skill frontmatter. Both allow automatic selection and manual invocation.
 
-Use it in a version and session that supports `/goal`. Claude Code requires v2.1.139 or later. Other agents can reuse the skill when they support Agent Skills and a similar goal mode. Without a native `/goal` runtime, the skill can still produce structured goal text but cannot add continuous execution by itself.
+Codex can pass the generated text to its native `/goal` runtime for continuous execution. Claude Code can invoke `/goal-prompt` and receive the same structured goal text, but it does not provide Codex's native `/goal` runtime; run the generated task through Claude Code's normal execution flow instead. Other agents can reuse the skill when they support Agent Skills.
 
 ## Development
 
@@ -100,7 +100,7 @@ Use it in a version and session that supports `/goal`. Claude Code requires v2.1
 npx skills@1.5.20 add . --list
 ```
 
-See [`references/fusion-notes.md`](references/fusion-notes.md) for source lineage and design decisions.
+See [`skills/goal-prompt/references/fusion-notes.md`](skills/goal-prompt/references/fusion-notes.md) for source lineage and design decisions.
 
 ## License
 

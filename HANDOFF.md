@@ -86,8 +86,9 @@ Skill 只生成 goal，不启动或执行 goal。
 ## 评测资产与分支复用
 
 - `evals/skill-up/` 纳入 Git，作为稳定的 Prompt 回归集；切换分支时不复制或改写整套用例。
+- 运行时 Skill 移到 `skills/goal-prompt/` 后，skill-up v0.7.0 会提示其在根目录评测套件上方找不到 `SKILL.md`，并把 `evals/` 作为配置根；因此 case/fixture 路径使用 `skill-up/...`，快照路径使用 `../.eval-work/target`。该提示不影响 `validate` 加载 20 个用例。
 - `.eval-work/` 不纳入 Git，用于放置当前被测 Skill 的普通文件快照、隔离 HOME 和运行结果。
-- 每轮只替换 `.eval-work/target/`，并记录被测分支、commit、Skill 哈希、eval suite commit、模型、CLI 版本、轮数、token 和耗时。
+- 每轮从 `skills/goal-prompt/` 只替换 `.eval-work/target/`，并记录被测分支、commit、Skill 哈希、eval suite commit、模型、CLI 版本、轮数、token 和耗时。
 - 基线与候选必须使用相同的用例、Judge 和运行参数。若协议或断言变化，应使用新版用例同时重跑两者，不能跨口径比较旧结果。
 - 先将受影响和新增用例各跑 3 轮，再跑全量 Prompt 回归；另选 2–3 个小任务实际执行生成的 `/goal`，验证代码、测试、阻塞恢复和完成证据。
 - 不删除有效用例或放宽断言来制造通过；失败输出和复现命令保留在忽略目录或外部报告中。
@@ -98,6 +99,23 @@ Skill 只生成 goal，不启动或执行 goal。
 - 父任务的文件系统权限不会自动传给新的 `codex exec`；显式 `-s workspace-write` 会保护 `.git`，导致 `git add` 无法创建 `.git/index.lock`。
 - 对完全位于 `.eval-work/` 的一次性合成仓库，需要验证 commit 门槛时使用 `codex exec --ignore-user-config --ephemeral -s danger-full-access ...`。
 - 代码、测试、范围控制、恢复、审查和 commit 分开评分。若因错误沙箱参数无法提交，只能把 commit 标为“未有效评估”，不能把代码端到端判为失败。
+
+### Claude Code 兼容性验证（待实测）
+
+静态已确认：
+
+- `npx skills add ... -a claude-code` 能把 `1.1-dev` 安装到 `~/.claude/skills/goal-prompt/`。
+- 当前 `skills/goal-prompt/` 下的 `name` / `description` frontmatter、`SKILL.md` 和相对 `references/` 符合 Claude Code Skill 结构。
+- Codex 和 Claude Code 都可使用 `/goal-prompt` 或自动调用 Skill；差异在生成后的执行入口：Codex 有原生 `/goal` 持续执行语义，Claude Code 没有。共享测试可统一使用 `/goal-prompt`，但不得假设 Claude Code 能执行 `/goal`。
+
+有 Claude Code 环境后，使用全新会话验证：
+
+1. `/skills` 能发现 `goal-prompt`，直接 `/goal-prompt` 和自然语言自动调用各成功一次。
+2. 同会话安装后的热发现是否及时；若首次未知，记录等待/重试次数，不重复安装。
+3. 运行代表 case：语义确认、用户跳过确认、委托判断、小型代码 1 reviewer、深度任务 3 reviewer、单 SPEC、requirement + design + todo。
+4. 确认 Claude 能按需读取 `references/scenarios.md` 和长任务 reference，不使用 `.codex/` 路径。
+5. 触发一次长会话 compaction 后再次调用，确认 `SKILL.md` 尾部输出契约仍有效；当前文件约 18.5 KB，接近 Claude Code 对 Skill 重附加内容的 5,000-token单 Skill上限。
+6. 运行时安装包只携带 `skills/goal-prompt/evals/` 下的公开基础 eval；不得携带根目录 `evals/skill-up/` 的完整 cases、grader 和 fixtures，避免完整评分逻辑泄漏。
 
 ## 已验证与待完成
 

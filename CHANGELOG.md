@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented in this file.
 
+## 1.1-dev
+
+- Move the installable Skill to `skills/goal-prompt/` so repository maintenance
+  files and the full `skill-up` regression suite are not installed at runtime.
+- Bundle only the runtime references, agent metadata, and public basic evals.
+- Keep the full regression suite under `evals/skill-up/`.
+
 ## 1.0 - 2026-07-25
 
 - Publish the two-stage research, confirmation, and rendering workflow.

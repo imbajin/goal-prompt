@@ -70,7 +70,7 @@ npx skills add imbajin/goal-prompt -g -a codex -a claude-code
 也可以让 Codex 安装：
 
 ```text
-$skill-installer 将 https://github.com/imbajin/goal-prompt 仓库根目录安装为 goal-prompt
+$skill-installer 从 https://github.com/imbajin/goal-prompt 安装 goal-prompt
 ```
 
 其他 Agent 可以运行下面的命令，再选择目标平台：
@@ -82,17 +82,17 @@ npx skills add imbajin/goal-prompt
 ## 使用
 
 ```text
-# Codex/CC
+# Codex / Claude Code
 /goal-prompt 帮我给当前目录的认证模块定一个任务计划, 参考 XX 设计实现
 ```
 
-请求匹配时，Agent 可以自动调用这个 skill，你也可以手动调用。无论哪种方式，它只生成提示词，不会直接启动 `/goal`。
+请求匹配时，Agent 可以自动调用这个 skill，你也可以用 `/goal-prompt` 手动调用。无论哪种方式，它只生成提示词，不会直接执行。
 
 ## 兼容范围
 
-核心内容使用通用的 [Agent Skills](https://agentskills.io/) 目录结构。Codex 通过 `agents/openai.yaml` 提供入口信息，Claude Code 使用标准 skill frontmatter；两者都允许自动选择和手动调用。
+核心内容位于 `skills/goal-prompt/`，使用通用的 [Agent Skills](https://agentskills.io/) 目录结构。Codex 通过 `skills/goal-prompt/agents/openai.yaml` 提供入口信息，Claude Code 使用标准 skill frontmatter；两者都允许自动选择和手动调用。
 
-请在支持 `/goal` 的版本和会话中使用。Claude Code 需要 v2.1.139 或更高版本。其他 Agent 如果支持 Agent Skills 和类似的 goal 模式，可以直接复用；如果没有原生 `/goal`，仍可生成结构化目标文本，但不会获得持续执行能力。
+Codex 可以把生成的文本交给原生 `/goal` 持续执行。Claude Code 可以调用 `/goal-prompt` 并生成同样的结构化目标文本，但没有 Codex 原生 `/goal` 的运行语义，需要通过 Claude Code 的普通执行流程继续任务。其他支持 Agent Skills 的 Agent 也可以复用。
 
 ## 开发与校验
 
@@ -100,7 +100,7 @@ npx skills add imbajin/goal-prompt
 npx skills@1.5.20 add . --list
 ```
 
-来源和设计取舍见 [`references/fusion-notes.md`](references/fusion-notes.md)。
+来源和设计取舍见 [`skills/goal-prompt/references/fusion-notes.md`](skills/goal-prompt/references/fusion-notes.md)。
 
 ## 许可证
 

@@ -6,7 +6,7 @@ input:
     请帮我为“把当前认证中间件迁移为 Bearer token，同时保持公开行为兼容”创建一个可复制的 /goal。
     请先检查这个仓库，不要直接猜测路径或测试命令。
 context:
-  repo_fixture: evals/skill-up/fixtures/repos/auth-app
+  repo_fixture: skill-up/fixtures/repos/auth-app
   git:
     init: true
     checkout: main

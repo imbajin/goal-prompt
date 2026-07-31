@@ -7,7 +7,7 @@ input:
     三份文档都已确认：需求定义结果，设计定义接口与不变量，todo 定义实施范围。
     不要复制或重新设计这些内容；请检查当前仓库并补足恢复、验证和完成门槛。
 context:
-  repo_fixture: evals/skill-up/fixtures/repos/import-migration-app
+  repo_fixture: skill-up/fixtures/repos/import-migration-app
   git:
     init: true
     checkout: main

@@ -7,7 +7,7 @@ input:
     只修复 src/slugify.js 中 slugify(value) 的空白折叠问题，保持导出 API 不变；
     npm test 必须通过，不改依赖、测试或其他文件。请生成最终可复制的 /goal。
 context:
-  repo_fixture: evals/skill-up/fixtures/repos/slugify-app
+  repo_fixture: skill-up/fixtures/repos/slugify-app
   git:
     init: true
     checkout: main

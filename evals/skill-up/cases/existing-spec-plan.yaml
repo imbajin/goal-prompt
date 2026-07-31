@@ -7,7 +7,7 @@ input:
     SPEC 已完成评审，是本任务的权威计划；不要重复设计，也不要询问文档已经确定的事项。
     请检查当前实现和测试，补足执行与验证门槛。
 context:
-  repo_fixture: evals/skill-up/fixtures/repos/spec-export-app
+  repo_fixture: skill-up/fixtures/repos/spec-export-app
   git:
     init: true
     checkout: main
