@@ -412,6 +412,3 @@ During Stage 2, return:
    tradeoffs.
 
 Do not start the goal.
-
-When maintaining this skill, read `references/fusion-notes.md` for rule lineage
-and local design decisions.

@@ -1,18 +1,19 @@
-# goal-prompt
+# goal-prompt [![EN](https://img.shields.io/badge/-EN-555)](../README.md)
 
-> [English Version](README.md)
+[![Version](https://img.shields.io/badge/version-1.1-1684C7)](../CHANGELOG.md)
+[![Validate](https://github.com/imbajin/goal-prompt/actions/workflows/validate.yml/badge.svg)](https://github.com/imbajin/goal-prompt/actions/workflows/validate.yml)
+[![License](https://img.shields.io/badge/license-Apache%202.0-D96C2C)](../LICENSE)
+[![Agent Skills](https://img.shields.io/badge/Agent%20Skills-compatible-2E8B57)](https://agentskills.io/)
 
-`goal-prompt` 用来生成长度合适、边界清楚、可以验证结果的 `/goal`。它会先了解任务和仓库，只问会改变目标的问题，确认后输出可直接复制的 prompt。你也可以明确跳过调查或确认，或者把剩余判断交给 Agent
+`goal-prompt` 用来快速生成长度合适、边界清楚、可以验证结果的 `/goal`。它会先了解任务和仓库，只问会改变目标的问题，确认后输出可直接复制的 prompt。你也可以明确跳过调查或确认，或者把剩余判断交给 Agent
 
-它不执行任务，也不要求先搭一整套 SPEC
+它尽可能自适应任务复杂度，找到效率和质量的平衡点
 
->版本核心变动见 [CHANGELOG.md](CHANGELOG.md)
-
-![goal-prompt 如何解决常见的 /goal 问题](assets/overview-zh.png)
+![goal-prompt 如何解决常见的 /goal 问题](../assets/overview-zh.png)
 
 > **实际回测**
 >
-> goal-prompt 已使用 [eval-system: skill-up](https://github.com/alibaba/skill-up) 持续回归，[基础实测 case](evals/skill-up/cases/) 公开可复现，也欢迎补充 case 或提出更好的建议。eval 确保核心行为稳定性 + 基本质量保障
+> 已使用 [eval-system: skill-up](https://github.com/alibaba/skill-up) 确保核心行为稳定性 + 基本质量保障，[基础实测 case](../evals/skill-up/cases/) 直接可用，也欢迎补充 case 或提出更好的建议
 
 ## Why need it？
 
@@ -92,22 +93,22 @@ flowchart LR
 
 ## 安装
 
-安装到 Codex + Claude Code：
+最简安装，运行后选择目标 Agent：
+
+```bash
+npx skills add imbajin/goal-prompt
+```
+
+（可选）全局安装到 Codex + Claude Code：
 
 ```bash
 npx skills add imbajin/goal-prompt -g -a codex -a claude-code
 ```
 
-也可以让 Codex 安装：
+（可选）把下面的 prompt 发给任意 Agent：
 
 ```text
-$skill-installer 从 https://github.com/imbajin/goal-prompt 安装 goal-prompt
-```
-
-其他 Agent 可以运行下面的命令，再选择单独 Agent 类别：
-
-```bash
-npx skills add imbajin/goal-prompt
+请按照 https://github.com/imbajin/goal-prompt#install 安装 goal-prompt
 ```
 
 ## 使用
@@ -132,8 +133,8 @@ Codex 可以把生成的文本交给原生 `/goal` 持续执行。Claude Code �
 - [`goal-prompt-builder`](https://github.com/win4r/goal-prompt-builder) skill
 - `goal + spec` skill
 
->详情见 [`fusion-notes.md`](skills/goal-prompt/references/fusion-notes.md)
+>设计细节见 [`fusion-notes.md`](fusion-notes.md)，版本历史见 [CHANGELOG.md](../CHANGELOG.md)
 
 ## 许可证
 
-Apache License 2.0，详见 [`LICENSE`](LICENSE)
+Apache License 2.0，详见 [`LICENSE`](../LICENSE)

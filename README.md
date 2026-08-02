@@ -1,18 +1,19 @@
-# goal-prompt
+# goal-prompt [![中文](https://img.shields.io/badge/-%E4%B8%AD%E6%96%87-555)](docs/README.zh-CN.md)
 
-> [中文版](README.zh-CN.md)
+[![Version](https://img.shields.io/badge/version-1.1-1684C7)](CHANGELOG.md)
+[![Validate](https://github.com/imbajin/goal-prompt/actions/workflows/validate.yml/badge.svg)](https://github.com/imbajin/goal-prompt/actions/workflows/validate.yml)
+[![License](https://img.shields.io/badge/license-Apache%202.0-D96C2C)](LICENSE)
+[![Agent Skills](https://img.shields.io/badge/Agent%20Skills-compatible-2E8B57)](https://agentskills.io/)
 
-`goal-prompt` creates `/goal` prompts with a clear outcome, bounded scope, and verifiable completion criteria. It reads the task and repository, asks only questions that can change the goal, and returns a copy-pasteable prompt after confirmation. You can also skip investigation or confirmation explicitly, or delegate the remaining judgment to the agent.
+`goal-prompt` quickly creates `/goal` prompts with a clear outcome, bounded scope, and verifiable completion criteria. It reads the task and repository, asks only questions that can change the goal, and returns a copy-pasteable prompt after confirmation. You can also skip investigation or confirmation explicitly, or delegate the remaining judgment to the agent.
 
-It does not execute the task or require a full SPEC workflow up front.
-
-> See [CHANGELOG.md](CHANGELOG.md) for major version changes.
+It adapts to the task's complexity and balances efficiency with quality.
 
 ![How goal-prompt addresses common /goal problems](assets/overview-en.png)
 
 > **Tested with real evals**
 >
-> goal-prompt uses [skill-up](https://github.com/alibaba/skill-up) for ongoing regression testing. The [baseline test cases](evals/skill-up/cases/) are public and reproducible, and better cases and suggestions are welcome. These evals provide a baseline check for core behavior and quality.
+> We use [skill-up](https://github.com/alibaba/skill-up) to keep core behavior stable and provide a basic quality baseline. The [test cases](evals/skill-up/cases/) are ready to run, and better cases and suggestions are welcome.
 
 ## Why use it?
 
@@ -93,22 +94,22 @@ Do not create a file that duplicates `state.md` or an existing document.
 
 ## Install
 
-Install for Codex and Claude Code:
+Install and choose a target:
+
+```bash
+npx skills add imbajin/goal-prompt
+```
+
+(Optional) Install globally for Codex and Claude Code:
 
 ```bash
 npx skills add imbajin/goal-prompt -g -a codex -a claude-code
 ```
 
-Or ask Codex to install it:
+(Optional) Send this prompt to any Agent:
 
 ```text
-$skill-installer install goal-prompt from https://github.com/imbajin/goal-prompt
-```
-
-For another agent, run the command below and choose the target:
-
-```bash
-npx skills add imbajin/goal-prompt
+Install goal-prompt by following https://github.com/imbajin/goal-prompt#install
 ```
 
 ## Use
@@ -134,7 +135,8 @@ To avoid designing in isolation or rebuilding existing work, we surveyed and tes
 - the [`goal-prompt-builder`](https://github.com/win4r/goal-prompt-builder) Skill
 - a `goal + spec` Skill
 
-See [`fusion-notes.md`](skills/goal-prompt/references/fusion-notes.md) for details.
+See [`fusion-notes.md`](docs/fusion-notes.md) for design details and
+[CHANGELOG.md](CHANGELOG.md) for version history.
 
 ## License
 

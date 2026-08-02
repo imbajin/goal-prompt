@@ -49,7 +49,7 @@ jobs:
           test -f skills/goal-prompt/references/scenarios.md
           test -f skills/goal-prompt/references/long-goal-execution.md
           test -f skills/goal-prompt/references/long-goal-learning.md
-          test -f skills/goal-prompt/references/fusion-notes.md
+          test -f docs/fusion-notes.md
 
       - name: Check deterministic eval judges
         run: |
@@ -64,6 +64,13 @@ jobs:
           mkdir -p /tmp/skill-up-bin
           export SKILL_UP_VERSION=v0.7.0
           export INSTALL_DIR=/tmp/skill-up-bin
-          curl -fsSL https://raw.githubusercontent.com/alibaba/skill-up/5ac7ce0467a164d07aacbbf7052bcffda68a446b/install.sh | bash
+          installer=/tmp/skill-up-install.sh
+          curl -fsSL \
+            https://raw.githubusercontent.com/alibaba/skill-up/5ac7ce0467a164d07aacbbf7052bcffda68a446b/install.sh \
+            -o "$installer"
+          echo "2b7fbea303dc8b6feb09db6f9cc7307fb9263ff6cc4b0c68cdfe9c2897d109ef  $installer" \
+            | sha256sum --check
+          bash -n "$installer"
+          bash "$installer"
           /tmp/skill-up-bin/skill-up --version | grep -F "0.7.0"
           /tmp/skill-up-bin/skill-up validate evals/skill-up/eval.yaml

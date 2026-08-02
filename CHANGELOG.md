@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented in this file.
 
-## 1.1
+## 1.1 · 📅 2026-08-03
 
 - Add fast and deep modes so focused tasks stay lightweight while long-running
   work gets resumable state and explicit recovery rules.
@@ -23,7 +23,7 @@ All notable changes to this project are documented in this file.
 - Bundle only the runtime references, agent metadata, and public basic evals.
 - Keep the full regression suite under `evals/skill-up/`.
 
-## 1.0 - 2026-07-25
+## 1.0 · 📅 2026-07-25
 
 - Publish the two-stage research, confirmation, and rendering workflow.
 - Add scenario guidance and long-running goal execution references.
