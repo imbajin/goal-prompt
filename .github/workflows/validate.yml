@@ -13,23 +13,36 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
+      - name: Discover exactly one installable skill
+        run: |
+          test "$(find skills -type f -name SKILL.md | wc -l)" -eq 1
+          npx --yes skills@1.5.20 add . --list | tee /tmp/goal-prompt-skills.txt
+          grep -q "goal-prompt" /tmp/goal-prompt-skills.txt
+
       - name: Validate installation for Codex and Claude Code
         env:
           HOME: /tmp/goal-prompt-home
         run: |
           mkdir -p "$HOME"
           npx --yes skills@1.5.20 add . -g -a codex -a claude-code -y --copy
-          test -f "$HOME/.agents/skills/goal-prompt/SKILL.md"
-          test -f "$HOME/.claude/skills/goal-prompt/SKILL.md"
-          test -f "$HOME/.agents/skills/goal-prompt/references/scenarios.md"
-          test -f "$HOME/.agents/skills/goal-prompt/evals/evals.json"
-          test ! -e "$HOME/.agents/skills/goal-prompt/evals/skill-up"
-          test ! -e "$HOME/.agents/skills/goal-prompt/HANDOFF.md"
+          for installed in \
+            "$HOME/.agents/skills/goal-prompt" \
+            "$HOME/.claude/skills/goal-prompt"
+          do
+            diff -qr skills/goal-prompt "$installed"
+            test ! -e "$installed/evals/skill-up"
+            test ! -e "$installed/README.md"
+            test ! -e "$installed/HANDOFF.md"
+            test ! -e "$installed/CHANGELOG.md"
+          done
 
-      - name: Validate eval definitions
+      - name: Validate public metadata and eval definitions
         run: |
           python3 -m json.tool skills/goal-prompt/evals/evals.json >/dev/null
           python3 -m json.tool skills/goal-prompt/evals/trigger-evals.json >/dev/null
+          test -f skills/goal-prompt/agents/openai.yaml
+          grep -Fq "Use /goal-prompt" skills/goal-prompt/agents/openai.yaml
+          ! grep -Fq '$goal-prompt' skills/goal-prompt/agents/openai.yaml
 
       - name: Check bundled references
         run: |
@@ -37,3 +50,12 @@ jobs:
           test -f skills/goal-prompt/references/long-goal-execution.md
           test -f skills/goal-prompt/references/long-goal-learning.md
           test -f skills/goal-prompt/references/fusion-notes.md
+
+      - name: Validate full skill-up suite without model credentials
+        run: |
+          mkdir -p /tmp/skill-up-bin
+          export SKILL_UP_VERSION=v0.7.0
+          export INSTALL_DIR=/tmp/skill-up-bin
+          curl -fsSL https://raw.githubusercontent.com/alibaba/skill-up/main/install.sh | bash
+          /tmp/skill-up-bin/skill-up --version | grep -F "0.7.0"
+          /tmp/skill-up-bin/skill-up validate evals/skill-up/eval.yaml
