@@ -40,7 +40,7 @@
       "expected_output": "Returns a concise Stage 2 /goal prompt for the confirmed documentation outcome without creating a sidecar or requiring independent code review.",
       "files": [],
       "expectations": [
-        "The response contains one copy-pasteable /goal prompt and ends in ready.",
+        "The response contains one copy-pasteable /goal prompt and does not ask for confirmation again.",
         "The prompt is within the ordinary length target and uses conjunctive completion evidence.",
         "The prompt does not introduce .goal-task state or an independent reviewer for this ordinary documentation-only goal."
       ]
@@ -51,7 +51,7 @@
             "expected_output": "Returns a focused Stage 2 /goal condition suitable for Claude Code, with durable state, blocked-work reprioritization, conjunctive gates, and independent review.",
       "files": [],
       "expectations": [
-                "The response contains a copy-pasteable /goal prompt and ends in ready.",
+                "The response contains a copy-pasteable /goal prompt and does not ask for confirmation again.",
                 "The prompt uses .goal-task/auth-migration/state.md and does not use a Codex-specific state path.",
                 "Completion requires implementation evidence, all applicable validation gates, independent review, and re-review after fixes.",
                 "Recoverable CI or external waits are marked waiting or deferred and cause reprioritization rather than setting the overall goal to blocked.",
@@ -69,7 +69,7 @@
                 "Bounded recovery, authorized alternatives, task splitting, and reprioritization occur before any exceptional all-work-blocked state.",
                 "The confirmed shard set and completion gates cannot be removed without renewed user confirmation.",
                 "Each phase boundary requires a concise three-line progress bar summary with percentage, completed and remaining work, and one next primary action.",
-                "The response contains one copy-pasteable /goal prompt and ends in ready."
+                "The response contains one copy-pasteable /goal prompt and does not ask for confirmation again."
             ]
         },
         {
@@ -81,6 +81,28 @@
                 "The skill does not produce a proposed goal brief, needs confirmation, or a /goal prompt.",
                 "The response does not claim that goal-prompt should handle ordinary planning or implementation.",
                 "The skill does not start or execute a goal."
+            ]
+        },
+        {
+            "id": 8,
+            "prompt": "/goal-prompt Skip repository investigation, questions, and confirmation. Immediately return a final /goal for refactoring the current repository's authentication module.",
+            "expected_output": "Honors the explicit workflow override and returns a usable final /goal without inventing unavailable repository facts.",
+            "files": [],
+            "expectations": [
+                "The response contains one copy-pasteable /goal prompt and does not ask for confirmation again.",
+                "The prompt keeps unavailable paths, commands, dependencies, and repository details visibly unknown instead of fabricating them.",
+                "The prompt still preserves a bounded scope, conjunctive completion gates, and an execution-time path for resolving material unknowns."
+            ]
+        },
+        {
+            "id": 9,
+            "prompt": "/goal-prompt You have completed the repository investigation and shown me the remaining reasonable options. I do not want to choose between them; use your judgment and return the final /goal now.",
+            "expected_output": "Treats the user's request as delegated judgment, chooses a grounded option, and returns the final /goal without another confirmation round.",
+            "files": [],
+            "expectations": [
+                "The response contains one copy-pasteable /goal prompt and does not ask the user to choose or confirm again.",
+                "The selected direction is framed as the agent's grounded judgment rather than a fabricated user decision.",
+                "The prompt preserves the confirmed outcome, scope, and completion evidence."
             ]
         }
   ]

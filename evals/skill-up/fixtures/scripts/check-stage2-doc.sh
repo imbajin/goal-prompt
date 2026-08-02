@@ -3,8 +3,9 @@ set -euo pipefail
 
 message="${EVAL_FINAL_MESSAGE:-}"
 printf '%s' "$message" | grep -q '/goal'
-if printf '%s' "$message" | grep -Eqi '\.goal-task/[^[:space:]`]+/(state|todo|design|lessons)\.md|恰好[[:space:]]*3|exactly[[:space:]]+3'; then
-  echo "普通文档目标不应引入 sidecar 或 3 reviewer 门槛" >&2
+if printf '%s' "$message" | grep -Eqi \
+  '\.goal-task/[^[:space:]`]+/(state|todo|design|lessons)\.md|([234]|多个|多名)[[:space:]]*(个|名)?[[:space:]]*(独立)?[[:space:]]*(reviewer|reviewers|审查者|评审)|exactly[[:space:]]+[234]'; then
+  echo "普通文档目标不应引入 sidecar 或多个 reviewer 门槛" >&2
   exit 1
 fi
 line_count="$(printf '%s\n' "$message" | wc -l | tr -d ' ')"

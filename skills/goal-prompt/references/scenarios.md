@@ -2,8 +2,9 @@
 
 Read only the section matching the user's task. These rules extend the two-stage
 flow in `SKILL.md`; they are not complete prompt templates. Use them during
-research to improve the confirmation brief. Do not render `/goal` before the
-user confirms.
+research to improve the confirmation brief. By default, do not render `/goal`
+before the user confirms; follow the core contract when the user explicitly
+skips confirmation or delegates the remaining judgment.
 
 ## Refactor
 

@@ -16,9 +16,17 @@ environment changes still require explicit authorization.
 
 ## Core interaction contract
 
-- Do not render the final prompt from the user's first description.
+- By default, do not render the final prompt from the user's first description.
 - Investigate real context that can affect the result before asking the user to
   confirm the outcome, scope, and completion evidence.
+- An explicit user request may skip this skill's investigation, questions,
+  confirmation, or mode-selection defaults. Follow that request without asking
+  again, keep unavailable facts visibly unknown, and never invent repository
+  details. A request to delegate judgment means investigate first, then make the
+  remaining decision and continue without asking the user to choose.
+- User control over this workflow does not override higher-priority host
+  instructions, safety boundaries, or permissions. If they conflict, explain
+  the exact constraint and request only the decision needed for a feasible goal.
 - Ask only questions whose answers materially change the goal. Do not interrupt
   early for questions that evidence, a safe reversible assumption, or later
   execution can resolve.
@@ -157,7 +165,8 @@ when scope, repository baseline, key design, or environment materially changes.
 
 ### 6. Present the confirmation brief
 
-Stage 1 returns a confirmation brief, not `/goal`. Include:
+Unless the user explicitly skips confirmation or delegates the remaining
+judgment, Stage 1 returns a confirmation brief, not `/goal`. Include:
 
 - proposed outcome;
 - scope and exclusions;
@@ -178,7 +187,9 @@ mutations require the exact target and impact to be listed and explicitly
 authorized. Do not ask again when the same confirmation already covers them.
 
 If the user's response materially changes the goal or initialization plan,
-update the brief and confirm again. Otherwise proceed to Stage 2.
+update the brief and confirm again unless that response also explicitly
+authorizes the new scope, skips confirmation, or delegates the remaining
+judgment. Otherwise proceed to Stage 2.
 
 ## Stage 2: initialize and render
 
@@ -296,9 +307,12 @@ Fast mode compresses applicable rules into `/goal`. Deep mode references the ful
 execution contract in `state.md` instead of repeating initialization detail,
 complete TODOs, long specs, or review checklists.
 
-Return the final `/goal` only after Stage 1 is confirmed, initialization is
-complete, and all referenced paths are verified. Otherwise return an updated
-brief that clearly asks the user to confirm or correct it.
+Return the final `/goal` after Stage 1 is confirmed, the user explicitly skips
+confirmation, or the user delegates the remaining judgment. Complete only
+authorized initialization and verify every referenced path first. When
+investigation was explicitly skipped, omit unverifiable paths and commands,
+preserve material unknowns, and make their resolution part of execution rather
+than presenting guesses as facts.
 
 ## Length contract
 
@@ -388,7 +402,8 @@ dependency>.
 
 During Stage 1, return only the goal brief, material questions, and a clear
 request for confirmation; do not require a fixed status string or include a
-`/goal` code block.
+`/goal` code block. Skip this response format when the user explicitly skips
+confirmation or delegates the remaining judgment.
 
 During Stage 2, return:
 

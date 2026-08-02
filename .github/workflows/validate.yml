@@ -51,11 +51,19 @@ jobs:
           test -f skills/goal-prompt/references/long-goal-learning.md
           test -f skills/goal-prompt/references/fusion-notes.md
 
-      - name: Validate full skill-up suite without model credentials
+      - name: Check deterministic eval judges
         run: |
+          bash -n evals/skill-up/fixtures/scripts/*.sh
+          evals/skill-up/fixtures/scripts/test-judges.sh
+
+      - name: Validate skill-up definitions without model credentials
+        run: |
+          mkdir -p .eval-work/target
+          cp -R skills/goal-prompt/. .eval-work/target/
+          test -f .eval-work/target/SKILL.md
           mkdir -p /tmp/skill-up-bin
           export SKILL_UP_VERSION=v0.7.0
           export INSTALL_DIR=/tmp/skill-up-bin
-          curl -fsSL https://raw.githubusercontent.com/alibaba/skill-up/main/install.sh | bash
+          curl -fsSL https://raw.githubusercontent.com/alibaba/skill-up/5ac7ce0467a164d07aacbbf7052bcffda68a446b/install.sh | bash
           /tmp/skill-up-bin/skill-up --version | grep -F "0.7.0"
           /tmp/skill-up-bin/skill-up validate evals/skill-up/eval.yaml

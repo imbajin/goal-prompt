@@ -8,7 +8,7 @@ It does not execute the task or require a full SPEC workflow up front.
 
 > See [CHANGELOG.md](CHANGELOG.md) for major version changes.
 
-![How goal-prompt addresses common /goal problems](assets/goal-prompt-overview-en.png)
+![How goal-prompt addresses common /goal problems](assets/overview-en.png)
 
 > **Tested with real evals**
 >

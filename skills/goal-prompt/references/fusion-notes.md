@@ -25,17 +25,22 @@ From `goal-prompt-builder`:
 ## Major modifications
 
 - Replace one-stage generation with "investigate and confirm, then initialize and
-  render."
-- Recommend fast or deep mode automatically, with user confirmation.
+  render" as the default flow.
+- Recommend fast or deep mode automatically, with user confirmation by default.
+- Honor an explicit request to skip investigation or confirmation, or to
+  delegate the remaining judgment, while preserving unknowns and
+  higher-priority host constraints.
 - In deep mode, create approved `.goal-task/<slug>/` Markdown files after
   confirmation.
 - Keep one-time environment preparation out of the enduring prompt. Put
   unfinished work under `state.md`'s "Initialization TODO", then simplify or
   remove it after completion.
 - Derive gate and stop-condition counts from actual requirements.
-- End Stage 1 with a clear semantic request for confirmation, without requiring
-  a fixed status string; use the final `/goal` code block itself as the Stage 2
-  completion signal, with no extra status suffix.
+- By default, end Stage 1 with a clear semantic request for confirmation,
+  without requiring a fixed status string. When the user explicitly skips
+  confirmation or delegates judgment, continue without that extra round. Use
+  the final `/goal` code block itself as the Stage 2 completion signal, with no
+  extra status suffix.
 - Ground commands, paths, and constraints in repository or user evidence.
 - Include a token budget only when the user explicitly requests it.
 

@@ -8,7 +8,7 @@
 
 >版本核心变动见 [CHANGELOG.md](CHANGELOG.md)
 
-![goal-prompt 如何解决常见的 /goal 问题](http://img.tingtattoo.cn/goal-prompt-overview-zh.png)
+![goal-prompt 如何解决常见的 /goal 问题](assets/overview-zh.png)
 
 > **实际回测**
 >
@@ -71,7 +71,7 @@ flowchart LR
 
 **第一阶段**只返回临时目标摘要，包括预期结果、范围、排除项和完成证据。会改变目标的假设没有确认前，不会生成 `/goal`
 
-确认后才进入**第二阶段**。最终 prompt 只保留执行需要的内容：
+用户确认、委托判断或明确跳过确认后，进入**第二阶段**。最终 prompt 只保留执行需要的内容：
 
 - 预期结果、范围和排除项；
 - 必须全部满足的完成条件和验证证据；
