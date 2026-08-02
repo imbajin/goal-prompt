@@ -1,0 +1,24 @@
+id: existing-requirement-design-todo
+title: 完整 requirement design todo 驱动中大型目标
+description: 验证中大型任务复用已有需求、设计和计划文档，保持职责分离并补足仓库验证证据。
+input:
+  prompt: |
+    请根据 docs/requirement.md、docs/design.md 和 docs/todo.md 创建数据导入迁移 /goal。
+    三份文档都已确认：需求定义结果，设计定义接口与不变量，todo 定义实施范围。
+    不要复制或重新设计这些内容；请检查当前仓库并补足恢复、验证和完成门槛。
+context:
+  repo_fixture: skill-up/fixtures/repos/import-migration-app
+  git:
+    init: true
+    checkout: main
+expect:
+  must_contain: ["docs/requirement.md", "docs/design.md", "docs/todo.md", "npm run test:import", "npm run test:integration"]
+  exit_code: 0
+judge:
+  type: agent_judge
+  model: gpt-5.6-sol
+  criteria:
+    - "分别复用 requirement 的结果、design 的接口与不变量、todo 的实施范围，不合并复制成新的设计或 TODO sidecar。"
+    - "检查当前实现和 package.json，使用真实的 npm run test:import、npm run test:integration 和 npm run typecheck 作为合取门槛。"
+    - "按中大型深度任务设计恢复入口、独立工作重排和重大里程碑 3 reviewer，同时不重新询问三份文档已确定的决定。"
+  pass_threshold: 1.0

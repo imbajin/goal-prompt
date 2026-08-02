@@ -1,0 +1,22 @@
+id: delegated-judgment
+title: 用户委托判断时由 Agent 继续
+description: 验证用户不想亲自判断并要求继续时，Agent 基于调查结果自行决策并生成最终提示。
+input:
+  turns:
+    - role: user
+      content: |
+        请为“重构 src/cache 并保持公开 API 不变”创建 /goal。
+    - role: user
+      content: |
+        看起来差不多吧，你先往下弄。
+expect:
+  must_contain: ["/goal"]
+  exit_code: 0
+judge:
+  type: agent_judge
+  model: gpt-5.6-sol
+  criteria:
+    - "第一轮完成适当调查并给出待确认 brief，没有提前生成最终 /goal。"
+    - "第二轮把“看起来差不多吧，你先往下弄”理解为用户委托 Agent 判断，自行选择合理方案并生成最终 /goal。"
+    - "第二轮不因用户没有给出固定确认措辞而再次索取确认。"
+  pass_threshold: 1.0

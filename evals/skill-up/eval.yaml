@@ -1,0 +1,48 @@
+schema_version: v1alpha1
+
+environment:
+  type: none
+
+skills:
+  - source: local_path
+    path: ../.eval-work/target
+
+engine:
+  name: codex
+
+cases:
+  files:
+    - skill-up/cases/stage1-grounded-feature.yaml
+    - skill-up/cases/stage1-vague-draft.yaml
+    - skill-up/cases/stage1-long-running.yaml
+    - skill-up/cases/stage2-doc.yaml
+    - skill-up/cases/stage2-migration.yaml
+    - skill-up/cases/multiturn-confirmation.yaml
+    - skill-up/cases/multiturn-correction.yaml
+    - skill-up/cases/trigger-boundary.yaml
+    - skill-up/cases/research-goal.yaml
+    - skill-up/cases/audit-goal.yaml
+    - skill-up/cases/batch-goal.yaml
+    - skill-up/cases/reviewer-stop-condition.yaml
+    - skill-up/cases/skip-investigation.yaml
+    - skill-up/cases/delegated-judgment.yaml
+    - skill-up/cases/no-fabrication.yaml
+    - skill-up/cases/fast-small-task.yaml
+    - skill-up/cases/deep-compression-gates.yaml
+    - skill-up/cases/repository-rule-conflict.yaml
+    - skill-up/cases/existing-spec-plan.yaml
+    - skill-up/cases/existing-requirement-design-todo.yaml
+  defaults:
+    timeout_seconds: 420
+    max_turns: 12
+  parallelism: 1
+  retry_policy:
+    max_retries: 1
+    retry_on: [timeout, error]
+
+benchmark:
+  enabled: true
+
+report:
+  formats: [json, html]
+  artifacts: [transcript]

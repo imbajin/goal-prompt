@@ -1,0 +1,7 @@
+{
+  "name": "policy-auth-app-fixture",
+  "private": true,
+  "scripts": {
+    "typecheck": "node --check src/auth/middleware.js"
+  }
+}

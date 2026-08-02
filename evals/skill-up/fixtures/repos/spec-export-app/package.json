@@ -1,0 +1,9 @@
+{
+  "name": "spec-export-app-fixture",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:export": "node tests/export.test.js",
+    "typecheck": "node -e \"process.exit(0)\""
+  }
+}

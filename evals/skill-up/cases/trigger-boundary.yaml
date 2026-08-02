@@ -1,0 +1,13 @@
+id: trigger-boundary
+title: 普通任务不能被强制转成 goal
+description: 验证用户明确不需要 /goal 时，Skill 不会创建 goal 工件。
+input:
+  prompt: |
+    不要创建或讨论 /goal。只告诉我如何把 README 中的 teh 改成 the，一句话即可。
+expect:
+  must_not_contain: ["needs confirmation"]
+  exit_code: 0
+judge:
+  type: script
+  script_path: skill-up/fixtures/scripts/check-trigger-boundary.sh
+  timeout_seconds: 30

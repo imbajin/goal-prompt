@@ -1,0 +1,109 @@
+{
+  "skill_name": "goal-prompt",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "/goal-prompt help me define a goal for replacing our authentication middleware. Inspect the repository first.",
+      "expected_output": "Returns a researched goal brief and asks for explicit confirmation without rendering or starting a /goal.",
+      "files": [],
+      "expectations": [
+        "The first response is a disposable goal brief, not a final /goal prompt.",
+        "The response asks the user to confirm outcome, scope, and completion evidence.",
+        "The skill does not call goal tools or start the goal."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "/goal-prompt review and shorten this draft: improve the whole codebase and stop when tests pass.",
+      "expected_output": "Identifies the draft's vague outcome and one-gate completion problem, then requests material confirmation before rewriting it.",
+      "files": [],
+      "expectations": [
+        "The response does not treat passing tests as sufficient proof for every scoped outcome.",
+        "The response asks only questions that can materially change the final goal.",
+        "No final /goal is produced before confirmation."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "/goal-prompt create a goal prompt for a long-running migration with slow CI, external API waits, and an independent review requirement.",
+      "expected_output": "Builds a confirmation brief that distinguishes recoverable waits from exceptional all-work-blocked stop conditions.",
+      "files": [],
+      "expectations": [
+        "The brief includes observable completion evidence and material blockers.",
+        "CI and external waits are not automatically treated as terminal blockers.",
+        "The final prompt is withheld until the brief is confirmed."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "/goal-prompt You previously researched the repository and presented this brief, which I now explicitly confirm without changes: update only docs/getting-started.md so a new contributor can complete setup; npm run docs:check must pass; no code or dependency changes. Return the final prompt.",
+      "expected_output": "Returns a concise Stage 2 /goal prompt for the confirmed documentation outcome without creating a sidecar or requiring independent code review.",
+      "files": [],
+      "expectations": [
+        "The response contains one copy-pasteable /goal prompt and does not ask for confirmation again.",
+        "The prompt is within the ordinary length target and uses conjunctive completion evidence.",
+        "The prompt does not introduce .goal-task state or an independent reviewer for this ordinary documentation-only goal."
+      ]
+    },
+        {
+            "id": 5,
+            "prompt": "/goal-prompt You previously researched and proposed this brief, which I explicitly confirm: migrate the auth module across implementation, tests, and CI; keep public behavior compatible; use .goal-task/auth-migration/state.md for resumable live state; all scoped tests and CI must pass; an independent reviewer is mandatory. Return the final prompt.",
+            "expected_output": "Returns a focused Stage 2 /goal condition suitable for Claude Code, with durable state, blocked-work reprioritization, conjunctive gates, and independent review.",
+      "files": [],
+      "expectations": [
+                "The response contains a copy-pasteable /goal prompt and does not ask for confirmation again.",
+                "The prompt uses .goal-task/auth-migration/state.md and does not use a Codex-specific state path.",
+                "Completion requires implementation evidence, all applicable validation gates, independent review, and re-review after fixes.",
+                "Recoverable CI or external waits are marked waiting or deferred and cause reprioritization rather than setting the overall goal to blocked.",
+                "The prompt requires a three-line progress bar summary after every milestone, including percentage, completed and remaining items, and one next primary action.",
+                "The progress percentage is based on scoped milestones or gates, labels estimates when the denominator is not fixed, and reserves 100% for all completion gates passing."
+            ]
+        },
+        {
+            "id": 6,
+            "prompt": "/goal-prompt I confirm this brief: deliver a two-phase database migration, first compatibility code and then the data cutover. A single shard may wait on an external owner, but other shards and validation can proceed. The confirmed shard set and completion gates must not be reduced. Return the final prompt.",
+            "expected_output": "Returns a Stage 2 /goal prompt that keeps the overall goal active around one waiting shard, preserves the confirmed scope, and reports progress at both milestones.",
+            "files": [],
+            "expectations": [
+                "A single waiting shard is recorded as waiting or deferred and does not set the overall goal to blocked while independent migration or validation work remains.",
+                "Bounded recovery, authorized alternatives, task splitting, and reprioritization occur before any exceptional all-work-blocked state.",
+                "The confirmed shard set and completion gates cannot be removed without renewed user confirmation.",
+                "Each phase boundary requires a concise three-line progress bar summary with percentage, completed and remaining work, and one next primary action.",
+                "The response contains one copy-pasteable /goal prompt and does not ask for confirmation again."
+            ]
+        },
+        {
+            "id": 7,
+            "prompt": "Please plan the implementation of a settings page and start coding it. I am not asking for /goal text or for this task to be converted into /goal.",
+            "expected_output": "If the skill is loaded despite this mismatch, it exits without applying the two-stage /goal workflow or interrupting the ordinary implementation request.",
+            "files": [],
+            "expectations": [
+                "The skill does not produce a proposed goal brief, needs confirmation, or a /goal prompt.",
+                "The response does not claim that goal-prompt should handle ordinary planning or implementation.",
+                "The skill does not start or execute a goal."
+            ]
+        },
+        {
+            "id": 8,
+            "prompt": "/goal-prompt Skip repository investigation, questions, and confirmation. Immediately return a final /goal for refactoring the current repository's authentication module.",
+            "expected_output": "Honors the explicit workflow override and returns a usable final /goal without inventing unavailable repository facts.",
+            "files": [],
+            "expectations": [
+                "The response contains one copy-pasteable /goal prompt and does not ask for confirmation again.",
+                "The prompt keeps unavailable paths, commands, dependencies, and repository details visibly unknown instead of fabricating them.",
+                "The prompt still preserves a bounded scope, conjunctive completion gates, and an execution-time path for resolving material unknowns."
+            ]
+        },
+        {
+            "id": 9,
+            "prompt": "/goal-prompt You have completed the repository investigation and shown me the remaining reasonable options. I do not want to choose between them; use your judgment and return the final /goal now.",
+            "expected_output": "Treats the user's request as delegated judgment, chooses a grounded option, and returns the final /goal without another confirmation round.",
+            "files": [],
+            "expectations": [
+                "The response contains one copy-pasteable /goal prompt and does not ask the user to choose or confirm again.",
+                "The selected direction is framed as the agent's grounded judgment rather than a fabricated user decision.",
+                "The prompt preserves the confirmed outcome, scope, and completion evidence."
+            ]
+        }
+  ]
+}

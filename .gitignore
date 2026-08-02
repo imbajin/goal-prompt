@@ -1,0 +1,8 @@
+# Local skill-up snapshots, isolated homes, and run artifacts.
+.eval-work/
+
+# Local-only translated Skill maintenance files.
+.local-skill/
+
+# macOS metadata.
+.DS_Store

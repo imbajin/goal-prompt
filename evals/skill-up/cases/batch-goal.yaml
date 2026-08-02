@@ -1,0 +1,21 @@
+id: batch-goal
+title: 可枚举批任务使用固定分母
+description: 验证批处理目标记录集合来源、固定数量和项目消失时的处理方式。
+input:
+  prompt: |
+    你已完成调查，我确认这个批任务：
+    根据 migration-list.yaml 中固定的 8 个模块完成配置迁移；
+    每个模块必须通过 validate-module，最终运行 validate-all；
+    模块消失或内容变化时记录证据并停止该项，不得擅自替换集合。
+    请生成最终 /goal。
+expect:
+  must_contain: ["/goal", "8", "migration-list.yaml", "validate-module", "validate-all"]
+  exit_code: 0
+judge:
+  type: agent_judge
+  model: gpt-5.6-sol
+  criteria:
+    - "最终提示把 migration-list.yaml 的固定 8 项作为集合来源，并保持 validate-module 与 validate-all 的合取门槛。"
+    - "进度只使用固定分母，并说明项目消失或变化时记录证据、不擅自替换集合。"
+    - "提示简洁，不把八个项目的完整 TODO 清单展开进 /goal。"
+  pass_threshold: 1.0
