@@ -38,6 +38,9 @@ environment changes still require explicit authorization.
 - Do not create `goal.md`; the objective already lives in `/goal`.
 - Do not mark the whole goal `blocked` because of an ordinary failure, missing
   permission, resource limit, or possible question.
+- For frontend or UI work, apply `references/ui-acceptance.md`; the final goal
+  must require Chrome `browser_use` (or the available browser equivalent) and
+  actual functional plus UI/UX evidence.
 
 ## Stage 1: investigate and confirm
 
@@ -117,7 +120,9 @@ four-file bundle.
 ### 4. Select scenario guidance
 
 Choose the best match from refactor, feature, batch, research, audit, gatekeeper
-review, or custom. Read only that section in `references/scenarios.md`.
+review, or custom. Read only that section in `references/scenarios.md`. For
+parallel work, also read `references/parallel-agents.md`; for frontend or UI
+work, read `references/ui-acceptance.md`.
 
 For complex long-running work, also read
 `references/long-goal-execution.md`. Read
@@ -226,6 +231,13 @@ simplify or remove them promptly after completion.
   reported as `100%`.
 - Mark ordinary permission or authorization gaps `needs input` and continue
   independent work; do not mark the entire goal `blocked`.
+- `needs input`, `waiting`, and `deferred` describe an item in `state.md` or
+  `todo.md`; they are not native overall goal statuses. Codex's native
+  `update_goal` accepts only `complete` or `blocked`. Never call `blocked` for a
+  single failed item, and do not count three item retries as three blocked goal
+  turns. Use overall `blocked` only after the same condition recurs for the
+  native three-consecutive-goal-turn audit and all remaining work is jointly at
+  an impasse.
 
 Set the overall goal `blocked` only when the user explicitly defines that rule,
 or when bounded recovery, authorized alternatives, task splitting,
@@ -249,6 +261,13 @@ not elapsed time or effort. Use a coarse evidence-based value labeled `estimate`
 when the denominator is unstable. Never report `100%` before all applicable
 gates pass. Do not report tool calls, waits, or no-change loops separately.
 Combine review and commit when they occur in the same loop.
+
+Before context compaction, quota wait, or session handoff, persist the current
+gate percentage, completed items, remaining items, latest commit, validation
+evidence, active waits or deferrals, and one next action in `state.md`. After a
+major milestone commit, include the commit and the current completed-item
+summary in the next three-line progress report. Do not rely on the next session
+to reconstruct this from memory.
 
 #### Independent review
 

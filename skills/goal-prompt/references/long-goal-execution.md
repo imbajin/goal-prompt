@@ -17,6 +17,15 @@ Deep mode always creates a non-empty `state.md` containing:
 - next primary action and resume entrypoint;
 - applicable progress, retry, review, commit, and learning rules.
 
+## Compaction-safe checkpoints
+
+Before context compaction, quota wait, or session handoff, update `state.md` with
+the current gate percentage, completed and remaining items, latest commit,
+validation evidence, active waits or deferrals, and one next action. After every
+major milestone commit, the next progress report must include the commit and a
+short summary of what is complete now. A later session must be able to resume
+from `state.md` without reconstructing progress from conversation history.
+
 Split content only when responsibility is genuinely independent:
 
 - large or frequently changing items go to `todo.md`;
@@ -98,11 +107,15 @@ Under resource pressure, reduce concurrency, shrink batches, change validation
 cadence, then use authorized alternative resources. If still impossible, defer
 the item without waiving its completion gate.
 
-Set the overall goal `blocked` only when the user explicitly defines that rule,
-or when all meaningful remaining work, after bounded recovery, authorized
-alternatives, splitting, reprioritization, and completion of all independent
-work, still jointly depends on the same logical conflict, safety boundary, or
-verified mandatory external dependency.
+Record an item as `needs input`, waiting, or deferred without changing the native
+overall goal status. Codex's native `update_goal` accepts only `complete` or
+`blocked`; its blocked audit concerns the same condition across at least three
+consecutive goal turns, not three retries of one item. Set the overall goal
+`blocked` only when the user explicitly defines that rule, or when that native
+audit is satisfied and all meaningful remaining work, after bounded recovery,
+authorized alternatives, splitting, reprioritization, and completion of all
+independent work, still jointly depends on the same logical conflict, safety
+boundary, or verified mandatory external dependency.
 
 ## Loop and milestone progress
 

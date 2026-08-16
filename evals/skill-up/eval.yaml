@@ -9,6 +9,9 @@ skills:
 
 engine:
   name: codex
+  model:
+    provider: openai
+    name: gpt-5.6-luna
 
 cases:
   files:
@@ -32,6 +35,10 @@ cases:
     - skill-up/cases/repository-rule-conflict.yaml
     - skill-up/cases/existing-spec-plan.yaml
     - skill-up/cases/existing-requirement-design-todo.yaml
+    - skill-up/cases/frontend-ui-acceptance.yaml
+    - skill-up/cases/parallel-agents-goal.yaml
+    - skill-up/cases/compaction-checkpoint.yaml
+    - skill-up/cases/native-blocked-scope.yaml
   defaults:
     timeout_seconds: 420
     max_turns: 12

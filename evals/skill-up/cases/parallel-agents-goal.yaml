@@ -1,0 +1,17 @@
+id: parallel-agents-goal
+title: 并行任务必须有独立边界和集成责任
+description: 验证多 agent 拆分拥有独立文件边界、共享写入点唯一归属和集成复验。
+input:
+  prompt: |
+    你已经完成调查并给出简报。我明确确认深度模式：
+    将 auth、billing、notifications 三个互不依赖的模块迁移到统一事件接口，
+    保持公开兼容；请生成最终 /goal，并合理使用子 agents 并行。
+    要求明确每个 agent 的文件所有权、共享 schema 和 lockfile 的唯一 owner、
+    接缝集成责任、集成后复跑测试，以及并行实现不能替代独立 reviewer。
+expect:
+  must_contain: ["/goal", "auth", "billing", "notifications"]
+  exit_code: 0
+judge:
+  type: script
+  script_path: skill-up/fixtures/scripts/check-parallel-agents.sh
+  timeout_seconds: 30
