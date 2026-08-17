@@ -16,7 +16,46 @@ environment changes still require explicit authorization.
 
 ## Core interaction contract
 
+### Non-negotiable routing gate
+
+At the end of every turn, classify the latest user message as one of three
+states: pending confirmation, authorized Stage 2, or explicit non-goal work. If
+it is pending confirmation, output only the Stage 1 brief and questions, then
+stop. Do not satisfy the user's request for a “final”, “copyable”, or “ready”
+goal until the authorization state changes. This gate is about authorization,
+not confidence in the investigation.
+
 - By default, do not render the final prompt from the user's first description.
+- Treat the conversation as a two-state protocol. Before explicit confirmation,
+  explicit skip, or explicit delegation of the remaining judgment, remain in
+  Stage 1. A Stage 1 response must be a confirmation brief and must not contain
+  a copyable `/goal`, a fenced final prompt, or language that presents one as
+  ready to run. “I finished investigating” or “please create a /goal” is not
+  confirmation by itself.
+- After a Stage 1 brief, stop and wait for the user's response. Do not infer
+  confirmation from silence, a first-turn request to continue, or the fact that
+  the available evidence is sufficient. A semantic confirmation is enough; it
+  need not use a fixed status word.
+- Make the routing visible in the output. Start the response with a brief label
+  such as `Proposed goal brief`, keep the unresolved questions at the end, and
+  do not write the literal `/goal` token anywhere in that first response. The
+  only exceptions are an explicit user request to skip confirmation or an
+  explicit delegation of the remaining judgment.
+- If the user explicitly delegates the remaining judgment (for example, asks
+  the agent to choose and continue), treat that as authorization to enter Stage
+  2 after the investigation. Preserve unknown repository facts in the final
+  goal instead of inventing them. If the user explicitly skips investigation or
+  confirmation, the skip is the authorization and the final goal must state the
+  resulting unknowns honestly.
+- Skipping confirmation is not the same as skipping investigation. A request to
+  “generate it directly” still requires reading available repository policy,
+  source, tests, and specs unless the user also explicitly says not to inspect
+  them.
+- An explicit request to skip both investigation and confirmation is an
+  authorized Stage 2 route. Render the final goal immediately in that case;
+  preserve every unavailable fact as an unknown and do not emit a brief or wait
+  for another turn. “Generate it directly” without an investigation skip only
+  skips confirmation, so inspect the available context first.
 - Investigate real context that can affect the result before asking the user to
   confirm the outcome, scope, and completion evidence.
 - An explicit user request may skip this skill's investigation, questions,
@@ -117,6 +156,14 @@ implementation and validation, remote waits, or cross-session recovery.
 Complexity does not imply more files. Do not treat deep mode as a mandatory
 four-file bundle.
 
+Use a conservative mode decision. Recommend deep mode when the task spans more
+than one subsystem, has multiple implementation and validation phases, needs
+cross-session or quota recovery, or carries a public compatibility or migration
+boundary. Recommend fast mode only when the work is genuinely focused, low-risk,
+and can finish with one compact validation cycle. Reuse an already confirmed
+deep-mode decision; do not downgrade it because the final `/goal` should be
+short.
+
 ### 4. Select scenario guidance
 
 Choose the best match from refactor, feature, batch, research, audit, gatekeeper
@@ -190,6 +237,16 @@ listed `.goal-task/<task-slug>/` Markdown files. Worktree or branch changes,
 dependency installation, configuration changes, destructive actions, and remote
 mutations require the exact target and impact to be listed and explicitly
 authorized. Do not ask again when the same confirmation already covers them.
+
+For a research or audit goal, keep the confirmation brief read-only and separate
+evidence gaps from user preference gaps. Do not add a behavior-change reviewer,
+implementation gate, or code re-review mechanically to a report-only goal. A
+report can still name one independent evidence reviewer when appropriate.
+
+When repository policy or contributor files are part of the available context,
+name the exact file in the brief and explain any user-requested override. Use
+only commands observed in those files, package scripts, or the current source;
+do not add generic commands merely because they are common.
 
 If the user's response materially changes the goal or initialization plan,
 update the brief and confirm again unless that response also explicitly
@@ -327,11 +384,15 @@ execution contract in `state.md` instead of repeating initialization detail,
 complete TODOs, long specs, or review checklists.
 
 Return the final `/goal` after Stage 1 is confirmed, the user explicitly skips
-confirmation, or the user delegates the remaining judgment. Complete only
-authorized initialization and verify every referenced path first. When
-investigation was explicitly skipped, omit unverifiable paths and commands,
-preserve material unknowns, and make their resolution part of execution rather
-than presenting guesses as facts.
+confirmation, or the user delegates the remaining judgment. A delegated
+decision is still a Stage 2 authorization, not a request to stop because one
+repository path or preference is unavailable. If the requested goal can be
+written without that fact, preserve the unknown and make its resolution an
+execution gate; ask for input only when the missing fact changes the objective
+or makes a safe goal impossible. Complete only authorized initialization and
+verify every referenced path first. When investigation was explicitly skipped,
+omit unverifiable paths and commands, preserve material unknowns, and make their
+resolution part of execution rather than presenting guesses as facts.
 
 ## Length contract
 

@@ -1,0 +1,16 @@
+id: deep-existing-docs
+title: 中大型已有文档任务保持 deep
+description: 覆盖已有 requirement/design/todo 时错误降级 fast、丢失恢复和 reviewer 门槛的问题。
+input:
+  prompt: |
+    当前任务已完成调查并明确确认使用深度模式。
+    docs/requirement.md 已确认结果，docs/design.md 已确认接口与不变量，docs/todo.md 已确认实施范围。
+    请生成最终 /goal，不要重复设计这些文档；必须保留 state.md 恢复入口、独立工作重排、3 名 reviewer 和修复后复审。
+    任务涉及多个模块、测试、CI 和跨会话恢复。
+expect:
+  must_contain: ["/goal", "docs/requirement.md", "docs/design.md", "docs/todo.md"]
+  exit_code: 0
+judge:
+  type: script
+  script_path: skill-up/fixtures/scripts/check-deep-existing.sh
+  timeout_seconds: 30

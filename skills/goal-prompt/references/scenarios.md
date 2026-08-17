@@ -50,8 +50,9 @@ skips confirmation or delegates the remaining judgment.
   evidence from a missing user preference.
 - Restrict writes to named report files when appropriate.
 - Cite real files, lines, command output, or primary sources.
-- Use 1 independent reviewer by default for pure documentation, read-only
-  research, or analysis.
+- Keep a pure read-only research goal free of implementation-only gates. Use 1
+  independent reviewer by default for the report and evidence, not a code
+  reviewer or behavior-change re-review unless the user asks for remediation.
 - Exhaust accessible evidence and independent research lanes before requesting
   input because mandatory evidence is inaccessible or authorities conflict.
 

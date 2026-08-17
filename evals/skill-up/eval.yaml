@@ -39,6 +39,10 @@ cases:
     - skill-up/cases/parallel-agents-goal.yaml
     - skill-up/cases/compaction-checkpoint.yaml
     - skill-up/cases/native-blocked-scope.yaml
+    - skill-up/cases/confirmation-brief.yaml
+    - skill-up/cases/research-brief-boundary.yaml
+    - skill-up/cases/deep-existing-docs.yaml
+    - skill-up/cases/delegated-goal.yaml
   defaults:
     timeout_seconds: 420
     max_turns: 12
