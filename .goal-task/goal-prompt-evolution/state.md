@@ -5,13 +5,14 @@ Updated: 2026-08-18
 ## Status
 
 - Mode: deep
-- State: final proof and scoped closeout in progress; no remote work
-- Current phase: P5 final review / handoff
-- Progress: 80% estimate (deterministic gates, targeted samples, and package
-  checks are complete; the current full-run gate is externally blocked, then
-  scoped commit and explicit external TODOs remain)
-- Next action: hand off the scoped commit and retain the explicitly deferred
-  external gates; no push is authorized.
+- State: final proof complete with explicitly deferred external/model TODOs;
+  no remote work
+- Current phase: P5 scoped closeout / handoff
+- Progress: 95% estimate (current-SHA full run, corrected deterministic replay,
+  execution-task reviews, package checks, CI-local replay, and local commit are
+  complete; live Claude remains explicitly out of scope)
+- Next action: hand off the local milestone and preserve user-owned dirty case
+  edits; no push is authorized.
 
 ## Confirmed outcome and boundaries
 
@@ -163,6 +164,28 @@ truth.
   claim. Re-run in a clean runner session with no unfinished goal before
   treating GP-402 as complete.
 
+## Current-SHA full regression and corrected replay
+
+- Completed clean-run evidence is under
+  `.eval-work/p0-20260818T012626/final-full-clean-home-20260818T063409/iteration-1/`.
+  It used HEAD `c3519c842dde7f734a9f579279e5968f01946278`, Skill SHA
+  `4ed9b96439cc7a2b3970c2e23cede7dd6c925ecd5bcae2a29d1d814855e6a4cb`, eval
+  SHA `6eee26ad82f1456ffbb29e1820d4dc9b466c8217712c6e9be1e78a825a161d7d`,
+  local skill-up `0.9.0`, Codex `gpt-5.6-luna`, Judge `gpt-5.6-sol`,
+  parallelism 4, chronicle-off wrapper, and a clean temporary `CODEX_HOME`.
+- Complete result: 56 units, 30 PASS / 22 FAIL / 4 ERROR; with_skill 21 PASS /
+  7 FAIL / 0 ERROR, without_skill 9 PASS / 15 FAIL / 4 ERROR. All four ERRORs
+  are without_skill `context deadline exceeded` during multi-turn continuation.
+- The seven with_skill FAILs are classified as model/case variance
+  (`research-goal`, `audit-goal`, `no-fabrication`, `existing-spec-plan`,
+  `existing-requirement-design-todo`, `frontend-ui-acceptance`) plus one
+  stale parallel Judge false-red. No stable Skill defect is reproduced.
+- Every saved deterministic script response was replayed through the current
+  Judges. The exact table and evidence are in
+  `.eval-work/p0-20260818T012626/final-full-clean-home-20260818T063409/replay-corrected.md`;
+  corrected `parallel-agents-goal` with_skill is PASS and the remaining
+  deterministic/high-risk with_skill checks are 100% PASS.
+
 ## Failure classification matrix (previous run)
 
 | Case/config | Classification | Skill change authorized? | Evidence |
@@ -217,12 +240,13 @@ truth.
   recommendation; the agent correctly returned `blocked` because remote/CI
   authority was unavailable.
 - Deep isolated task: `.eval-work/p0-20260818T012626/execution-tasks/deep-export/`;
-  implementation/tests passed and recovery/reviewer evidence was written to
-  `.goal-task/export-manifest/state.md`; the three reviewer paragraphs are
-  self-review, not independently traceable reviewer sessions. Three commit
-  attempts hit the fixture environment's `.git/index.lock` permission
-  boundary. Therefore its independent-review and commit gates remain TODO;
-  this is an environment limitation, not a main-repository failure.
+  final fixture commit is `3ac0af16cc319a7f2cf4e1b5e18ea0fc5a4d8e98`.
+  Implementation/tests passed; mixed-character and repeated-byte checks were
+  added; tests run in a temporary working directory with `try/finally`
+  cleanup. Three independent read-only final reviewers
+  (`reviewers/correctness-tests-r6.md`, `design-boundary-r6.md`,
+  `security-maintainability-r6.md`) report PASS against that exact HEAD.
+  Earlier lock and reviewer failures remain retained as historical evidence.
 
 ## Completion gates
 
@@ -255,12 +279,12 @@ truth.
      hardening is currently covered by deterministic fixtures only.
 
 4. **Current-candidate baseline**
-   - A previous copied candidate produced a complete with_skill/without_skill
-     result under identical inputs, Judge, model, and runtime parameters. The
-     current-SHA run was interrupted by runner infrastructure errors and did
-     not produce a complete report.
-   - Record infrastructure ERROR separately from semantic FAIL.
-   - Inspect transcripts and assertion evidence for every failing or flaky case.
+   - The current-SHA clean run produced a complete with_skill/without_skill
+     result under identical inputs, Judge, model, and runtime parameters.
+   - Infrastructure ERROR is recorded separately from semantic FAIL; all four
+     ERRORs are without_skill continuation timeouts.
+   - Transcripts and assertion evidence were inspected for every with_skill
+     failure; no unclassified result remains.
 
 5. **Evidence-driven repair and refactor**
    - A Skill behavior change requires a reproducible defect or a confirmed
@@ -274,9 +298,8 @@ truth.
 6. **Final behavioral evidence**
    - Deterministic and high-risk gates pass 100%.
    - Each affected or high-risk Prompt case passes three targeted rounds.
-   - The previous candidate full comparison has no unclassified FAIL or ERROR;
-     the current-SHA full comparison remains deferred until a clean runner
-     session is available.
+   - The current-SHA full comparison is complete; model-backed variance and
+     without_skill control failures remain explicitly classified TODOs.
    - Every stable, reproducible, in-scope Skill defect is resolved.
    - Run 2-3 representative Codex execution-level tasks and separately verify
      produced changes, tests, recovery/stop behavior, review, commit behavior,

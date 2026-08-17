@@ -82,6 +82,10 @@ expect_pass "check-parallel-agents.sh" \
   "/goal auth、billing、notifications 并行处理；明确 ownership，Agent 0 唯一负责共享 schema 和 lockfile。集成树上重新运行测试，并安排独立只读 reviewer。"
 expect_pass "check-parallel-agents.sh" \
   "/goal auth、billing、notifications 并行；Agent 0 是唯一可修改共享 schema/lockfile 的 owner。集成后重跑测试，独立 reviewer 复核。"
+expect_pass "check-parallel-agents.sh" \
+  "/goal auth、billing、notifications 并行；Agent 0 是唯一可以修改共享 schema/lockfile 的 owner。集成后重跑测试，独立 reviewer 复核。"
+expect_pass "check-parallel-agents.sh" \
+  "/goal auth、billing、notifications 并行；共享 schema 由唯一 schema owner 维护，lockfile 由唯一 dependency owner 维护。集成后重跑测试，独立 reviewer 复核。"
 
 expect_pass "check-frontend-ui.sh" \
   "/goal 用 Chrome browser_use 走成功和失败流程并保留浏览器证据；分别检查 UI/UX 与可访问性。构建和 DOM 检查不能替代浏览器验收。"

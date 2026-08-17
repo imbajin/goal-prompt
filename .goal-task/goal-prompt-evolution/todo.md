@@ -9,10 +9,12 @@ Item-level status lives here. Valid states are `pending`, `in progress`,
   as an ordinary-file snapshot under `.eval-work/`; record hashes, diff
   manifest, commands, environment, and result locations without overwriting
   existing artifacts.
-- [ ] GP-002 `needs input` — Reproduce one deterministic and one model-backed case
-  with local skill-up 0.9.0 and the repository-pinned 0.7.0. Decide and record
-  the authoritative execution version before full regression. The pinned
-  0.7.0 binary is absent; installing it needs an explicitly named target.
+- [x] GP-002 `complete` — Reproduced a deterministic case with local
+  skill-up 0.9.0 and the exact repository-pinned 0.7.0 installer, plus a
+  model-backed `parallel-agents-goal` sample under identical wrapper/clean-home
+  parameters; both versions passed 2/2 after the current Judge correction.
+  Exact artifacts are under `.eval-work/p0-20260818T012626/version-sample/`;
+  the CI-local replay also verified the pinned installer SHA and `v0.7.0`.
 - [x] GP-003 `complete` — Run the repository-observed static gates:
   `skill-up validate evals/skill-up/eval.yaml`,
   `bash -n evals/skill-up/fixtures/scripts/*.sh`,
@@ -72,20 +74,26 @@ Item-level status lives here. Valid states are `pending`, `in progress`,
 - [ ] GP-401 `deferred` — Deterministic and high-risk gates are 100%; the
   `research-brief-boundary` model wording sample is 1/3 and remains a flaky
   TODO without a reproducible Skill defect.
-- [ ] GP-402 `deferred` — The previous frozen candidate produced 43 PASS / 13
-  classified FAIL / 0 ERROR, but its copied target SHA was not the final
-  worktree. A fresh current-SHA run was attempted and stopped after Codex
-  chronicle/unfinished-goal infrastructure errors without a complete report;
-  re-run in a clean runner session before closing this gate.
-- [ ] GP-403 `pending` — Execute 2-3 representative Codex tasks covering a fast
-  change, deep recovery/refactor, and one high-risk boundary such as parallel or
-  UI work. Fast and audit tasks are valid; deep task implementation/tests pass,
-  but its independent-review and commit gates remain unverified due the fixture
-  `.git/index.lock` permission boundary.
-- [ ] GP-404 `pending` — Verify installable package contents, repository static
-  checks, and CI.
+- [x] GP-402 `complete` — The current-SHA clean-home full run completed with
+  56 units: 30 PASS / 22 FAIL / 4 ERROR; with_skill 21/28/0 and without_skill
+  9/15/4. All errors were without_skill continuation timeouts. Every failure
+  is classified in `state.md`, and all saved deterministic scripts were
+  replayed through the corrected Judges in
+  `final-full-clean-home-20260818T063409/replay-corrected.md`.
+- [x] GP-403 `complete` — Executed fast, audit, and deep isolated Codex tasks.
+  The deep export task finished at local commit
+  `3ac0af16cc319a7f2cf4e1b5e18ea0fc5a4d8e98`; its temporary-workspace tests,
+  recovery state, and three independent final read-only reviewers
+  (`correctness-tests-r6`, `design-boundary-r6`, `security-maintainability-r6`)
+  all pass. Earlier lock/reviewer failures are retained as historical evidence.
+- [x] GP-404 `complete` — Exact CI-local replay passed package installation,
+  JSON/metadata/readme hygiene, shell syntax, Judge fixtures, `git diff
+  --check`, and pinned `skill-up v0.7.0` download/SHA/validation. Live Actions
+  was not run; the local replay is the recorded CI-equivalent evidence.
 - [x] GP-405 `complete` — Final three-lane review and re-review completed;
   evidence state was updated and the current local milestone was created. No
   push.
-- [ ] GP-406 `pending` — Record live Claude Code validation as a scoped TODO
-  unless separately authorized and available.
+- [ ] GP-406 `pending` — Live Claude Code validation remains a scoped TODO;
+  static compatibility checks are complete, but live Claude execution was
+  explicitly excluded and needs separate authorization plus an available
+  Claude runtime.
