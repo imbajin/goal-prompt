@@ -1,7 +1,9 @@
 # Long-Goal Execution Loop
 
-Use only for deep work with remote CI, slow validation, external environments,
-multiple phases, or cross-quota recovery. Put the full contract in
+Use for deep work with remote CI, slow validation, external environments,
+multiple phases, cross-quota recovery, or durable recovery semantics such as
+checkpoint/resume, idempotency, replay, rollback, or partial-failure recovery.
+Put the full contract in
 `.goal-task/<task-slug>/state.md`; keep only its entrypoint and completion gates
 in `/goal`.
 

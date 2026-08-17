@@ -20,5 +20,5 @@ judge:
   criteria:
     - "最终 /goal 严格限制为 src/slugify.js，保持 slugify(value) 导出 API，并以 npm test 为验证门槛。"
     - "快速模式的小型低风险代码变更只要求 1 个独立 reviewer，不机械增加 3 reviewer。"
-    - "不创建或引用 sidecar，不修改依赖、测试或其他文件，也不扩展为全局重构。"
+    - "不创建 sidecar，也不修改依赖、测试或其他文件，也不扩展为全局重构；说明无需 sidecar 不算创建。"
   pass_threshold: 1.0

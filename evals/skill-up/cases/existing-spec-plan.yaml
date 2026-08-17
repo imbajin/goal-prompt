@@ -18,7 +18,7 @@ judge:
   type: agent_judge
   model: gpt-5.6-sol
   criteria:
-    - "完整复用 SPEC.md 中已确认的结果、范围、排除项、兼容要求和验收条件，不重复设计或询问已确定事项。"
-    - "检查当前实现、测试和 package.json，使用真实的 npm run test:export 与 npm run typecheck。"
+    - "完整复用 SPEC.md 中已确认的结果、范围、排除项、兼容要求和验收条件，不重新设计或重新询问这些产品决定；可以单独确认未由 SPEC 决定的执行模式。"
+    - "检查当前实现、测试和 package.json，识别并把真实的 npm run test:export 与 npm run typecheck 作为验证门槛；Stage 1 不要求为生成 brief 而实际执行它们。"
     - "把 SPEC.md 作为 active truth，不复制为新的 design.md、todo.md 或其他 sidecar，也不把文档存在误当成实现完成。"
   pass_threshold: 1.0

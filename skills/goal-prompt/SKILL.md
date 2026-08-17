@@ -164,6 +164,11 @@ and can finish with one compact validation cycle. Reuse an already confirmed
 deep-mode decision; do not downgrade it because the final `/goal` should be
 short.
 
+Durability and recovery semantics are deep-mode signals even in a small
+repository: checkpoint/resume, idempotency, replay, rollback, or recovery after
+partial failure require deep mode when implementation and cross-layer evidence
+are in scope.
+
 ### 4. Select scenario guidance
 
 Choose the best match from refactor, feature, batch, research, audit, gatekeeper
@@ -171,7 +176,7 @@ review, or custom. Read only that section in `references/scenarios.md`. For
 parallel work, also read `references/parallel-agents.md`; for frontend or UI
 work, read `references/ui-acceptance.md`.
 
-For complex long-running work, also read
+For deep mode, long-running work, or durable-recovery work, also read
 `references/long-goal-execution.md`. Read
 `references/long-goal-learning.md` only when a learning record is selected.
 
@@ -231,6 +236,17 @@ judgment, Stage 1 returns a confirmation brief, not `/goal`. Include:
 For complex long-running work, also summarize recoverable waits, independent work
 that can continue while waiting, checkpoint or recovery actions, and stop
 conditions valid only when all remaining work is jointly blocked.
+For deep work with recovery or durable checkpoints, name the independent work
+that can continue or be reordered while one item waits; do not reduce this to a
+generic retry statement.
+When authoritative requirement/design documents state explicit interfaces or
+invariants, preserve each material constraint in the brief and completion
+evidence; do not compress keys, ordering, checkpoint timing, or compatibility
+rules into a generic “preserve behavior” summary. Deep behavior or migration
+work must also name the exact reviewer count and the required re-review gate.
+Its recovery/stop subsection must explicitly state that a waiting, deferred, or
+`needs input` item is reordered behind and does not stop independent work, and
+that overall `blocked` requires every remaining item to share the same blocker.
 
 Confirming deep mode and its initialization plan authorizes creation of the
 listed `.goal-task/<task-slug>/` Markdown files. Worktree or branch changes,
@@ -243,10 +259,18 @@ evidence gaps from user preference gaps. Do not add a behavior-change reviewer,
 implementation gate, or code re-review mechanically to a report-only goal. A
 report can still name one independent evidence reviewer when appropriate.
 
+For a gatekeeper review, the Stage 1 brief must make the finding schema
+explicit: every finding has severity, exact location, observed evidence, and a
+recommendation. Keep these fields in the completion evidence even when the
+target repository or revision is unavailable; do not summarize them as generic
+“issues”.
+
 When repository policy or contributor files are part of the available context,
 name the exact file in the brief and explain any user-requested override. Use
 only commands observed in those files, package scripts, or the current source;
-do not add generic commands merely because they are common.
+do not add generic commands merely because they are common. When package
+scripts are confirmed, preserve their exact command strings in completion
+evidence; do not replace them with a generic “all scripts pass” summary.
 
 If the user's response materially changes the goal or initialization plan,
 update the brief and confirm again unless that response also explicitly
@@ -276,97 +300,29 @@ simplify or remove them promptly after completion.
 
 ### 8. Write the execution contract
 
-#### Persistent execution and retry
+Use `references/long-goal-execution.md` as the sole detailed contract for
+deep, long-running, or durable-recovery work. Read it before drafting a deep
+brief or final goal. It owns
+state initialization, checkpoints, capability preflight, batching, waits,
+retry/deferral, progress, independent review, commits, quota recovery, and
+learning. Do not copy that contract into `SKILL.md` or repeat it in `/goal`;
+the deep goal points to `state.md` and keeps only its outcome, scope, gates, and
+joint-stop semantics.
 
-- Unless the user specifies otherwise, try one item at most three times. If it
-  still fails, record evidence, defer it, and continue all independent work.
-- Diagnose and repair recoverable failures, narrow the next action, or use an
-  authorized alternative.
-- Under resource pressure, first reduce concurrency or batch size, change
-  validation cadence, or adjust resource use; defer the item only if needed.
-- Deferral is not a waiver. An unmet gate remains active, so progress cannot be
-  reported as `100%`.
-- Mark ordinary permission or authorization gaps `needs input` and continue
-  independent work; do not mark the entire goal `blocked`.
-- `needs input`, `waiting`, and `deferred` describe an item in `state.md` or
-  `todo.md`; they are not native overall goal statuses. Codex's native
-  `update_goal` accepts only `complete` or `blocked`. Never call `blocked` for a
-  single failed item, and do not count three item retries as three blocked goal
-  turns. Use overall `blocked` only after the same condition recurs for the
-  native three-consecutive-goal-turn audit and all remaining work is jointly at
-  an impasse.
+For fast mode, put only applicable compact rules in `/goal`: retry each item at
+most three times and record/defer failures without waiving gates; continue
+independent work; report gate-based progress after productive loops; use one
+independent read-only reviewer for focused low-risk behavior changes; when the
+goal produces persistent repository changes, commit only after validation and
+review, and do not push by default. Read-only research, audit, and gatekeeper
+work create no empty commit. Permission gaps are `needs input`, not overall
+`blocked`; native `blocked` is valid only after
+the same condition recurs for three goal turns and all remaining work is
+jointly unable to proceed.
 
-Set the overall goal `blocked` only when the user explicitly defines that rule,
-or when bounded recovery, authorized alternatives, task splitting,
-reprioritization, and all independent work are exhausted and every meaningful
-remaining item still depends on the same logical conflict, safety boundary, or
-verified mandatory external dependency.
-
-#### Loop progress
-
-After every productive execution loop, and when a major milestone review or
-commit spans its own loop, report:
-
-```text
-Progress [██████░░░░] 60% (3/5 gates)
-This loop: <completed work and key evidence>; Remaining: <main open work>.
-Next: <one primary action>.
-```
-
-Calculate percentage from scoped milestones, deliverables, and completion gates,
-not elapsed time or effort. Use a coarse evidence-based value labeled `estimate`
-when the denominator is unstable. Never report `100%` before all applicable
-gates pass. Do not report tool calls, waits, or no-change loops separately.
-Combine review and commit when they occur in the same loop.
-
-Before context compaction, quota wait, or session handoff, persist the current
-gate percentage, completed items, remaining items, latest commit, validation
-evidence, active waits or deferrals, and one next action in `state.md`. After a
-major milestone commit, include the commit and the current completed-item
-summary in the next three-line progress report. Do not rely on the next session
-to reconstruct this from memory.
-
-#### Independent review
-
-- For a focused, low-risk behavior change in fast mode, use 1 independent
-  read-only reviewer by default.
-- For deep-mode or major behavior changes, use exactly 3 independent read-only
-  reviewers at the final major milestone; apply the same rule to intermediate
-  major milestones in deep work.
-- For a large change, all 3 first scan global risk, then focus respectively on
-  correctness/tests, design/boundaries, and security/maintainability.
-- Pure documentation, read-only research, or analysis uses 1 independent
-  reviewer by default; the user may increase the count.
-- A reviewer may be a subagent, isolated session, or equivalent independent
-  review tool. The implementation worker cannot substitute for one.
-- Run at most 3 fix/re-review rounds by default. If review still fails, record
-  and defer affected work, continue independent work, and do not claim the gate.
-- If required reviewers are unavailable, raise an early high-risk warning,
-  finish review-independent work, and remain `needs input`; do not self-review
-  or mark the whole goal `blocked` automatically.
-
-#### Milestone commits
-
-- When a major milestone produces persistent repository changes, create a local
-  commit promptly after applicable validation and review pass. Do not create
-  empty commits for read-only research, analysis, audits, or gatekeeper reviews.
-- Fix high-severity findings, test failures, and unmet gates before committing by
-  default.
-- If current changes are a required baseline for later work, an intermediate
-  checkpoint commit may record the risks and unmet gates. It does not mean review
-  passed or complete those gates.
-- Do not push by default. Pushes, PRs, releases, and deployments require explicit
-  authorization.
-
-#### Learning
-
-At the end of each productive deep-mode loop, briefly summarize disproven
-assumptions, effective recovery, and potentially reusable rules. Write to
-`lessons.md` only when the content is evidence-backed and reusable.
-
-Learning may propose candidates for repository rules, global rules, or Memory,
-but cannot promote them automatically. Changing AGENTS instructions or Memory
-requires separate explicit authorization.
+The core routing gate, scenario guidance, and the detailed long-work reference
+remain authoritative when the final prompt is rendered. Never weaken a required
+gate merely to keep the prompt short.
 
 ### 9. Render the final `/goal`
 
@@ -443,25 +399,27 @@ confirmation.
 ```text
 /goal <concise confirmed and verifiable outcome>.
 
-[Active truth, only when needed:
+[Fast mode active truth, only when needed:
 - <minimum path and responsibility>]
+
+[Deep mode active truth (required):
+- `.goal-task/<task-slug>/state.md` — sole execution contract and recovery
+  entrypoint]
 
 Scope: <included area and material exclusions>.
 
 Constraints:
-- Keep the goal active until all applicable gates pass. After three failed
-  attempts by default, defer one item and continue independent work. Mark
-  permission or authorization gaps `needs input`, not automatically `blocked`.
-- After each productive loop, report a three-line summary with gate-based
-  percentage, this-loop/remaining work, and one primary next action. Report a
-  review or commit that spans its own loop; combine them within one loop.
-- [Independent review: 1 reviewer for a focused low-risk fast-mode change;
-  exactly 3 for deep-mode or major behavior changes; the implementer cannot
-  substitute, and fixes require re-review.]
-- [Persistent repository changes: create a local commit after applicable
-  validation and review pass; do not push by default.]
-- [Deep mode: use the contract in state.md for active truth, review, commits,
-  and learning.]
+- Keep the goal active until all applicable gates pass. Mark permission or
+  authorization gaps `needs input`, not automatically `blocked`.
+- [Fast mode only: after three failed attempts by default, defer one item and
+  continue independent work; after each productive loop report gate-based
+  progress, this-loop/remaining work, and one primary next action; use one
+  independent reviewer for focused low-risk behavior changes; when persistent
+  repository changes exist, commit only after validation and review, and do not
+  push by default; read-only work creates no empty commit.]
+- [Deep mode only: use the contract in `state.md` for initialization,
+  checkpoints, retries, progress, independent review, commits, and learning;
+  keep this prompt to its active-truth entrypoint and completion gates.]
 
 Complete only when all applicable conditions are true:
 1. <observable outcome or artifact>.

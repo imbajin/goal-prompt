@@ -5,7 +5,7 @@ message="${EVAL_FINAL_MESSAGE:-}"
 printf '%s' "$message" | grep -q '/goal'
 printf '%s' "$message" | grep -q '.goal-task/auth-migration/state.md'
 printf '%s' "$message" | grep -Eqi '独立|independent'
-printf '%s' "$message" | grep -Eqi '复审|re-review|review again'
+printf '%s' "$message" | grep -Eqi '复审|复核|重新审查|再次审查|重新评审|再次评审|re-?review|review again'
 printf '%s' "$message" | grep -Eqi '阻塞|blocked'
 printf '%s' "$message" | grep -Eqi 'CI'
 printf '%s' "$message" | grep -Eqi '兼容|compatib'

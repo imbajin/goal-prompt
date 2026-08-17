@@ -76,6 +76,9 @@ is distinct from independent review after implementation.
 - Review the actual final diff and relevant validation evidence.
 - In Stage 1 verify the target revision, available checks, and comments.
 - Report severity, exact location, evidence, and recommendation.
+- In the Stage 1 brief, make these four finding fields explicit as completion
+  evidence even when the repository or revision is unavailable; do not collapse
+  them into a generic “issues” line.
 - Use a small verdict set such as `ready`, `needs work`, or `blocked`.
 - Refresh when the revision changes. If one validation is unavailable, continue
   other review work first.
