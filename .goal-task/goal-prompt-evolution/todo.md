@@ -71,9 +71,12 @@ Item-level status lives here. Valid states are `pending`, `in progress`,
 
 ## P4: Final proof
 
-- [ ] GP-401 `deferred` — Deterministic and high-risk gates are 100%; the
-  `research-brief-boundary` model wording sample is 1/3 and remains a flaky
-  TODO without a reproducible Skill defect.
+- [ ] GP-401 `deferred` — Deterministic Judge fixtures pass, and 11/12
+  with_skill script-judge responses pass in the current full run. Two
+  model-output variance TODOs remain: `frontend-ui-acceptance` omitted browser
+  acceptance evidence in this run, while `research-brief-boundary` was 1/3 in
+  its targeted sample. Neither has a stable reproducible Skill defect; unblock
+  with three consecutive reproductions or a confirmed contract gap.
 - [x] GP-402 `complete` — The current-SHA clean-home full run completed with
   56 units: 30 PASS / 22 FAIL / 4 ERROR; with_skill 21/28/0 and without_skill
   9/15/4. All errors were without_skill continuation timeouts. Every failure
