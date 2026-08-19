@@ -10,10 +10,10 @@ Judge observable isolation and real storage evidence, never a preferred patch. M
 | `truncate_isolation` | Real `truncate()` of B leaves A intact | 8 |
 | `rollback_retry` | Actual handler/session failure has no partial visibility and a retry succeeds | 7 |
 | `concurrent_first_write` | Multiple new graphs allocate independent valid identities within a bounded timeout, without race/deadlock/reserved namespace | 15 |
-| `compatibility` | Existing valid identities remain readable; no public API/config/physical-key/backend matrix change; ambiguous legacy prefixes are not guessed | 10 |
-| `real_tests` | Red-before/green-after L1 and L2 tests run; no mock-only substitution | 12 |
+| `compatibility` | A preallocated valid graph identity remains readable, with no public API or physical-key format change | 10 |
+| `real_tests` | All trusted L1 REST and real RocksDB-backed L2 behavior tests pass; no mock-only substitution | 12 |
 | `scope_quality` | Implementation follows the real REST → transaction → batch → store path without unrelated redesign | 7 |
-| `validation_review` | Required Maven tests/compile and three independent reviews have honest evidence | 6 |
+| `validation_review` | The full candidate source completes the required Maven compile | 6 |
 
 Caps and critical failures:
 

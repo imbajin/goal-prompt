@@ -12,7 +12,8 @@ import sys
 from typing import Any
 
 
-ALLOWED_ENV = ("PATH", "HOME", "DOCKER_HOST", "DOCKER_CONTEXT", "XDG_CONFIG_HOME")
+ALLOWED_ENV = ("PATH", "HOME", "DOCKER_HOST", "DOCKER_CONTEXT", "XDG_CONFIG_HOME",
+               "HG_AB_MODEL_API_KEY", "HG_AB_RUNTIME_PRIVATE_CONFIG")
 
 
 def read_object(path: Path) -> dict[str, Any]:
@@ -38,7 +39,7 @@ def expand_argv(value: Any, replacements: dict[str, str]) -> list[str]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=("prepare", "cleanup"))
+    parser.add_argument("action", choices=("prepare", "reset", "cleanup"))
     parser.add_argument("--spec", required=True)
     parser.add_argument("--case", required=True)
     parser.add_argument("--run-id", required=True)
@@ -50,7 +51,7 @@ def main() -> int:
         spec = read_object(spec_path)
         allowed = {
             "schema_version", "case_id", "service_config_identity",
-            "prepare_argv", "cleanup_argv", "timeout_seconds",
+            "prepare_argv", "reset_argv", "cleanup_argv", "timeout_seconds",
         }
         if set(spec) - allowed:
             raise ValueError("unknown service spec keys")
@@ -64,6 +65,15 @@ def main() -> int:
             raise ValueError("invalid service timeout")
         output = Path(args.output).resolve()
         data_dir = Path(args.data_dir).resolve()
+        real_controller = any(Path(item).name == "service-controller.py"
+                              for key in ("prepare_argv", "reset_argv", "cleanup_argv")
+                              for item in spec.get(key, []) if isinstance(item, str))
+        if real_controller and output.parent.name != "artifacts":
+            raise ValueError("reviewed real services require an execution/artifacts output")
+        if output.parent.name == "artifacts":
+            expected_data = output.parent.parent / "data"
+            if data_dir != expected_data or data_dir.name != "data":
+                raise ValueError("service data-dir must be the current arm execution/data directory")
         data_dir.mkdir(parents=True, exist_ok=True)
         replacements = {
             "case": args.case,

@@ -142,7 +142,7 @@ CASE 3：hugegraph-doc Graphs REST API
 3. 当前 master：只写 server source 可证实的 post-1.7 行为，并明确后续修复边界；不得发明 1.8。
 4. 删除、替换或明确隔离不适用版本的 Cassandra/backend 示例。
 5. 中英文 endpoint、警告、版本范围、示例和状态码语义等价。
-6. 运行 bash dist/validate-links.sh、读取项目实际推荐依赖安装命令后安装、hugo --minify；条件允许时做隔离 API smoke。
+6. 运行 bash dist/validate-links.sh、核验执行环境已提供的预装依赖、hugo --minify；只有依赖缺失且环境允许时才按项目推荐命令安装，条件允许时做隔离 API smoke。
 7. 使用 server source 证明 API 行为；不得只凭 Hugo/link 成功宣称完成。
 
 文档评分 100

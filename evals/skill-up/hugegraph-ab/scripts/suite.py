@@ -145,6 +145,30 @@ def file_digest(path: Path) -> str:
     return digest_bytes(path.read_bytes())
 
 
+def runtime_bundle_digest(root: Path) -> str:
+    selected = [
+        root / "Dockerfile.executor-oracle", root / "codex-executor.sh",
+        root / "model-proxy.py", root / "service-controller.py",
+        root / "trusted",
+    ]
+    digest = hashlib.sha256()
+    files: list[Path] = []
+    for item in selected:
+        if item.is_dir():
+            files.extend(path for path in item.rglob("*") if path.is_file())
+        elif item.is_file():
+            files.append(item)
+        else:
+            fail(f"runtime bundle input is missing: {item}")
+    for path in sorted(files):
+        if path.is_symlink():
+            fail(f"runtime bundle symlink is forbidden: {path}")
+        digest.update(path.relative_to(root).as_posix().encode() + b"\0")
+        digest.update(path.read_bytes())
+        digest.update(b"\0")
+    return digest.hexdigest()
+
+
 def stable_digest(value: Any) -> str:
     return digest_bytes(json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8"))
 
@@ -1189,6 +1213,7 @@ def clear_trusted_scoring(artifacts: Path) -> None:
 
 def validate_service_attestation(path: Path, case_id: str, run_id: str,
                                  data_dir: Path, expected_config_identity: str,
+                                 expected_model: str,
                                  used_networks: set[str]) -> dict[str, Any]:
     value = read_json(path)
     expected = {
@@ -1208,6 +1233,8 @@ def validate_service_attestation(path: Path, case_id: str, run_id: str,
     if network in used_networks:
         fail("service network was reused across anonymous arms")
     used_networks.add(network)
+    if not isinstance(value.get("network_id"), str) or not value["network_id"]:
+        fail("service attestation requires a resolved network identity")
     health = value.get("private_health_urls")
     if not isinstance(health, list) or not health or not all(isinstance(item, str) and item for item in health):
         fail("service attestation requires private health URLs")
@@ -1217,11 +1244,22 @@ def validate_service_attestation(path: Path, case_id: str, run_id: str,
             fail(f"invalid service attestation {name}")
     if not isinstance(value.get("model_policy_identity"), str) or not value["model_policy_identity"]:
         fail("service attestation requires model policy identity")
+    if value.get("allowed_model") != expected_model:
+        fail("service attestation model does not match the fixed A/B model")
+    if (not isinstance(value.get("provider_origin_sha256"), str) or
+            len(value["provider_origin_sha256"]) != 64):
+        fail("service attestation requires a credential-free provider origin identity")
     service_images = value.get("service_image_ids")
     if (not isinstance(service_images, dict) or not service_images
             or not all(isinstance(name, str) and name and isinstance(image, str) and image
                        for name, image in service_images.items())):
         fail("service attestation requires resolved service image identities")
+    service_artifacts = value.get("service_artifact_ids")
+    if (not isinstance(service_artifacts, dict) or
+            set(service_artifacts) != {"controller_sha256", "model_proxy_sha256"} or
+            not all(isinstance(item, str) and len(item) == 64
+                    for item in service_artifacts.values())):
+        fail("service attestation requires controller and proxy artifact identities")
     return value
 
 
@@ -1408,6 +1446,13 @@ def command_execute(args: argparse.Namespace) -> None:
             fail("real execution requires explicit model/reasoning and executor/oracle images")
         if not os.environ.get("HG_AB_MODEL_API_KEY"):
             fail("real execution requires HG_AB_MODEL_API_KEY for the private provider endpoint")
+        runtime_private = os.environ.get("HG_AB_RUNTIME_PRIVATE_CONFIG")
+        if not runtime_private:
+            fail("real execution requires HG_AB_RUNTIME_PRIVATE_CONFIG under .eval-work")
+        runtime_private_path = Path(runtime_private).resolve()
+        if (not runtime_private_path.is_file() or ".eval-work" not in runtime_private_path.parts or
+                stat.S_IMODE(runtime_private_path.stat().st_mode) != 0o600):
+            fail("HG_AB_RUNTIME_PRIVATE_CONFIG must be a mode-0600 file under .eval-work")
     if (args.timeout_seconds < 1 or args.oracle_timeout_seconds < 1
             or args.service_timeout_seconds < 1 or args.max_turns < 1 or args.max_retries < 0):
         fail("execution budgets are invalid")
@@ -1418,11 +1463,14 @@ def command_execute(args: argparse.Namespace) -> None:
     pristine = pair_root / "private" / "pristine" / "source"
     expected_source_digest = str(manifest["source_sha256"])
     service_config_identity = "fake"
+    runtime_bundle_sha256 = "fake"
     if service_spec is not None:
         service_doc = read_json(service_spec)
         service_config_identity = str(service_doc.get("service_config_identity", ""))
-        if service_doc.get("schema_version") != 1 or service_doc.get("case_id") != case_id or not service_config_identity:
+        if (service_doc.get("schema_version") != 1 or service_doc.get("case_id") != case_id or
+                not service_config_identity or not isinstance(service_doc.get("reset_argv"), list)):
             fail("service spec schema/case/identity mismatch")
+        runtime_bundle_sha256 = runtime_bundle_digest(service_spec.parent)
 
     role_order = ROLE_NAMES if args.order == "ab" else tuple(reversed(ROLE_NAMES))
     pids_limit = int(os.environ.get("HG_AB_PIDS_LIMIT", "1024"))
@@ -1436,7 +1484,10 @@ def command_execute(args: argparse.Namespace) -> None:
         "timeout_seconds": args.timeout_seconds,
         "oracle_timeout_seconds": args.oracle_timeout_seconds,
         "service_timeout_seconds": args.service_timeout_seconds,
-        "max_turns": args.max_turns,
+        # Codex exec exposes no supported downstream turn-limit flag.  The
+        # hard execution budget is the recorded wall timeout; do not attest a
+        # turn constraint that the executor cannot enforce.
+        "max_turns": None,
         "max_retries": args.max_retries,
         "isolation_wrapper_sha256": file_digest(wrapper),
         "executor_sha256": file_digest(executor),
@@ -1449,6 +1500,7 @@ def command_execute(args: argparse.Namespace) -> None:
         "network_probe_sha256": file_digest(SCRIPT_DIR / "container-network-probe.py"),
         "service_spec_sha256": file_digest(service_spec) if service_spec is not None else None,
         "service_config_identity": service_config_identity,
+        "runtime_bundle_sha256": runtime_bundle_sha256,
         "executor_image": "fake" if args.fake else args.executor_image,
         "oracle_image": "fake" if args.fake else args.oracle_image,
         "pids_limit": pids_limit,
@@ -1526,7 +1578,6 @@ def command_execute(args: argparse.Namespace) -> None:
             "AB_ISOLATION_ATTESTATION": str(attestation_path),
             "AB_MODEL": execution_policy["model"],
             "AB_REASONING_EFFORT": execution_policy["reasoning_effort"],
-            "AB_MAX_TURNS": str(args.max_turns),
         })
         started = time.monotonic()
         expected_prompt_model = "fake" if args.fake else args.model
@@ -1552,7 +1603,7 @@ def command_execute(args: argparse.Namespace) -> None:
                 service_active = True
                 service_attestation = validate_service_attestation(
                     service_attestation_path, case_id, arm_id, stage / "data",
-                    service_config_identity, used_service_networks,
+                    service_config_identity, str(args.model), used_service_networks,
                 )
             except SuiteError as exc:
                 clear_trusted_scoring(artifacts)
@@ -1584,10 +1635,12 @@ def command_execute(args: argparse.Namespace) -> None:
                 "HG_AB_MODEL_BASE_URL": str(service_attestation["model_base_url"]),
                 "HG_AB_MODEL_POLICY_URL": str(service_attestation["model_policy_url"]),
                 "HG_AB_MODEL_POLICY_IDENTITY": str(service_attestation["model_policy_identity"]),
-                "HG_AB_MODEL_API_KEY": os.environ["HG_AB_MODEL_API_KEY"],
+                "HG_AB_MODEL_API_KEY": f"hg-ab-client-{arm_id}",
                 "HG_AB_PRIVATE_HEALTH_URLS": json.dumps(service_attestation["private_health_urls"]),
                 "HG_AB_SERVICE_CONFIG_IDENTITY": service_config_identity,
                 "HG_AB_SERVICE_ATTESTATION": str(service_attestation_path),
+                "HG_AB_SOURCE_SHA256": expected_source_digest,
+                "HG_AB_RUNTIME_BUNDLE_SHA256": runtime_bundle_sha256,
             })
             env.update({
                 "HG_AB_PIDS_LIMIT": str(pids_limit),
@@ -1688,6 +1741,44 @@ def command_execute(args: argparse.Namespace) -> None:
             })
             failures.append(f"{arm_id}: goal_integrity_error")
             continue
+        if not args.fake:
+            assert service_harness is not None and service_spec is not None
+            reset_attestation_path = artifacts / "oracle-service-attestation.json"
+            try:
+                run_service_action(
+                    service_harness, "reset", service_spec, case_id, arm_id,
+                    stage / "data", reset_attestation_path, args.service_timeout_seconds,
+                )
+                reset_attestation = validate_service_attestation(
+                    reset_attestation_path, case_id, arm_id, stage / "data",
+                    service_config_identity, str(args.model), set(),
+                )
+                if reset_attestation["network"] != service_attestation["network"]:
+                    fail("oracle reset changed the anonymous service network name")
+                for identity_key in (
+                        "model_policy_identity", "allowed_model", "service_image_ids",
+                        "service_artifact_ids", "provider_origin_sha256"):
+                    if reset_attestation.get(identity_key) != service_attestation.get(identity_key):
+                        fail(f"oracle reset changed {identity_key}")
+                attestation["oracle_private_network_id"] = reset_attestation["network_id"]
+                attestation["oracle_service_image_ids"] = reset_attestation["service_image_ids"]
+                attestation["oracle_service_artifact_ids"] = reset_attestation["service_artifact_ids"]
+                service_attestation = reset_attestation
+            except SuiteError as exc:
+                cleanup_error = cleanup_service(
+                    service_harness, service_spec, case_id, arm_id, stage / "data",
+                    service_attestation_path, args.service_timeout_seconds, service_active,
+                )
+                clear_trusted_scoring(artifacts)
+                write_json(artifacts / "run.json", {
+                    "schema_version": 2, "anonymous_run_id": arm_id, "case_id": case_id,
+                    "status": "ENVIRONMENT_ERROR", "failure_kind": "service_reset_error",
+                    "failure": cleanup_error or str(exc), "duration_seconds": duration,
+                    "prompt_metrics": prompt_metrics, "execution_policy": execution_policy,
+                    "isolation_attestation": attestation, "fake": False,
+                })
+                failures.append(f"{arm_id}: service_reset_error")
+                continue
         oracle_env = clean_agent_env()
         oracle_env.update({
             "AB_CASE_ID": case_id,
@@ -1699,6 +1790,8 @@ def command_execute(args: argparse.Namespace) -> None:
             oracle_env.update({
                 "HG_AB_ORACLE_IMAGE": str(args.oracle_image),
                 "HG_AB_PRIVATE_NETWORK": str(service_attestation["network"]),
+                "HG_AB_SOURCE_SHA256": expected_source_digest,
+                "HG_AB_RUNTIME_BUNDLE_SHA256": runtime_bundle_sha256,
             })
             oracle_env.update({
                 "HG_AB_PIDS_LIMIT": str(pids_limit),

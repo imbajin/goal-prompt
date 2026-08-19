@@ -1,0 +1,5 @@
+{
+  "provider_base_url": "https://provider.example.invalid/v1",
+  "model_policy_identity": "reviewed-provider-only-policy",
+  "allowed_model": "fixed-ab-model"
+}

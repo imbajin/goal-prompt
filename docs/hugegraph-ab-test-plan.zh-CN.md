@@ -309,7 +309,8 @@ Server primary evidence：[1.5.0 GraphsAPI](https://github.com/apache/hugegraph/
 
 ```bash
 bash dist/validate-links.sh
-npm install
+# 优先使用执行 fixture 中预装的离线依赖；仅在依赖缺失且环境允许时安装
+test -d node_modules
 hugo --minify
 ```
 

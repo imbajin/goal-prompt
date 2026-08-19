@@ -171,7 +171,7 @@
 2. 核清 1.7.0 auth-enabled 支持路径，以及 non-auth 上下文 creator 取值 NPE 与后续 master 修复的时间边界；不能泛化成所有 1.7 动态建图都坏，也不能把后续修复倒推为已进入 1.7 release。
 3. 删除或隔离不适用于对应版本的 backend 示例；每个版本给出可复制、互不混写的 create/query/delete 流程。
 4. 中英文 endpoint、警告、版本范围、示例和状态码语义等价；不靠逐字翻译掩盖事实差异。
-5. 对照 server source 验证行为。运行 bash dist/validate-links.sh、项目当前推荐的依赖安装命令和 hugo --minify；条件允许时做隔离 API smoke。Hugo/link 通过不能替代 API 证据。
+5. 对照 server source 验证行为。运行 bash dist/validate-links.sh、核验执行环境已提供的预装依赖和 hugo --minify；只有依赖缺失且环境允许时才按项目推荐命令安装。条件允许时做隔离 API smoke。Hugo/link 通过不能替代 API 证据。
 6. 不新增持久 hash、不冻结输出格式、不建立持久对照基准、不接 CI/merge 强制门禁；不提交、不 push。
 
 执行方式

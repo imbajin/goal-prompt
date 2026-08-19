@@ -331,6 +331,7 @@ def main() -> int:
                         "oracle_adapter_sha256", "oracle_isolation_sha256", "service_harness_sha256", "judge_sha256",
                         "trusted_command_oracle_sha256", "network_probe_sha256", "executor_image",
                         "oracle_image", "goal_prompt_sha256", "pids_limit", "memory_limit", "cpu_limit",
+                        "runtime_bundle_sha256",
                     )
                 }
                 global_policy_fingerprints.add(json.dumps({
@@ -354,9 +355,16 @@ def main() -> int:
                         "container_image_id": isolation.get("container_image_id"),
                         "model_policy_identity": isolation.get("model_policy_identity"),
                         "model_base_url": isolation.get("model_base_url"),
+                        "image_source_provenance": isolation.get("image_source_provenance"),
+                        "provider_origin_sha256": isolation.get("provider_origin_sha256"),
                     }, sort_keys=True))
                     case_service_image_fingerprints[str(manifest["case_id"])].add(
-                        json.dumps(isolation.get("service_image_ids"), sort_keys=True)
+                        json.dumps({
+                            "images": isolation.get("service_image_ids"),
+                            "artifacts": isolation.get("service_artifact_ids"),
+                            "oracle_images": isolation.get("oracle_service_image_ids"),
+                            "oracle_artifacts": isolation.get("oracle_service_artifact_ids"),
+                        }, sort_keys=True)
                     )
                     oracle_image_id = isolation.get("oracle_image_id")
                     if isinstance(oracle_image_id, str) and oracle_image_id:

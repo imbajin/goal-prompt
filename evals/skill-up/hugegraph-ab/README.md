@@ -13,7 +13,7 @@ the operator supplies explicit real-run flags.
 - A prompt pair is two independent single-role skill-up runs. The control
   runtime root contains no Skill files; the treatment root contains the local
   `goal-prompt` tree. Their runtime,
-  model, reasoning effort, timeout, maximum turns, source, and evidence are
+  model, reasoning effort, timeout, Prompt-generation maximum turns, source, and evidence are
   identical; only `skills: []` versus the local `goal-prompt` skill differs.
   `--order ab|ba` controls which role runs first.
 - Prompt and execution failures are retained for both anonymous arms. Automatic
@@ -55,6 +55,7 @@ evals/skill-up/hugegraph-ab/
 ├── cases/                 # checked Raw Requests; benchmark disabled
 ├── rubrics/               # observable behavior scoring
 ├── oracles/               # deterministic adapters; real specs run isolated
+├── runtime/               # reviewed Docker, services, proxy, and hidden oracles
 ├── scripts/               # preflight, pairing, isolation, judge, summary
 └── fixtures/fakes/        # deterministic orchestration smoke only
 ```
@@ -160,6 +161,23 @@ model response is a trusted model-failure zero.
 
 ## Real downstream execution and trusted oracle
 
+Build the reviewed executor/oracle images from the exact active preflight
+sources. Keep only `runtime-private.json`, credentials, attestations, and run
+outputs under `.eval-work`; all rebuildable runtime code is checked in:
+
+```bash
+cp "$suite/runtime/runtime-private.example.json" \
+  .eval-work/hugegraph-ab/runtime-private.json
+# Fill the credential-free provider URL, policy identity, and fixed model.
+chmod 0600 .eval-work/hugegraph-ab/runtime-private.json
+export HG_AB_RUNTIME_PRIVATE_CONFIG="$PWD/.eval-work/hugegraph-ab/runtime-private.json"
+HG_AB_PREFLIGHT_ROOT=.eval-work/hugegraph-ab/runs/pilot-20260820/preflight \
+  "$suite/runtime/build-runtime-image.sh"
+```
+
+The local runtime config must not contain provider credentials; the provider
+key is injected only into the trusted arm-local model proxy.
+
 ```text
 executor <generated-goal-file> <writable-workspace> <artifact-dir>
 service harness prepare|cleanup --spec ... --run-id ... --data-dir ...
@@ -173,6 +191,10 @@ environment error; it cannot enter A/B means or unlock unblinding.
 Executor and oracle containers default to `1024` PIDs, `12g` memory, and `8`
 CPUs; an operator override is recorded and must remain identical across the
 cohort.
+The current `codex exec` CLI has no supported downstream maximum-turn flag, so
+downstream execution is bounded by the recorded wall timeout; the suite records
+`max_turns: null` instead of claiming an unenforced turn limit. `--max-turns`
+still applies to the skill-up Prompt-generation stage.
 
 The reviewed service spec has `prepare_argv`, `cleanup_argv`, a stable
 `service_config_identity`, no shell string, and an idempotent `cleanup_argv`
@@ -196,14 +218,14 @@ export HG_AB_MODEL_API_KEY=<private-provider-token>
 
 "$suite/scripts/run-execution-pairs.sh" \
   --pair-root .eval-work/hugegraph-ab/pairs/toolchain-empty-graph-edit/pilot-01 \
-  --executor /absolute/path/to/the-same-executor \
+  --executor "$suite/runtime/codex-executor.sh" \
   --isolation-wrapper "$suite/scripts/container-isolation.sh" \
   --executor-image <reviewed-local-executor-image> \
   --oracle-image <reviewed-local-oracle-image> \
   --service-harness "$suite/scripts/service-harness.py" \
-  --service-spec /absolute/path/to/reviewed-toolchain-services.json \
+  --service-spec "$suite/runtime/toolchain-services.json" \
   --oracle-isolation "$suite/scripts/oracle-isolation.sh" \
-  --oracle-spec /absolute/path/to/reviewed-toolchain-oracle.json \
+  --oracle-spec "$suite/runtime/toolchain-oracle.json" \
   --model <fixed-model> --reasoning-effort <fixed-effort> \
   --timeout-seconds 7200 --oracle-timeout-seconds 7200 \
   --max-turns 60 --max-retries 0 --order ba --run-executors

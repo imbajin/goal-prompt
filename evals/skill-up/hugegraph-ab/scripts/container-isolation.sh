@@ -21,6 +21,8 @@ model_policy_identity="${HG_AB_MODEL_POLICY_IDENTITY:-}"
 model_api_key="${HG_AB_MODEL_API_KEY:-}"
 private_health_urls="${HG_AB_PRIVATE_HEALTH_URLS:-}"
 service_config_identity="${HG_AB_SERVICE_CONFIG_IDENTITY:-}"
+expected_source_sha256="${HG_AB_SOURCE_SHA256:-}"
+expected_runtime_bundle_sha256="${HG_AB_RUNTIME_BUNDLE_SHA256:-}"
 scripts_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 network_probe="$scripts_dir/container-network-probe.py"
 
@@ -32,7 +34,7 @@ network_probe="$scripts_dir/container-network-probe.py"
   echo "model endpoint, policy, identity, and API key are required" >&2
   exit 1
 }
-[[ -n "$private_health_urls" && -n "$service_config_identity" ]] || {
+[[ -n "$private_health_urls" && -n "$service_config_identity" && -n "$expected_source_sha256" && -n "$expected_runtime_bundle_sha256" ]] || {
   echo "private service health URLs and service config identity are required" >&2
   exit 1
 }
@@ -66,9 +68,21 @@ command -v docker >/dev/null 2>&1 || { echo "docker is required" >&2; exit 1; }
 }
 
 image_id="$(docker image inspect --format '{{.Id}}' "$image")"
+image_source_provenance="$(docker image inspect --format '{{index .Config.Labels "org.apache.hugegraph.ab.source-provenance"}}' "$image_id")"
+image_runtime_bundle_sha256="$(docker image inspect --format '{{index .Config.Labels "org.apache.hugegraph.ab.runtime-bundle-sha256"}}' "$image_id")"
+[[ "$image_source_provenance" == *":$expected_source_sha256"* ]] || {
+  echo "executor image is not bound to the current preflight source" >&2
+  exit 1
+}
+[[ "$image_runtime_bundle_sha256" == "$expected_runtime_bundle_sha256" ]] || {
+  echo "executor image runtime bundle is stale" >&2
+  exit 1
+}
 network_id="$(docker network inspect --format '{{.Id}}' "$network")"
 service_attestation_sha256="$(python3 -c 'import hashlib, pathlib, sys; print(hashlib.sha256(pathlib.Path(sys.argv[1]).read_bytes()).hexdigest())' "$service_attestation")"
 service_image_ids="$(python3 -c 'import json, pathlib, sys; value=json.loads(pathlib.Path(sys.argv[1]).read_text()); print(json.dumps(value.get("service_image_ids", {}), sort_keys=True, separators=(",", ":")))' "$service_attestation")"
+service_artifact_ids="$(python3 -c 'import json, pathlib, sys; value=json.loads(pathlib.Path(sys.argv[1]).read_text()); print(json.dumps(value.get("service_artifact_ids", {}), sort_keys=True, separators=(",", ":")))' "$service_attestation")"
+provider_origin_sha256="$(python3 -c 'import json, pathlib, sys; value=json.loads(pathlib.Path(sys.argv[1]).read_text()); print(value.get("provider_origin_sha256", ""))' "$service_attestation")"
 uid="$(id -u)"
 gid="$(id -g)"
 container_goal="/ab/session/generated-goal.txt"
@@ -81,14 +95,30 @@ probe_container="${container_prefix}-probe"
 seed_container="${container_prefix}-seed"
 main_container="${container_prefix}-agent"
 copy_container="${container_prefix}-copy"
-docker volume create "$volume" >/dev/null
+volume_created=0
 cleanup_runtime() {
-  docker rm -f "$probe_container" "$seed_container" "$main_container" "$copy_container" >/dev/null 2>&1 || true
-  docker volume rm "$volume" >/dev/null 2>&1 || true
+  local failed=0 name
+  for name in "$probe_container" "$seed_container" "$main_container" "$copy_container"; do
+    if docker container inspect "$name" >/dev/null 2>&1; then
+      docker rm -f "$name" >/dev/null 2>&1 || failed=1
+    fi
+  done
+  if ((volume_created == 1)) && docker volume inspect "$volume" >/dev/null 2>&1; then
+    docker volume rm "$volume" >/dev/null 2>&1 || failed=1
+  fi
+  return "$failed"
 }
-trap cleanup_runtime EXIT
+finish_runtime() {
+  local status=$?
+  trap - EXIT
+  cleanup_runtime || status=125
+  exit "$status"
+}
+trap finish_runtime EXIT
 trap 'exit 143' TERM
 trap 'exit 130' INT
+docker volume create "$volume" >/dev/null
+volume_created=1
 
 # Probe from the exact internal network before any model task runs.
 docker run --rm \
@@ -102,7 +132,7 @@ docker run --rm \
   --env HTTP_PROXY= --env HTTPS_PROXY= --env ALL_PROXY= --env NO_PROXY='*' \
   --env http_proxy= --env https_proxy= --env all_proxy= --env no_proxy='*' \
   --env OPENAI_API_KEY="$model_api_key" \
-  "$image" python3 /probe/network.py \
+  "$image_id" python3 /probe/network.py \
     --model-base-url "$model_base_url" \
     --policy-url "$model_policy_url" \
     --policy-identity "$model_policy_identity" \
@@ -115,7 +145,7 @@ docker run --rm \
   --entrypoint /bin/sh \
   --mount "type=volume,src=$volume,dst=/work" \
   --mount "type=bind,src=$workspace,dst=/seed,readonly" \
-  "$image" -c 'cp -a /seed/. /work/ && chown -R "$1:$2" /work' sh "$uid" "$gid"
+  "$image_id" -c 'cp -a /seed/. /work/ && chown -R "$1:$2" /work' sh "$uid" "$gid"
 
 mounts=(
   --mount "type=bind,src=$stage/home,dst=/ab/home"
@@ -127,11 +157,16 @@ mounts=(
   --mount "type=bind,src=$workspace/version-evidence,dst=$container_workspace/version-evidence,readonly"
   --mount "type=bind,src=$executor,dst=/runner/executor,readonly"
 )
+network_aliases=()
+if [[ "${AB_CASE_ID:-}" == "server-hstore-graph-isolation" ]]; then
+  network_aliases=(--network-alias store --network-alias hugegraph)
+fi
 
 set +e
 docker run --rm \
   --name "$main_container" \
   --network "$network" \
+  "${network_aliases[@]}" \
   --read-only \
   --tmpfs /tmp:rw,nosuid,nodev,size=2g \
   --cap-drop ALL \
@@ -149,12 +184,15 @@ docker run --rm \
   --env AB_CASE_ID="${AB_CASE_ID:-}" \
   --env AB_MODEL="${AB_MODEL:-}" \
   --env AB_REASONING_EFFORT="${AB_REASONING_EFFORT:-}" \
-  --env AB_MAX_TURNS="${AB_MAX_TURNS:-}" \
+  --env HG_AB_HUGEGRAPH_URL=http://hugegraph:8080 \
+  --env HG_AB_HUGEGRAPH_USER=admin \
+  --env HG_AB_HUGEGRAPH_PASSWORD=hg-ab-isolated-admin \
+  --env HG_AB_PD_URL=http://pd:8620 \
   --env HTTP_PROXY= --env HTTPS_PROXY= --env ALL_PROXY= --env NO_PROXY='*' \
   --env http_proxy= --env https_proxy= --env all_proxy= --env no_proxy='*' \
   --env OPENAI_BASE_URL="$model_base_url" \
   --env OPENAI_API_KEY="$model_api_key" \
-  "$image" \
+  "$image_id" \
   /runner/executor "$container_goal" "$container_workspace" "$container_artifacts"
 status=$?
 set -e
@@ -167,7 +205,7 @@ if ! docker run --rm \
   --entrypoint /bin/sh \
   --mount "type=volume,src=$volume,dst=/work,readonly" \
   --mount "type=bind,src=$workspace,dst=/host" \
-  "$image" -c 'find /host -mindepth 1 -maxdepth 1 ! -name version-evidence -exec rm -rf {} + && find /work -mindepth 1 -maxdepth 1 ! -name version-evidence -exec cp -a {} /host/ \;'
+  "$image_id" -c 'find /host -mindepth 1 -maxdepth 1 ! -name version-evidence -exec rm -rf {} + && find /work -mindepth 1 -maxdepth 1 ! -name version-evidence -exec cp -a {} /host/ \;'
 then
   echo "failed to copy isolated workspace back to host" >&2
   copy_failed=1
@@ -184,7 +222,8 @@ fi
 python3 -c '
 import json, pathlib, sys
 (output, image_id, network_id, service_sha, policy_identity,
- config_identity, model_base_url, status, wrapper_failure_kind, service_images) = sys.argv[1:]
+ config_identity, model_base_url, source_provenance, status,
+ wrapper_failure_kind, service_images, service_artifacts, provider_origin) = sys.argv[1:]
 pathlib.Path(output).write_text(json.dumps({
     "schema_version": 2,
     "runtime": "docker_internal_network",
@@ -203,10 +242,13 @@ pathlib.Path(output).write_text(json.dumps({
     "model_policy_identity": policy_identity,
     "model_base_url": model_base_url,
     "service_config_identity": config_identity,
+    "image_source_provenance": source_provenance,
     "service_image_ids": json.loads(service_images),
+    "service_artifact_ids": json.loads(service_artifacts),
+    "provider_origin_sha256": provider_origin,
     "executor_exit_code": int(status),
     "wrapper_failure_kind": wrapper_failure_kind or None,
 }, indent=2) + "\n", encoding="utf-8")
-' "$attestation" "$image_id" "$network_id" "$service_attestation_sha256" "$model_policy_identity" "$service_config_identity" "$model_base_url" "$status" "$wrapper_failure_kind" "$service_image_ids"
+' "$attestation" "$image_id" "$network_id" "$service_attestation_sha256" "$model_policy_identity" "$service_config_identity" "$model_base_url" "$image_source_provenance" "$status" "$wrapper_failure_kind" "$service_image_ids" "$service_artifact_ids" "$provider_origin_sha256"
 
 exit "$status"

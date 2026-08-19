@@ -78,6 +78,167 @@ def main() -> int:
     args = parser.parse_args()
     root = Path(args.root).resolve()
     suite = load_suite_module()
+    oracle_spec = importlib.util.spec_from_file_location(
+        "hugegraph_ab_runtime_oracle_test",
+        SUITE_DIR / "runtime" / "trusted" / "oracle-driver.py",
+    )
+    assert oracle_spec and oracle_spec.loader
+    runtime_oracle = importlib.util.module_from_spec(oracle_spec)
+    oracle_spec.loader.exec_module(runtime_oracle)
+    for statement in (
+        "1.8.0 has not been officially released",
+        "1.8.0 hasn't been officially released",
+        "1.8.0 尚未有正式发布版本",
+        "1.8 不是正式发布版本",
+    ):
+        assert not runtime_oracle.affirmatively_claims_released_18(statement)
+    assert not runtime_oracle.affirmatively_claims_release(
+        "1.5.0 isn't officially released", "1.5.0",
+    )
+    assert not runtime_oracle.affirmatively_claims_release(
+        "There is no official 1.5.0 release", "1.5.0",
+    )
+    assert not runtime_oracle.affirmatively_claims_release(
+        "1.5.0 was never released", "1.5.0",
+    )
+    assert runtime_oracle.affirmatively_claims_release(
+        "1.5.0 is an official release", "1.5.0",
+    )
+    assert runtime_oracle.named_validation_overclaim(
+        "docs-graphs-api-version-truth",
+        "Hugo build、链接检查与 API smoke 均已通过",
+        {"site_quality": False, "api_behavior": False},
+    )
+    heading_contract = runtime_oracle.version_matrix_contract("""
+## 1.5.0
+GET /graphs/{graph}
+Expected status: 200
+POST /graphs/{graph}
+Content-Type: text/plain; properties; backend=rocksdb; serializer=binary
+Expected status: 200
+DELETE /graphs/{graph}?confirm_message=I'm sure
+Expected status: 204
+## 1.7.0
+GET /graphspaces/{graphspace}/graphs/{graph}; Expected status: 200
+POST /graphspaces/{graphspace}/graphs/{graph}; application/json; Authorization: Bearer; gremlin.graph=HugeFactoryAuthProxy; backend=rocksdb,hstore; serializer=binary; store=demo; Expected status: 201
+Auth-enabled required; non-auth creator NPE.
+DELETE /graphspaces/{graphspace}/graphs/{graph}?confirm_message=I'm sure; Expected status: 204
+## master post-1.7
+GET /graphspaces/{graphspace}/graphs/{graph}; Expected status: 200
+POST /graphspaces/{graphspace}/graphs/{graph}; application/json; Authorization: Bearer; gremlin.graph=HugeFactoryAuthProxy; backend=rocksdb,hstore; serializer=binary; store=demo; Expected status: 201
+Non-auth creator anonymous fix, not included in 1.7.
+DELETE /graphspaces/{graphspace}/graphs/{graph}?confirm_message=I'm sure; Expected status: 204
+    """)
+    assert all(all(values) for values in heading_contract.values())
+    split_backend_contract = runtime_oracle.version_matrix_contract("""
+## 1.5.0
+GET /graphs/{graph} 200
+POST /graphs/{graph} text/plain properties backend=rocksdb serializer=binary 200
+DELETE /graphs/{graph}?confirm_message=yes 204
+## 1.7.0 reference
+GET /graphspaces/{graphspace}/graphs/{graph} 200
+POST /graphspaces/{graphspace}/graphs/{graph} application/json Authorization Bearer gremlin.graph=HugeFactoryAuthProxy backend=rocksdb serializer=binary store=a 201
+POST /graphspaces/{graphspace}/graphs/{graph} application/json Authorization Bearer gremlin.graph=HugeFactoryAuthProxy backend=hstore serializer=binary store=b 201
+auth-enabled supported; non-auth creator NPE
+DELETE /graphspaces/{graphspace}/graphs/{graph}?confirm_message=yes 204
+## 1.7.0 examples
+The two backend examples above are independently copyable.
+## master post-1.7
+GET /graphspaces/{graphspace}/graphs/{graph} 200
+POST /graphspaces/{graphspace}/graphs/{graph} application/json Authorization Bearer gremlin.graph=HugeFactoryAuthProxy backend=rocksdb serializer=binary store=a 201
+POST /graphspaces/{graphspace}/graphs/{graph} application/json Authorization Bearer gremlin.graph=HugeFactoryAuthProxy backend=hstore serializer=binary store=b 201
+non-auth creator anonymous fix not included in 1.7
+DELETE /graphspaces/{graphspace}/graphs/{graph}?confirm_message=yes 204
+""")
+    assert all(all(values) for values in split_backend_contract.values())
+    assert runtime_oracle.claims_fix_in_17("The creator fix was already in 1.7.0")
+    assert runtime_oracle.claims_fix_in_17("The non-auth creator NPE was resolved in 1.7.0")
+    assert runtime_oracle.claims_fix_in_17("1.7.0 已解决非鉴权 creator NPE")
+    assert not runtime_oracle.claims_fix_in_17("The creator fix was not included in 1.7.0")
+    assert not runtime_oracle.claims_fix_in_17("The creator fix isn't in 1.7.0")
+    assert not runtime_oracle.claims_fix_in_17("1.7.0 不包含该修复")
+    assert not runtime_oracle.claims_fix_in_17("No creator fix exists in 1.7.0")
+    assert not runtime_oracle.claims_fix_in_17("The creator fix never landed in 1.7.0")
+    assert not runtime_oracle.claims_fix_in_17("The creator fix is absent in 1.7.0")
+    assert runtime_oracle.claims_fix_in_17("1.7.0 ships with the creator repair")
+    wrong_status = runtime_oracle.version_matrix_contract("""
+## 1.5.0
+GET /graphs/{graph}; Expected status: 204
+POST /graphs/{graph}; text/plain; properties; backend=rocksdb; serializer=binary; Expected status: 200
+DELETE /graphs/{graph}?confirm_message=I'm sure; Expected status: 204
+## 1.7.0
+GET /graphspaces/{graphspace}/graphs/{graph}; Expected status: 200
+POST /graphspaces/{graphspace}/graphs/{graph}; application/json; Authorization: Bearer; gremlin.graph=HugeFactoryAuthProxy; backend=rocksdb,hstore; serializer=binary; store=demo; Expected status: 201
+Auth-enabled required; non-auth creator NPE.
+DELETE /graphspaces/{graphspace}/graphs/{graph}?confirm_message=I'm sure; Expected status: 204
+## master post-1.7
+GET /graphspaces/{graphspace}/graphs/{graph}; Expected status: 200
+POST /graphspaces/{graphspace}/graphs/{graph}; application/json; Authorization: Bearer; gremlin.graph=HugeFactoryAuthProxy; backend=rocksdb,hstore; serializer=binary; store=demo; Expected status: 201
+Non-auth creator anonymous fix, not included in 1.7.
+DELETE /graphspaces/{graphspace}/graphs/{graph}?confirm_message=I'm sure; Expected status: 204
+""")
+    assert not all(wrong_status["1.5"])
+    snapshot_root = root / "oracle-snapshot"
+    snapshot_root.mkdir()
+    (snapshot_root / "existing.txt").write_text("before", encoding="utf-8")
+    before_snapshot = runtime_oracle.source_snapshot([snapshot_root])
+    (snapshot_root / "new-source.js").write_text("export default true", encoding="utf-8")
+    assert not runtime_oracle.source_snapshot_unchanged(
+        before_snapshot, runtime_oracle.source_snapshot([snapshot_root]),
+    )
+    (snapshot_root / "new-source.js").unlink()
+    dist = snapshot_root / "hugegraph-store/apache-hugegraph-store-incubating-1.7.0"
+    dist.mkdir(parents=True)
+    (dist / "generated.txt").write_text("before", encoding="utf-8")
+    dist_before = runtime_oracle.source_snapshot([snapshot_root])
+    (dist / "generated.txt").write_text("after", encoding="utf-8")
+    assert runtime_oracle.source_snapshot_unchanged(
+        dist_before, runtime_oracle.source_snapshot([snapshot_root]),
+    )
+    hubble_root = snapshot_root / "hugegraph-hubble"
+    hubble_root.mkdir()
+    hubble_before = runtime_oracle.source_snapshot([snapshot_root])
+    (hubble_root / "apache-hugegraph-hubble-incubating-1.7.0.tar.gz").write_bytes(b"generated")
+    (hubble_root / "apache-hugegraph-hubble-incubating-1.7.0").mkdir()
+    (hubble_root / "apache-hugegraph-hubble-incubating-1.7.0/conf").mkdir()
+    (hubble_root / "apache-hugegraph-hubble-incubating-1.7.0/conf/runtime.properties").write_text(
+        "generated", encoding="utf-8")
+    copied_hubble = hubble_root / "hubble-dist/apache-hugegraph-hubble-incubating-1.7.0"
+    copied_hubble.mkdir(parents=True)
+    (copied_hubble / "generated.txt").write_text("generated", encoding="utf-8")
+    assert runtime_oracle.source_snapshot_unchanged(
+        hubble_before, runtime_oracle.source_snapshot([snapshot_root]),
+    )
+    resources = snapshot_root / "module/src/main/resources"
+    resources.mkdir(parents=True)
+    (resources / "version.properties").write_text("1.7.0", encoding="utf-8")
+    resources_before = runtime_oracle.source_snapshot([snapshot_root])
+    (resources / "version.properties").write_text("1.8.0", encoding="utf-8")
+    assert not runtime_oracle.source_snapshot_unchanged(
+        resources_before, runtime_oracle.source_snapshot([snapshot_root]),
+    )
+    hidden_build = snapshot_root / "module/src/feature/build/runtime-fix.ts"
+    hidden_build.parent.mkdir(parents=True)
+    hidden_build.write_text("export default true", encoding="utf-8")
+    assert str(hidden_build.absolute()) in runtime_oracle.source_snapshot([snapshot_root])
+    hidden_modules = snapshot_root / "src/node_modules/runtime-fix.js"
+    hidden_modules.parent.mkdir(parents=True)
+    hidden_modules.write_text("export default true", encoding="utf-8")
+    hidden_archive = snapshot_root / "src/runtime-fix.zip"
+    hidden_archive.write_bytes(b"not generated")
+    hidden_dist = snapshot_root / "src/apache-x-hubble-v1.2.3/runtime-fix.js"
+    hidden_dist.parent.mkdir(parents=True)
+    hidden_dist.write_text("export default true", encoding="utf-8")
+    tightened = runtime_oracle.source_snapshot([snapshot_root])
+    assert str(hidden_modules.absolute()) in tightened
+    assert str(hidden_archive.absolute()) in tightened
+    assert str(hidden_dist.absolute()) in tightened
+    assert runtime_oracle.hidden_cross_graph_leak({
+        "testPutIsolation": "HG_AB_CROSS_GRAPH_LEAK: visible in B",
+    })
+    assert not runtime_oracle.hidden_cross_graph_leak({
+        "testPutIsolation": "AssertionError: expected value was missing",
+    })
     interrupted_child_pid = root / "interrupted-child.pid"
     interrupter = threading.Timer(0.5, os.kill, args=(os.getpid(), signal.SIGINT))
     interrupter.start()
@@ -475,11 +636,18 @@ if action == "prepare":
         "data_root": str(pathlib.Path(data_dir).resolve()),
         "service_config_identity": identity,
         "network": "network-" + run_id,
+        "network_id": "sha256:fake-service-network",
         "private_health_urls": ["http://hugegraph:8080/health"],
         "model_base_url": "http://model:9000/v1",
         "model_policy_url": "http://model:9000/policy",
         "model_policy_identity": "provider-only-policy-v1",
+        "allowed_model": "fake",
+        "provider_origin_sha256": "c" * 64,
         "service_image_ids": {"hugegraph": "sha256:hugegraph-test", "model": "sha256:model-test"},
+        "service_artifact_ids": {
+            "controller_sha256": "a" * 64,
+            "model_proxy_sha256": "b" * 64,
+        },
     }))
 else:
     pathlib.Path(output + ".cleaned").write_text("cleaned")
@@ -493,6 +661,10 @@ else:
         "case_id": "toolchain-empty-graph-edit",
         "service_config_identity": "fake-service-v1",
         "prepare_argv": [
+            sys.executable, str(service_helper), "prepare", "{case}", "{run_id}",
+            "{data_dir}", "{output}", "{service_config_identity}",
+        ],
+        "reset_argv": [
             sys.executable, str(service_helper), "prepare", "{case}", "{run_id}",
             "{data_dir}", "{output}", "{service_config_identity}",
         ],
@@ -514,12 +686,12 @@ else:
     used_networks: set[str] = set()
     suite.validate_service_attestation(
         service_output, "toolchain-empty-graph-edit", "arm-123456789abc",
-        service_data, "fake-service-v1", used_networks,
+        service_data, "fake-service-v1", "fake", used_networks,
     )
     try:
         suite.validate_service_attestation(
             service_output, "toolchain-empty-graph-edit", "arm-123456789abc",
-            service_data, "fake-service-v1", used_networks,
+            service_data, "fake-service-v1", "fake", used_networks,
         )
     except suite.SuiteError as exc:
         assert "reused" in str(exc)

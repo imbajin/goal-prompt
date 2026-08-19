@@ -50,7 +50,7 @@ def expand_argv(value: Any, replacements: dict[str, str]) -> list[str]:
 
 def run_probe(name: str, config: Any, replacements: dict[str, str], default_timeout: int,
               probe_uid: int, probe_gid: int) -> tuple[bool, dict[str, Any]]:
-    if not isinstance(config, dict) or set(config) - {"argv", "timeout_seconds"}:
+    if not isinstance(config, dict) or set(config) - {"argv", "timeout_seconds", "trusted_controller"}:
         raise ValueError(f"invalid oracle probe config: {name}")
     timeout = int(config.get("timeout_seconds", default_timeout))
     if timeout < 1 or timeout > 14400:
@@ -60,14 +60,20 @@ def run_probe(name: str, config: Any, replacements: dict[str, str], default_time
         os.setgid(probe_gid)
         os.setuid(probe_uid)
 
+    trusted_controller = (config.get("trusted_controller") is True or
+                          argv[0] == "/opt/hg-ab/oracle-driver.py")
+    if trusted_controller and argv[0] != "/opt/hg-ab/oracle-driver.py":
+        raise ValueError("trusted_controller is restricted to the reviewed oracle driver")
     process = subprocess.Popen(
         argv,
         cwd=replacements["workspace"],
-        env={"PATH": os.environ.get("PATH", "/usr/local/bin:/usr/bin:/bin"), "HOME": "/tmp", "TMPDIR": "/tmp"},
+        env={"PATH": os.environ.get("PATH", "/usr/local/bin:/usr/bin:/bin"),
+             "HOME": "/tmp", "TMPDIR": "/tmp",
+             "HG_AB_PROBE_UID": str(probe_uid), "HG_AB_PROBE_GID": str(probe_gid)},
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         start_new_session=True,
-        preexec_fn=drop_probe_privileges,
+        preexec_fn=None if trusted_controller else drop_probe_privileges,
     )
     try:
         stdout, stderr = process.communicate(timeout=timeout)

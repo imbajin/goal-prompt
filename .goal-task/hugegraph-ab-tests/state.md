@@ -25,9 +25,9 @@ Do not create `goal.md`, `todo.md`, or `design.md` that duplicates these files.
 | Select representative cases | complete | Frontend #486, backend #3095, docs Graphs API version truth |
 | Define A/B protocol and rubrics | complete | Detailed plan and prompts documents |
 | Independent documentation review | complete | One read-only reviewer found 3 P1 and 2 P2 issues in the detailed documents; all were closed, and the same reviewer then approved the consolidated single Goal with no findings |
-| Implement suite | complete | Three cases/rubrics, bound preflight/fixtures, independent Prompt arms, per-arm service/network/data isolation, Agent/trusted artifact separation, container-isolated command oracle, critical-aware judges, preregistered cohort summary, and deterministic fakes exist; all round-1/2/3 findings were closed |
-| Deterministic validation | complete for current diff | Fake two-stage smoke, prompt/error retention, evidence/score binding, sealed Pilot/Formal schedules, failure classification, version-drift/source-evidence, FIFO secret delivery, interrupt/process-group/service cleanup, judge and existing regression checks pass |
-| Real Pilot | not started | No model A/B has been run |
+| Implement suite | complete | Three cases/rubrics, bound preflight/fixtures, independent Prompt arms, tracked rebuildable runtime, per-arm service/network/data isolation, Agent/trusted artifact separation, container-isolated behavior oracles, critical-aware judges, preregistered cohort summary, and deterministic fakes exist; exactly three final reviewers report no unresolved P0/P1 on the frozen diff |
+| Deterministic validation | complete for current diff | Fake two-stage smoke, prompt/error retention, evidence/score binding, sealed Pilot/Formal schedules, failure classification, version-drift/source-evidence, FIFO secret delivery, interrupt/process-group/service cleanup, judge and existing regression checks pass at `self-test-32984` |
+| Real Pilot | needs input after infrastructure preflight | Three online active/no-drift preflights completed and the 3-pair Pilot cohort is sealed; full deterministic validation passes, but no model A/B arm has run yet |
 | Formal 3-pair experiment | not started | No results exist |
 
 ## Verified version facts
@@ -103,18 +103,27 @@ All `master` claims require a fresh preflight. Published refs use their names. D
 | Network research | Canonical releases, issues, draft/merged PRs, source files, and docs pages were checked on 2026-08-19 |
 | Upstream writes | none |
 | Model A/B calls | none |
-| Local delivery | scoped suite/docs commit created on the current branch; no push or MR |
-| Independent suite review, rounds 1–3 | complete; the same three read-only reviewers closed all isolation, runtime, evidence-binding, cohort, failure-classification, source-fact, cleanup, and documentation findings; final mtime has no unresolved P0/P1/P2 |
+| Pilot preflight | Three fresh canonical checkouts; Toolchain master, Server 1.7.0, and Docs master all classified `active`, `online`, and no version drift. A transient matching-Server partial-clone blob failure was recovered by fetching commit-addressed raw blobs and verifying their Git object IDs |
+| Pilot cohort | `pilot-20260820-live-01` is sealed with three pairs; Prompt and execution first-role schedules are independently 2/1 balanced |
+| Runtime capability | Java, Maven, Node/npm/pnpm, Codex, and repository-pinned skill-up 0.7.0 are present. Official HugeGraph 1.7 PD and Store images downloaded; the Server pull then left Docker Desktop returning `EOF`, so real service inspection/probes are not yet valid |
+| Local delivery | Earlier scoped suite/docs commit `93e7c61` exists; the current validated runtime hardening is delivered as a separate local milestone commit on this branch; no push or MR |
+| Independent suite review, final round | Exactly three read-only reviewers independently checked Backend, Toolchain/runtime, and Docs. All report no unresolved P0/P1 on the same frozen diff. One non-blocking P2 remains: targeted Jest's own summary is candidate-produced; real browser behavior is scored independently by the trusted Playwright path |
 | New suite validate | `.eval-work/tools/skill-up-bin/skill-up validate evals/skill-up/hugegraph-ab/eval.yaml` loaded exactly 3 cases |
 | Paired dry-run | Wrapper reported all 3 cases and checked config mode without invoking an Agent; pair-specific materialization is repeatable after a read-only fixture dry-run |
+| Current deterministic rerun | `HG_AB_SKILL_UP="$PWD/.eval-work/tools/skill-up-bin/skill-up" bash evals/skill-up/hugegraph-ab/scripts/test-suite.sh` completed at `.eval-work/hugegraph-ab/self-test-32984` with `hugegraph-ab deterministic suite: PASS`; no model was invoked |
 | Fake two-stage smoke | Current smoke passes and covers byte-identical Raw Requests, same-source/evidence copies, forged Agent score isolation, behavior-evidence binding, partial Prompt ERROR retention, model-failure zero score, blinded environment diagnostics, critical score zeroing, aggregate suppression, exact sealed Pilot/Formal schedules, per-pair snapshots, service network reuse rejection, FIFO secret non-persistence, SIGINT/SIGTERM process-group cleanup including a TERM-ignoring grandchild, cleanup failure sidecars, unexpected 1.8 drift, Toolchain `index.js` markers, and Docs auth fallback evidence |
 | Real isolation contract | Real path now requires a reviewed per-arm service spec, unique internal network/data root, actual HTTP/TCP policy/health/CONNECT probe, checked executor/oracle images, Agent-only artifact mount, isolated oracle container and terminal cleanup. No real service/model was run in this suite-only Goal; Pilot must exercise the final contract before producing results |
 | Existing regression | Existing deterministic judges and the existing 20-case `evals/skill-up/eval.yaml` validation pass |
 
 ## Blockers
 
-The suite implementation has no current blocker. A future real Prompt run requires a reviewed OpenSandbox template, model base/policy endpoint and host-only runtime attestation. A future downstream run requires reviewed executor/oracle images, per-case service/oracle specs, canonical upstream checkouts, local HugeGraph/browser/HStore/Hugo dependencies, active online preflight, and private model credentials/quota. These are Pilot dependencies, not reasons to run models during this suite-only Goal.
+The active Pilot cannot start Prompt arms until a reviewed OpenSandbox control-plane URL/template/attestation and `HG_AB_OPENSANDBOX_API_KEY` plus `HG_AB_PROMPT_MODEL_API_KEY` are available. Downstream arms also require `HG_AB_MODEL_API_KEY`. A 2026-08-20 recheck found all three variables absent. Docker Desktop still returns `EOF` for `docker version --format '{{.Server.Version}}'`. Restarting Docker may stop unrelated user containers, so it needs explicit user authorization after the user checks that impact. The real executor/oracle images, service chain, behavior oracles, and isolation probes remain dynamically unverified until those external runtime conditions are restored.
 
 ## Next action
 
-Suite-ready implementation and its scoped local commit are complete without push/MR. Do not start the consolidated Goal, real Pilot, or Formal experiment unless the user explicitly requests execution in a later task.
+After the user supplies the reviewed OpenSandbox URL/template/attestation plus the three private credential variables and authorizes a Docker Desktop restart (or restores Docker independently), build and verify the real runtime images and isolation probes. Run all six Prompt arms and all six downstream Pilot arms without selective retry. Enter Formal only after the Pilot is healthy.
+
+## Progress accounting
+
+- Suite implementation milestone: 100%. Research, task selection, one-Goal entrypoint, implementation, deterministic validation, online preflight, sealed Pilot schedule, and three-reviewer P0/P1 closure are complete.
+- Overall experiment: 45%. This percentage weights research/design/suite/preflight as 45%, real Pilot as 25%, Formal as 20%, and final analysis/report as 10%. The next mainline task is the real Pilot; no Prompt or downstream model arm has run yet.
