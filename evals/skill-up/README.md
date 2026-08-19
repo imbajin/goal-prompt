@@ -46,12 +46,38 @@ work.
 Generating `/goal` proves only the Prompt layer. End-to-end task completion
 requires a separate execution evaluation.
 
+## Deterministic execution-contract checks
+
+The cases for long-running, parallel, and UI work use self-contained structural
+judge scripts with the same contract. The reusable
+`fixtures/scripts/check-goal-contract.py` checker is also available for local
+checks and generated-document directories. It is deliberately a structural
+gate: it fails when the generated goal does not explicitly name the required
+contract, and it does not claim that the named work was actually executed.
+
+```bash
+EVAL_FINAL_MESSAGE="$(cat generated-goal.md)" \
+  evals/skill-up/fixtures/scripts/check-goal-contract.py --profile long
+
+evals/skill-up/fixtures/scripts/check-goal-contract.py \
+  --profile long --root .goal-task/example
+```
+
+`long` requires a visible progress bar/percentage, milestone commit, current
+completed-item summary, compaction or handoff checkpoint in `state.md`, and
+remaining/next work. `parallel` requires lane ownership, a single owner for
+shared schema or lockfile, integration re-run, and an independent reviewer.
+`ui` requires Chrome `browser_use`, real success/failure interaction, browser
+evidence, separate UI/UX and accessibility checks, and an explicit statement
+that static checks do not replace browser acceptance. The fixture tests include
+both passing and intentionally incomplete Markdown documents.
+
 ## Evaluation summary
 
-本轮把评测分成两层。24 个既有 case 用同一批输入分别运行
-with_skill 和 without_skill，记录在
-`.eval-work/21ee37aa1de9e4a9b127deb0d6710505193b57ea/full-1786911163/iteration-1/result.json`。
-这是修改前的可落盘基线，作用是保留完整对照，不把一次波动误报成改进。
+本轮把评测分成两层。24 个既有 case 加 4 个新增 case，共 28 个 case；既有
+case 用同一批输入分别运行 with_skill 和 without_skill，结果保存在本地运行证据中，
+这些证据不随仓库提交。这是修改前的可落盘基线，作用是保留完整对照，不把一次波动
+误报成改进。
 
 | Case | with_skill | without_skill |
 | --- | --- | --- |
@@ -103,6 +129,6 @@ without_skill 3 个 ERROR。FAIL 里既有真实行为缺口，也有判定脚�
 判定器还补充了等价表达，例如“可继续”“不依赖”“独立推进”和
 “不应作为默认门槛”。这些变化不改变 case 的目标，只避免把同一语义的中文表达误判为失败。
 
-24 个 case 的最新全量重跑曾受到 skill-up/Codex 运行器错误影响，日志出现
+24 个历史 case 的最新全量重跑曾受到 skill-up/Codex 运行器错误影响，日志出现
 `invalid value ... expected i32` 以及 rollout thread flush 失败，未生成可信的完整 result.json。
 因此 README 保留上面的落盘基线，并单独报告新增回归结果，不用不完整日志冒充新的 24-case 总分。
