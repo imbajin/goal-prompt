@@ -3,9 +3,9 @@ title: Gatekeeper 审查保持只读并给出有限判定
 description: 验证发布审查围绕权威基线、实际 diff、检查证据和明确 verdict。
 input:
   prompt: |
-    请创建一个 /goal，用来只读审查当前分支是否达到发布条件。
-    以 RELEASE.md 为权威标准，检查最终 diff 和现有 CI 证据；
-    verdict 只能是 ready、needs work、blocked。不要修复、推送或合并。
+    请帮我写一个 /goal，只读检查当前分支能不能发布。
+    以 RELEASE.md 为准，核对最终 diff 和现有 CI 结果。
+    结论只能是 ready、needs work 或 blocked。不要修改文件，也不要 push、merge 或 rebase。
 expect:
   exit_code: 0
 judge:

@@ -3,11 +3,11 @@ title: 长任务必须显式保存 compaction 进度
 description: 验证最终目标和 state.md 契约不会遗漏进度、里程碑提交和当前完成事项摘要。
 input:
   prompt: |
-    你已经调查并给出简报。我明确确认深度模式：
-    分阶段迁移 payments、orders、reports，使用 .goal-task/reporting/state.md；
-    请生成最终 /goal。执行期间每个 productive loop 必须报告进度条、This loop、
-    Remaining、Next；每个重大里程碑验证后要做本地 commit 并报告 commit 与当前完成事项；
-    在 compaction、配额等待或交接前必须把完成项、剩余项、最新 commit、验证证据和下一步写入 state.md。
+    你已经调查过并给了我 brief，我确认使用深度模式。
+    请分阶段迁移 payments、orders、reports，并用 .goal-task/reporting/state.md 保存执行状态。
+    请生成最终 /goal。执行时每轮工作都要报告进度条、This loop、Remaining 和 Next。
+    每个重要里程碑验证通过后创建本地 commit，并在下一次报告里写清 commit 和本轮完成内容。
+    在 compaction、配额等待或交接前，把完成项、剩余项、最新 commit、验证证据和下一步写进 state.md。
 expect:
   must_contain: ["/goal", "state.md", "Progress", "commit"]
   exit_code: 0

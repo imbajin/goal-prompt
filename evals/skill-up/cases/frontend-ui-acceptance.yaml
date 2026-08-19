@@ -3,11 +3,10 @@ title: 前端目标必须包含 Chrome 实际验收
 description: 验证前端任务同时要求 browser_use 功能交互和 UI/UX 证据，不把构建或静态检查当成验收。
 input:
   prompt: |
-    你已经完成调查并给出简报。我明确确认：
-    改造当前设置页面的表单交互，保持公开 API 兼容；
-    请生成最终 /goal。这个目标必须要求在 Chrome 中使用 browser_use 实际操作页面，
-    验证成功和失败流程、记录截图，并分别验收功能、UI/UX 和可访问性。
-    不要把构建成功或 DOM 检查当成完整验收。
+    我已经看过调查结果，也确认了范围。
+    请改造当前设置页面的表单交互，同时保持公开 API 兼容，并生成最终 /goal。
+    目标里必须写明用 Chrome 的 browser_use 实际操作页面，走通成功和失败流程，保存截图，
+    分别检查功能、UI/UX 和可访问性。构建成功或 DOM 检查不能代替这些验收。
 expect:
   must_contain: ["/goal", "Chrome", "browser_use"]
   exit_code: 0

@@ -3,10 +3,11 @@ title: 中大型已有文档任务保持 deep
 description: 覆盖已有 requirement/design/todo 时错误降级 fast、丢失恢复和 reviewer 门槛的问题。
 input:
   prompt: |
-    当前任务已完成调查并明确确认使用深度模式。
-    docs/requirement.md 已确认结果，docs/design.md 已确认接口与不变量，docs/todo.md 已确认实施范围。
-    请生成最终 /goal，不要重复设计这些文档；必须保留 state.md 恢复入口、独立工作重排、3 名 reviewer 和修复后复审。
-    任务涉及多个模块、测试、CI 和跨会话恢复。
+    这项任务已经调查完成，我也确认使用深度模式。
+    docs/requirement.md 已确定结果，docs/design.md 已确定接口和不变量，docs/todo.md 已确定实施范围。
+    请直接生成最终 /goal，不要把这三份文档重新抄一遍或重新设计。
+    目标里必须保留 state.md 恢复入口，写清独立工作如何重排、3 名 reviewer 和修复后的复审。
+    任务会涉及多个模块、测试、CI 和跨会话恢复。
 expect:
   must_contain: ["/goal", "docs/requirement.md", "docs/design.md", "docs/todo.md"]
   exit_code: 0

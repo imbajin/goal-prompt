@@ -3,10 +3,10 @@ title: 可枚举批任务使用固定分母
 description: 验证批处理目标记录集合来源、固定数量和项目消失时的处理方式。
 input:
   prompt: |
-    你已完成调查，我确认这个批任务：
-    根据 migration-list.yaml 中固定的 8 个模块完成配置迁移；
-    每个模块必须通过 validate-module，最终运行 validate-all；
-    模块消失或内容变化时记录证据并停止该项，不得擅自替换集合。
+    我已经调查过了，也确认这个批任务可以开始。
+    请根据 migration-list.yaml 里的 8 个固定模块完成配置迁移。
+    每个模块都要通过 validate-module，最后再跑 validate-all。
+    如果列表里的模块消失或内容发生变化，记录证据并暂停该项，不要自己换一个模块。
     请生成最终 /goal。
 expect:
   must_contain: ["/goal", "8", "migration-list.yaml", "validate-module", "validate-all"]

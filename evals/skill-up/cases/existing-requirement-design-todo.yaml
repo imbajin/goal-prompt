@@ -3,9 +3,9 @@ title: 完整 requirement design todo 驱动中大型目标
 description: 验证中大型任务复用已有需求、设计和计划文档，保持职责分离并补足仓库验证证据。
 input:
   prompt: |
-    请根据 docs/requirement.md、docs/design.md 和 docs/todo.md 创建数据导入迁移 /goal。
-    三份文档都已确认：需求定义结果，设计定义接口与不变量，todo 定义实施范围。
-    不要复制或重新设计这些内容；请检查当前仓库并补足恢复、验证和完成门槛。
+    请根据 docs/requirement.md、docs/design.md 和 docs/todo.md 写一个数据导入迁移的最终 /goal。
+    三份文档都已经定稿，分别确定了结果、接口与不变量、实施范围。
+    不要把它们重新抄一遍或重新设计；请检查当前仓库，补上恢复、验证和完成条件。
 context:
   repo_fixture: skill-up/fixtures/repos/import-migration-app
   git:

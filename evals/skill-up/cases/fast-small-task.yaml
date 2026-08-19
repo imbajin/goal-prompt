@@ -3,9 +3,9 @@ title: 小型代码修复保持轻量
 description: 验证单文件、低风险、测试明确的代码修复只使用 1 reviewer，不创建 sidecar 或扩大范围。
 input:
   prompt: |
-    你已经调查并给出简报。我明确确认快速模式：
-    只修复 src/slugify.js 中 slugify(value) 的空白折叠问题，保持导出 API 不变；
-    npm test 必须通过，不改依赖、测试或其他文件。请生成最终可复制的 /goal。
+    你已经调查过并给了我 brief，我确认使用快速模式。
+    只修复 src/slugify.js 里的 slugify(value) 空白折叠问题，保持导出 API 不变。
+    npm test 必须通过，依赖、测试和其他文件都不要改。请直接生成最终可复制的 /goal。
 context:
   repo_fixture: skill-up/fixtures/repos/slugify-app
   git:

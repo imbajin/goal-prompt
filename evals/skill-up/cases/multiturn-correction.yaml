@@ -5,10 +5,10 @@ input:
   turns:
     - role: user
       content: |
-        请为“只重构 src/cache，保持公开 API 不变”创建 /goal。
+        请为“只重构 src/cache，同时保持公开 API 不变”创建 /goal。
     - role: user
       content: |
-        改一下：除了重构缓存，还要更改公开 API，并迁移所有调用方。请按新范围继续。
+        范围改了。除了重构缓存，还要修改公开 API，并迁移所有调用方。请按这个新范围继续，直接生成最终 /goal。
 expect:
   must_contain: ["/goal"]
   exit_code: 0

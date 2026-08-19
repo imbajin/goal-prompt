@@ -3,9 +3,9 @@ title: 单一 SPEC 作为简单到中等任务计划
 description: 验证已有完整 SPEC.md 时复用其决定，并结合当前实现补足执行和验证门槛。
 input:
   prompt: |
-    请根据仓库中的 SPEC.md 为导出功能创建 /goal。
-    SPEC 已完成评审，是本任务的权威计划；不要重复设计，也不要询问文档已经确定的事项。
-    请检查当前实现和测试，补足执行与验证门槛。
+    请根据仓库里的 SPEC.md 为导出功能写一个 /goal。
+    SPEC 已经评审完成，是这项任务的权威计划。不要重新设计，也不要再问文档已经确定的事情。
+    请检查当前实现和测试，补上执行和验证条件。
 context:
   repo_fixture: skill-up/fixtures/repos/spec-export-app
   git:

@@ -1,14 +1,14 @@
 id: delegated-goal
 title: 委托判断后保留未知并继续
-description: 覆盖用户委托判断后因缺少仓库路径而停住、未生成诚实目标的问题。
+description: 覆盖用户把剩余判断交给 agent 后，agent 因缺少仓库路径而停住的问题。
 input:
   turns:
     - role: user
       content: |
-        请为“重构 src/cache 并保持公开 API 不变”创建 /goal。
+        请为“重构 src/cache，同时保持公开 API 不变”创建 /goal。
     - role: user
       content: |
-        看起来差不多，你根据调查结果自行决定并继续，不要再让我选择。
+        我看过了，剩下的你自己判断并继续，不要再让我做选择。
 expect:
   must_contain: ["/goal"]
   exit_code: 0

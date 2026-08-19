@@ -3,11 +3,12 @@ title: 原生 Blocked 不能吞掉独立工作
 description: 验证单项三次失败与 Codex 原生三轮 blocked audit 不被混为一谈。
 input:
   prompt: |
-    你已经调查并给出简报。我明确确认深度模式：
-    迁移 api、worker、web 三个模块；worker 的外部依赖连续三次失败，
-    但 api 和 web 仍可独立完成。请生成最终 /goal，说明如何记录 worker 的 needs input 或 deferred，
-    如何继续 api 和 web，并严格区分单项三次重试与 Codex 原生 update_goal 的 blocked 状态。
-    只有同一整体阻塞条件连续三个 goal turns 且所有剩余工作共同无法推进时，才允许整体 blocked。
+    你已经调查过并给了我 brief，我确认使用深度模式。
+    请迁移 api、worker、web 三个模块。worker 的外部依赖已经连续三次失败，
+    但 api 和 web 仍然可以独立完成。
+    请生成最终 /goal，说明如何记录 worker 的 needs input 或 deferred，如何继续 api 和 web，
+    也要把单项三次重试和 Codex 原生 update_goal 的 blocked 状态分开。
+    只有同一个整体阻塞条件连续三个 goal turns，且所有剩余工作都无法推进时，才允许整体 blocked。
 expect:
   must_contain: ["/goal", "api", "worker", "web", "blocked"]
   exit_code: 0

@@ -3,8 +3,8 @@ title: 首轮必须先调查真实仓库
 description: 验证功能目标在生成最终提示前会读取仓库约束、实现和验证命令。
 input:
   prompt: |
-    请帮我为“把当前认证中间件迁移为 Bearer token，同时保持公开行为兼容”创建一个可复制的 /goal。
-    请先检查这个仓库，不要直接猜测路径或测试命令。
+    请帮我把“把当前认证中间件迁移为 Bearer token，同时保持公开行为兼容”整理成一个可复制的 /goal。
+    先检查当前仓库，不要猜路径，也不要猜测试命令。
 context:
   repo_fixture: skill-up/fixtures/repos/auth-app
   git:

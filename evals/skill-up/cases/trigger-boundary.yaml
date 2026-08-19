@@ -3,7 +3,7 @@ title: 普通任务不能被强制转成 goal
 description: 验证用户明确不需要 /goal 时，Skill 不会创建 goal 工件。
 input:
   prompt: |
-    不要创建或讨论 /goal。只告诉我如何把 README 中的 teh 改成 the，一句话即可。
+    不要创建或讨论 /goal。只用一句话告诉我，怎么把 README 里的 teh 改成 the。
 expect:
   must_not_contain: ["needs confirmation"]
   exit_code: 0
