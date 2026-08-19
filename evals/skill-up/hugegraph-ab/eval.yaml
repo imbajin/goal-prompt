@@ -1,0 +1,33 @@
+schema_version: v1alpha1
+
+environment:
+  type: none
+
+skills:
+  - source: local_path
+    path: ../../.eval-work/target
+
+engine:
+  name: codex
+
+cases:
+  files:
+    - hugegraph-ab/cases/toolchain-empty-graph-edit.yaml
+    - hugegraph-ab/cases/server-hstore-graph-isolation.yaml
+    - hugegraph-ab/cases/docs-graphs-api-version-truth.yaml
+  defaults:
+    timeout_seconds: 900
+    max_turns: 18
+  parallelism: 1
+  retry_policy:
+    max_retries: 0
+
+# Real paired runs must use scripts/run-prompt-pairs.sh --paired. The wrapper
+# creates two independent single-role configs under .eval-work and records an
+# explicit balanced order; it does not enable skill-up's benchmark mode.
+benchmark:
+  enabled: false
+
+report:
+  formats: [json, html]
+  artifacts: [transcript]

@@ -1,0 +1,23 @@
+id: docs-graphs-api-version-truth
+title: Graphs REST API 双语版本真相
+description: 验证生成的 Goal 区分 1.5、1.7、master API 行为并要求双语可执行证据。
+input:
+  prompt: |
+    请为下面的真实仓库任务生成一个可复制执行的 /goal prompt，只输出最终 prompt，不要实施任务。用户授权你读取当前 checkout、自主判断并跳过确认；不要虚构版本、命令、引用或已经完成的验证。
+
+    仓库是 Apache HugeGraph Doc 的 canonical 工作源码。修正 Graphs REST API 的中英文文档，使 1.5.0、1.7.0 和当前 master 的读者能各自找到可执行且不混写的建图、查询和删除流程。可信 preflight 已把 doc 的 release-1.5.0、1.7.0、当前页面以及相同 refs 的 HugeGraph Server GraphsAPI 必要证据写入只读 version-evidence；执行时必须核对本地证据，确认是否真的存在 1.8，不得编造未发布版本。执行环境无外网、无 .git，不要求提交。
+
+    当前页面把 legacy endpoint/text/plain properties body 与 GraphSpace endpoint/application/json 混在同一叙述中，中英文对动态建图 NPE 的受影响版本说明还互相矛盾，示例也可能保留当前版本不支持的 backend。需要确认 1.7.0 release 的真实行为，并准确区分 auth-enabled 支持路径与 non-auth 上下文 creator 取值 NPE、post-1.7 master 修复边界、endpoint、Content-Type、body、backend 与状态码；不能泛化成所有 1.7 动态建图都 NPE。
+
+    目标应限定在 REST 总览和 Graphs API 的中英文对应文件，除非 primary evidence 证明必须扩大。要求两种语言语义等价，每个支持版本有独立可复制流程；运行 Hugo build 和链接检查，并用 server source 或隔离 smoke 验证 API 行为。说明站点构建不能替代行为验证。纯文档任务最终使用一名独立 reviewer。不要做全站重构，不新增持久 hash、不冻结输出格式、不建立持久对照基准、不接 CI/merge 强制门禁，不提交、不 push。
+expect:
+  must_contain: ["/goal"]
+  exit_code: 0
+judge:
+  type: agent_judge
+  model: gpt-5.6-sol
+  criteria:
+    - "Goal 为 1.5 legacy text/plain 和 1.7 GraphSpace JSON 分别保留独立可复制流程，并核验 endpoint、鉴权、body、backend 与状态码。"
+    - "Goal 准确区分 1.7 auth-enabled 支持路径、1.7 non-auth creator NPE 和 post-1.7 master 修复边界，不泛化、不虚构 1.8。"
+    - "Goal 限定中英文 REST 总览/Graphs 文件，要求双语等价、Hugo/link 与 server source 或隔离 smoke，且明确站点构建不能替代 API 行为证据。"
+  pass_threshold: 1.0
