@@ -85,6 +85,69 @@ def main() -> int:
     assert oracle_spec and oracle_spec.loader
     runtime_oracle = importlib.util.module_from_spec(oracle_spec)
     oracle_spec.loader.exec_module(runtime_oracle)
+    service_spec = importlib.util.spec_from_file_location(
+        "hugegraph_ab_service_controller_test",
+        SUITE_DIR / "runtime" / "service-controller.py",
+    )
+    assert service_spec and service_spec.loader
+    service_controller = importlib.util.module_from_spec(service_spec)
+    service_spec.loader.exec_module(service_controller)
+    service_calls: list[tuple[str, ...]] = []
+    original_service_docker = service_controller.docker
+    original_service_wait = service_controller.wait_url
+
+    def fake_service_docker(*argv: str, check: bool = True) -> SimpleNamespace:
+        service_calls.append(argv)
+        if argv[:4] == ("run", "--rm", "--entrypoint", "cat"):
+            return SimpleNamespace(stdout=(
+                "backend=hstore\nserializer=binary\npd.peers=127.0.0.1:8686\n"
+                "#rocksdb.data_path=/old\n#rocksdb.wal_path=/old\n"
+            ), returncode=0, stderr="")
+        return SimpleNamespace(stdout="", returncode=0, stderr="")
+
+    service_controller.docker = fake_service_docker
+    service_controller.wait_url = lambda *unused_args, **unused_kwargs: None
+    service_root = root / "service-controller"
+    service_root.mkdir()
+    rocks_config = service_controller.write_rocksdb_graph_config(
+        service_root / "rocks", "sha256:server-test",
+    ).read_text(encoding="utf-8")
+    assert "backend=rocksdb" in rocks_config
+    assert "pd.peers=" not in rocks_config
+    assert "rocksdb.data_path=/hugegraph-server/rocksdb-data" in rocks_config
+    assert "rocksdb.wal_path=/hugegraph-server/rocksdb-wal" in rocks_config
+    service_controller.start_rocksdb(
+        {
+            "network": "net", "server": "server", "model": "model",
+            "hugegraph": "hugegraph",
+        },
+        service_root / "rocks-start", "sha256:server-test",
+    )
+    rocks_run = next(
+        call for call in service_calls
+        if call[:2] == ("run", "-d") and "server" in call
+    )
+    assert f"PASSWORD={service_controller.PASSWORD}" in rocks_run
+    assert any(
+        value.startswith("type=bind,") and
+        "dst=/hugegraph-server/conf/graphs" in value and
+        "readonly" not in value
+        for value in rocks_run
+    )
+    assert any("dst=/hugegraph-server/rocksdb-data" in value for value in rocks_run)
+    assert any("dst=/hugegraph-server/rocksdb-wal" in value for value in rocks_run)
+    service_controller.start_hstore(
+        {"network": "net", "pd": "pd", "model": "model"},
+        service_root / "hstore", "sha256:pd-test",
+    )
+    pd_run = next(call for call in service_calls if call[:2] == ("run", "-d") and "pd" in call)
+    for expected in (
+        "HG_PD_GRPC_HOST=pd", "HG_PD_RAFT_ADDRESS=pd:8610",
+        "HG_PD_RAFT_PEERS_LIST=pd:8610", "HG_PD_INITIAL_STORE_LIST=store:8500",
+    ):
+        assert expected in pd_run
+    service_controller.docker = original_service_docker
+    service_controller.wait_url = original_service_wait
     for statement in (
         "1.8.0 has not been officially released",
         "1.8.0 hasn't been officially released",

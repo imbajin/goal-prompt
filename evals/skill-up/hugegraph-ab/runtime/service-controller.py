@@ -150,10 +150,39 @@ def start_model(item: dict[str, str], config: dict[str, Any]) -> None:
     wait_url(item["model"], "http://model:9000/policy", 30)
 
 
+def write_rocksdb_graph_config(data_dir: Path, server_image_id: str) -> Path:
+    source = docker(
+        "run", "--rm", "--entrypoint", "cat", server_image_id,
+        "/hugegraph-server/conf/graphs/hugegraph.properties",
+    ).stdout
+    if not re.search(r"(?m)^backend\s*=", source):
+        raise ValueError("HugeGraph image graph config has no backend setting")
+    rendered = re.sub(r"(?m)^backend\s*=.*$", "backend=rocksdb", source, count=1)
+    # The 1.7 image defaults to HStore.  Leaving pd.peers in an otherwise
+    # RocksDB config makes docker-entrypoint's storage wait block on a PD that
+    # this standalone topology deliberately does not start.
+    rendered = re.sub(r"(?m)^\s*pd\.peers\s*=.*\n?", "", rendered)
+    for key, value in (
+        ("rocksdb.data_path", "/hugegraph-server/rocksdb-data"),
+        ("rocksdb.wal_path", "/hugegraph-server/rocksdb-wal"),
+    ):
+        pattern = rf"(?m)^\s*{re.escape(key)}\s*=.*$"
+        if re.search(pattern, rendered):
+            rendered = re.sub(pattern, f"{key}={value}", rendered, count=1)
+        else:
+            rendered += f"\n{key}={value}\n"
+    config_dir = data_dir / "service-config"
+    config_dir.mkdir(parents=True, exist_ok=True)
+    graph_config = config_dir / "hugegraph.properties"
+    graph_config.write_text(rendered, encoding="utf-8")
+    return graph_config
+
+
 def start_rocksdb(item: dict[str, str], data_dir: Path, server_image_id: str) -> list[str]:
     rocks = data_dir / "rocksdb"
     wal = data_dir / "rocksdb-wal"
     docker_flag = data_dir / "server-docker"
+    graph_config = write_rocksdb_graph_config(data_dir, server_image_id)
     for path in (rocks, wal, docker_flag):
         path.mkdir(parents=True, exist_ok=True)
     docker(
@@ -163,6 +192,11 @@ def start_rocksdb(item: dict[str, str], data_dir: Path, server_image_id: str) ->
         "--mount", f"type=bind,src={rocks},dst=/hugegraph-server/rocksdb-data",
         "--mount", f"type=bind,src={wal},dst=/hugegraph-server/rocksdb-wal",
         "--mount", f"type=bind,src={docker_flag},dst=/hugegraph-server/docker",
+        # enable-auth.sh edits the graph config during first initialization, so
+        # mount the arm-local directory writable rather than bind-mounting one
+        # file (sed cannot atomically replace a bind-mounted file).
+        "--mount", "type=bind," +
+                   f"src={graph_config.parent},dst=/hugegraph-server/conf/graphs",
         "--env", f"PASSWORD={PASSWORD}", server_image_id,
     )
     wait_url(item["model"], "http://hugegraph:8080/versions", 300)
@@ -180,6 +214,10 @@ def start_hstore(item: dict[str, str], data_dir: Path, pd_image_id: str) -> list
         *SERVICE_LIMITS,
         "--mount", f"type=bind,src={pd_conf},dst=/hugegraph-pd/conf/application.yml,readonly",
         "--mount", f"type=bind,src={pd_data},dst=/hugegraph-pd/pd_data",
+        "--env", "HG_PD_GRPC_HOST=pd",
+        "--env", "HG_PD_RAFT_ADDRESS=pd:8610",
+        "--env", "HG_PD_RAFT_PEERS_LIST=pd:8610",
+        "--env", "HG_PD_INITIAL_STORE_LIST=store:8500",
         pd_image_id,
     )
     wait_url(item["model"], "http://pd:8620/actuator/health", 240)
