@@ -29,6 +29,52 @@ PASSWORD = "hg-ab-isolated-admin"
 DATA_MARKER = ".hg-ab-service-data.json"
 SERVICE_LIMITS = ("--pids-limit", "512", "--memory", "4g", "--cpus", "4")
 PROXY_LIMITS = ("--pids-limit", "128", "--memory", "256m", "--cpus", "1")
+LOGIN_PROBE_CODE = r"""
+import base64
+import json
+import sys
+import urllib.error
+import urllib.request
+
+
+class NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, request, fp, code, message, headers, new_url):
+        return None
+
+
+url, password = sys.argv[1:3]
+basic = base64.b64encode(f"admin:{password}".encode()).decode()
+body = json.dumps({
+    "user_name": "admin", "user_password": password, "token_expire": 3600,
+}).encode()
+request = urllib.request.Request(
+    url, data=body, method="POST",
+    headers={"Content-Type": "application/json",
+             "Authorization": f"Basic {basic}"},
+)
+try:
+    with urllib.request.build_opener(NoRedirect).open(request, timeout=5) as response:
+        status = response.status
+        raw = response.read()
+except urllib.error.HTTPError as error:
+    print(f"http_status={error.code}", file=sys.stderr)
+    retryable = error.code in {408, 425, 429} or error.code >= 500
+    raise SystemExit(1 if retryable else 2)
+except (OSError, urllib.error.URLError) as error:
+    print(f"{type(error).__name__}: {error}", file=sys.stderr)
+    raise SystemExit(1)
+if status != 200:
+    print(f"unexpected_status={status}", file=sys.stderr)
+    raise SystemExit(1)
+try:
+    payload = json.loads(raw)
+except (UnicodeDecodeError, json.JSONDecodeError) as error:
+    print(f"invalid_json={type(error).__name__}", file=sys.stderr)
+    raise SystemExit(2)
+if not isinstance(payload, dict) or not payload.get("token"):
+    print("missing_token", file=sys.stderr)
+    raise SystemExit(2)
+""".strip()
 
 
 def run(argv: list[str], *, check: bool = True) -> subprocess.CompletedProcess[str]:
@@ -87,6 +133,29 @@ def wait_url(proxy: str, url: str, seconds: int) -> None:
             return
         time.sleep(3)
     raise ValueError(f"service health timeout: {url}")
+
+
+def login_probe_from_proxy(proxy: str, url: str) -> tuple[int, str]:
+    result = docker(
+        "exec", proxy, "python3", "-c", LOGIN_PROBE_CODE, url, PASSWORD,
+        check=False,
+    )
+    detail = (result.stderr or result.stdout).strip()[-500:]
+    return result.returncode, detail.replace(PASSWORD, "<redacted>")
+
+
+def wait_login(proxy: str, url: str, seconds: int) -> None:
+    deadline = time.monotonic() + seconds
+    last_detail = "no diagnostic"
+    while time.monotonic() < deadline:
+        returncode, detail = login_probe_from_proxy(proxy, url)
+        if returncode == 0:
+            return
+        last_detail = detail or f"probe exited {returncode}"
+        if returncode == 2:
+            raise ValueError(f"service login rejected: {url}; {last_detail}")
+        time.sleep(3)
+    raise ValueError(f"service login timeout: {url}; last probe: {last_detail}")
 
 
 def write_hstore_configs(data_dir: Path) -> tuple[Path, Path]:
@@ -200,6 +269,7 @@ def start_rocksdb(item: dict[str, str], data_dir: Path, server_image_id: str) ->
         "--env", f"PASSWORD={PASSWORD}", server_image_id,
     )
     wait_url(item["model"], "http://hugegraph:8080/versions", 300)
+    wait_login(item["model"], "http://hugegraph:8080/auth/login", 60)
     return ["http://model:9000/policy", "http://hugegraph:8080/versions"]
 
 

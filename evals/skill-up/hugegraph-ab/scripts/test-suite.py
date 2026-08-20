@@ -4,7 +4,9 @@
 from __future__ import annotations
 
 import argparse
+import base64
 import contextlib
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import importlib.util
 import io
 import json
@@ -92,9 +94,128 @@ def main() -> int:
     assert service_spec and service_spec.loader
     service_controller = importlib.util.module_from_spec(service_spec)
     service_spec.loader.exec_module(service_controller)
+
+    login_requests: list[dict[str, Any]] = []
+
+    class LoginHandler(BaseHTTPRequestHandler):
+        def do_POST(self) -> None:
+            length = int(self.headers.get("Content-Length", "0"))
+            body = self.rfile.read(length)
+            login_requests.append({
+                "path": self.path,
+                "authorization": self.headers.get("Authorization", ""),
+                "content_type": self.headers.get("Content-Type", ""),
+                "body": body,
+            })
+            if self.path == "/redirect":
+                self.send_response(302)
+                self.send_header("Location", "/sink")
+                self.end_headers()
+                return
+            if self.path == "/unauthorized":
+                status, payload = 401, b"{}"
+            elif self.path == "/timeout":
+                status, payload = 408, b"{}"
+            elif self.path == "/too-early":
+                status, payload = 425, b"{}"
+            elif self.path == "/rate-limit":
+                status, payload = 429, b"{}"
+            elif self.path == "/busy":
+                status, payload = 503, b"{}"
+            elif self.path == "/bad-json":
+                status, payload = 200, b"not-json"
+            elif self.path == "/empty":
+                status, payload = 200, b"{}"
+            else:
+                status, payload = 200, b'{"token":"ready"}'
+            self.send_response(status)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(payload)))
+            self.end_headers()
+            self.wfile.write(payload)
+
+        def log_message(self, _format: str, *unused_args: Any) -> None:
+            return
+
+    login_server = ThreadingHTTPServer(("127.0.0.1", 0), LoginHandler)
+    login_thread = threading.Thread(target=login_server.serve_forever, daemon=True)
+    login_thread.start()
+    login_origin = f"http://127.0.0.1:{login_server.server_port}"
+
+    def run_login_probe(path: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run([
+            sys.executable, "-c", service_controller.LOGIN_PROBE_CODE,
+            login_origin + path, service_controller.PASSWORD,
+        ], text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=10)
+
+    try:
+        assert run_login_probe("/ok").returncode == 0
+        login_request = login_requests[-1]
+        assert login_request["content_type"] == "application/json"
+        assert base64.b64decode(
+            login_request["authorization"].removeprefix("Basic "),
+        ).decode() == f"admin:{service_controller.PASSWORD}"
+        assert json.loads(login_request["body"]) == {
+            "user_name": "admin",
+            "user_password": service_controller.PASSWORD,
+            "token_expire": 3600,
+        }
+        empty = run_login_probe("/empty")
+        assert empty.returncode == 2 and "missing_token" in empty.stderr
+        bad_json = run_login_probe("/bad-json")
+        assert bad_json.returncode == 2 and "invalid_json=" in bad_json.stderr
+        unauthorized = run_login_probe("/unauthorized")
+        assert unauthorized.returncode == 2 and "http_status=401" in unauthorized.stderr
+        for path, status in (("/timeout", 408), ("/too-early", 425), ("/rate-limit", 429)):
+            retryable = run_login_probe(path)
+            assert retryable.returncode == 1 and f"http_status={status}" in retryable.stderr
+        busy = run_login_probe("/busy")
+        assert busy.returncode == 1 and "http_status=503" in busy.stderr
+        sink_requests_before = sum(item["path"] == "/sink" for item in login_requests)
+        redirect = run_login_probe("/redirect")
+        assert redirect.returncode == 2 and "http_status=302" in redirect.stderr
+        assert sum(item["path"] == "/sink" for item in login_requests) == sink_requests_before
+    finally:
+        login_server.shutdown()
+        login_server.server_close()
+        login_thread.join(timeout=5)
+    unavailable = run_login_probe("/ok")
+    assert unavailable.returncode == 1
+
+    original_login_probe = service_controller.login_probe_from_proxy
+    original_monotonic = service_controller.time.monotonic
+    original_sleep = service_controller.time.sleep
+    try:
+        attempts = iter(((1, "http_status=503"), (0, "")))
+        service_controller.login_probe_from_proxy = lambda *unused: next(attempts)
+        service_controller.time.monotonic = lambda: 0
+        service_controller.time.sleep = lambda _seconds: None
+        service_controller.wait_login("model", "http://hugegraph/auth/login", 10)
+
+        service_controller.login_probe_from_proxy = lambda *unused: (2, "http_status=401")
+        try:
+            service_controller.wait_login("model", "http://hugegraph/auth/login", 10)
+        except ValueError as error:
+            assert "login rejected" in str(error) and "http_status=401" in str(error)
+        else:
+            raise AssertionError("permanent login rejection was retried")
+
+        monotonic_values = iter((0, 0, 2))
+        service_controller.login_probe_from_proxy = lambda *unused: (1, "connection refused")
+        service_controller.time.monotonic = lambda: next(monotonic_values)
+        try:
+            service_controller.wait_login("model", "http://hugegraph/auth/login", 1)
+        except ValueError as error:
+            assert "login timeout" in str(error) and "connection refused" in str(error)
+        else:
+            raise AssertionError("retryable login failure did not time out")
+    finally:
+        service_controller.login_probe_from_proxy = original_login_probe
+        service_controller.time.monotonic = original_monotonic
+        service_controller.time.sleep = original_sleep
+
     service_calls: list[tuple[str, ...]] = []
     original_service_docker = service_controller.docker
-    original_service_wait = service_controller.wait_url
 
     def fake_service_docker(*argv: str, check: bool = True) -> SimpleNamespace:
         service_calls.append(argv)
@@ -106,7 +227,6 @@ def main() -> int:
         return SimpleNamespace(stdout="", returncode=0, stderr="")
 
     service_controller.docker = fake_service_docker
-    service_controller.wait_url = lambda *unused_args, **unused_kwargs: None
     service_root = root / "service-controller"
     service_root.mkdir()
     rocks_config = service_controller.write_rocksdb_graph_config(
@@ -136,6 +256,18 @@ def main() -> int:
     )
     assert any("dst=/hugegraph-server/rocksdb-data" in value for value in rocks_run)
     assert any("dst=/hugegraph-server/rocksdb-wal" in value for value in rocks_run)
+    login_call = next(
+        call for call in service_calls
+        if call[:2] == ("exec", "model") and
+        call[-2] == "http://hugegraph:8080/auth/login"
+    )
+    assert login_call[-1] == service_controller.PASSWORD
+    versions_call_index = next(
+        index for index, call in enumerate(service_calls)
+        if call[:2] == ("exec", "model") and
+        call[-1] == "http://hugegraph:8080/versions"
+    )
+    assert versions_call_index < service_calls.index(login_call)
     service_controller.start_hstore(
         {"network": "net", "pd": "pd", "model": "model"},
         service_root / "hstore", "sha256:pd-test",
@@ -147,7 +279,6 @@ def main() -> int:
     ):
         assert expected in pd_run
     service_controller.docker = original_service_docker
-    service_controller.wait_url = original_service_wait
     for statement in (
         "1.8.0 has not been officially released",
         "1.8.0 hasn't been officially released",
