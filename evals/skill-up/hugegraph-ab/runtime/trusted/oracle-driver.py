@@ -47,6 +47,8 @@ def run(argv: list[str], cwd: Path, timeout: int, env: dict[str, str] | None = N
         "TMPDIR": os.environ.get("TMPDIR", "/tmp"),
         "CI": "true",
         "HUGO_ENV": "production",
+        "NODE_OPTIONS": "--max-old-space-size=4096",
+        "GENERATE_SOURCEMAP": "false",
         "HTTP_PROXY": "", "HTTPS_PROXY": "", "ALL_PROXY": "", "NO_PROXY": "*",
         "http_proxy": "", "https_proxy": "", "all_proxy": "", "no_proxy": "*",
     }
@@ -835,8 +837,8 @@ def run_hidden_store_methods(workspace: Path) -> tuple[dict[str, bool], dict[str
             continue
         jar_entries.append(str(resolved))
     trusted_framework = [
-        "/opt/hg-ab/trusted-libs/junit-4.13.2.jar",
-        "/opt/hg-ab/trusted-libs/hamcrest-core-1.3.jar",
+        "/opt/hg-ab/trusted-libs/junit.jar",
+        "/opt/hg-ab/trusted-libs/hamcrest-core.jar",
     ]
     classpath = os.pathsep.join(trusted_framework + class_entries + jar_entries)
     if not jar_entries or not all(Path(path).is_file() for path in trusted_framework):
@@ -1254,11 +1256,12 @@ def compute_toolchain(workspace: Path, pristine: Path) -> tuple[dict[str, bool],
                                "HG_AB_PROBE_UID": os.environ.get("HG_AB_PROBE_UID", "65534"),
                                "HG_AB_PROBE_GID": os.environ.get("HG_AB_PROBE_GID", "65534"),
                                "HG_AB_HUBBLE_URL": "http://127.0.0.1:8088",
-                               "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH": "/usr/bin/chromium",
+                               "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH":
+                                   "/usr/local/bin/hg-ab-chromium",
                                "PLAYWRIGHT_NODE_MODULES": "/opt/hg-ab/node_modules",
                                "NODE_PATH": "/opt/hg-ab/node_modules",
                                "MAVEN_ARGS": "--settings /opt/hg-ab/maven-settings.xml",
-                               "MAVEN_OPTS": "-Dmaven.repo.local=/opt/hg-ab/m2"})
+                               "MAVEN_OPTS": "-Xmx768m -Dmaven.repo.local=/opt/hg-ab/m2"})
     finally:
         if hubble_home is not None:
             run_candidate(["bash", "bin/stop-hubble.sh"], hubble_home, 60)
