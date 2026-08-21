@@ -170,7 +170,7 @@ def write_hstore_configs(data_dir: Path) -> tuple[Path, Path]:
 
 def load_config() -> dict[str, Any]:
     value = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
-    if set(value) != {"provider_base_url", "model_policy_identity", "allowed_model"}:
+    if set(value) != {"provider_base_url", "provider_mode", "model_policy_identity", "allowed_model"}:
         raise ValueError("runtime-private.json has unexpected keys")
     if not str(value["provider_base_url"]).startswith("https://"):
         raise ValueError("provider_base_url must be HTTPS")
@@ -178,6 +178,11 @@ def load_config() -> dict[str, Any]:
         raise ValueError("model_policy_identity is required")
     if not isinstance(value["allowed_model"], str) or not value["allowed_model"]:
         raise ValueError("allowed_model is required")
+    if value["provider_mode"] not in {"openai_api", "chatgpt_codex"}:
+        raise ValueError("provider_mode must be openai_api or chatgpt_codex")
+    if (value["provider_mode"] == "chatgpt_codex" and
+            value["provider_base_url"].rstrip("/") != "https://chatgpt.com/backend-api/codex"):
+        raise ValueError("chatgpt_codex provider_base_url must use the fixed Codex backend")
     return value
 
 
@@ -197,9 +202,19 @@ def cleanup(run_id: str) -> None:
 
 
 def start_model(item: dict[str, str], config: dict[str, Any]) -> None:
-    provider_key = os.environ.get("HG_AB_MODEL_API_KEY")
-    if not provider_key:
-        raise ValueError("HG_AB_MODEL_API_KEY is required by the trusted model proxy")
+    provider_env: list[str]
+    if config["provider_mode"] == "chatgpt_codex":
+        access_token = os.environ.get("HG_AB_CHATGPT_ACCESS_TOKEN")
+        account_id = os.environ.get("HG_AB_CHATGPT_ACCOUNT_ID")
+        if not access_token or not account_id:
+            raise ValueError("ChatGPT access token and account identity are required by the trusted model proxy")
+        provider_env = ["--env", f"CHATGPT_ACCESS_TOKEN={access_token}",
+                        "--env", f"CHATGPT_ACCOUNT_ID={account_id}"]
+    else:
+        provider_key = os.environ.get("HG_AB_MODEL_API_KEY")
+        if not provider_key:
+            raise ValueError("HG_AB_MODEL_API_KEY is required by the trusted model proxy")
+        provider_env = ["--env", f"OPENAI_API_KEY={provider_key}"]
     client_token = "hg-ab-client-" + item["model"].removeprefix("hg-ab-svc-").removesuffix("-model")
     docker(
         "run", "-d", "--name", item["model"], "--hostname", "model",
@@ -208,9 +223,10 @@ def start_model(item: dict[str, str], config: dict[str, Any]) -> None:
         "--read-only", "--tmpfs", "/tmp:rw,nosuid,nodev,size=64m",
         "--cap-drop", "ALL", "--security-opt", "no-new-privileges",
         "--mount", f"type=bind,src={MODEL_PROXY},dst=/opt/model-proxy.py,readonly",
-        "--env", f"OPENAI_API_KEY={provider_key}",
+        *provider_env,
         str(config["proxy_image_id"]), "python3", "/opt/model-proxy.py",
         "--upstream", str(config["provider_base_url"]),
+        "--upstream-mode", str(config["provider_mode"]),
         "--policy-identity", str(config["model_policy_identity"]),
         "--allowed-model", str(config["allowed_model"]),
         "--client-token", client_token,

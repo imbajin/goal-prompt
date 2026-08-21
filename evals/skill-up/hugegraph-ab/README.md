@@ -151,6 +151,13 @@ export HG_AB_PROMPT_MODEL_API_KEY=<private-provider-token>
   --timeout-seconds 900 --max-turns 18 --order ab
 ```
 
+For a local Docker Desktop Pilot, the same policy also accepts the narrowly scoped
+combination `http://127.0.0.1:<port>` for an authenticated self-hosted OpenSandbox
+control plane and `http://host.docker.internal:<port>/v1` plus `/policy` for the
+provider-only proxy. Other plain-HTTP hosts and paths remain rejected. The Agent
+receives only the arm-local proxy token; the provider API key stays in the trusted
+host proxy.
+
 The provider token reaches each single-role runtime through a mode-`0600`
 named pipe and is never persisted in the generated eval config or artifacts.
 
@@ -168,15 +175,17 @@ outputs under `.eval-work`; all rebuildable runtime code is checked in:
 ```bash
 cp "$suite/runtime/runtime-private.example.json" \
   .eval-work/hugegraph-ab/runtime-private.json
-# Fill the credential-free provider URL, policy identity, and fixed model.
+# Fill the credential-free provider URL/mode, policy identity, and fixed model.
 chmod 0600 .eval-work/hugegraph-ab/runtime-private.json
 export HG_AB_RUNTIME_PRIVATE_CONFIG="$PWD/.eval-work/hugegraph-ab/runtime-private.json"
 HG_AB_PREFLIGHT_ROOT=.eval-work/hugegraph-ab/runs/pilot-20260820/preflight \
   "$suite/runtime/build-runtime-image.sh"
 ```
 
-The local runtime config must not contain provider credentials; the provider
-key is injected only into the trusted arm-local model proxy.
+The local runtime config must not contain provider credentials. `provider_mode`
+is either `openai_api` or `chatgpt_codex`; the latter uses the fixed
+`https://chatgpt.com/backend-api/codex` origin. API keys or ChatGPT access/account
+credentials are injected only into the trusted arm-local model proxy.
 
 ```text
 executor <generated-goal-file> <writable-workspace> <artifact-dir>

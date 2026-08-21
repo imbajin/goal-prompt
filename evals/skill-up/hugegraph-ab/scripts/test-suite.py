@@ -278,6 +278,38 @@ def main() -> int:
         "HG_PD_RAFT_PEERS_LIST=pd:8610", "HG_PD_INITIAL_STORE_LIST=store:8500",
     ):
         assert expected in pd_run
+    saved_chatgpt_access = os.environ.get("HG_AB_CHATGPT_ACCESS_TOKEN")
+    saved_chatgpt_account = os.environ.get("HG_AB_CHATGPT_ACCOUNT_ID")
+    try:
+        os.environ["HG_AB_CHATGPT_ACCESS_TOKEN"] = "test-access-token"
+        os.environ["HG_AB_CHATGPT_ACCOUNT_ID"] = "test-account"
+        before_model_calls = len(service_calls)
+        service_controller.start_model(
+            {"network": "net", "model": "model-chatgpt"},
+            {
+                "provider_mode": "chatgpt_codex",
+                "provider_base_url": "https://chatgpt.com/backend-api/codex",
+                "model_policy_identity": "policy-v1", "allowed_model": "test-model",
+                "proxy_image_id": "sha256:proxy-test",
+            },
+        )
+        chatgpt_run = next(
+            call for call in service_calls[before_model_calls:]
+            if call[:2] == ("run", "-d") and "model-chatgpt" in call
+        )
+        assert "--upstream-mode" in chatgpt_run and "chatgpt_codex" in chatgpt_run
+        assert "CHATGPT_ACCESS_TOKEN=test-access-token" in chatgpt_run
+        assert "CHATGPT_ACCOUNT_ID=test-account" in chatgpt_run
+        assert not any(value.startswith("OPENAI_API_KEY=") for value in chatgpt_run)
+    finally:
+        if saved_chatgpt_access is None:
+            os.environ.pop("HG_AB_CHATGPT_ACCESS_TOKEN", None)
+        else:
+            os.environ["HG_AB_CHATGPT_ACCESS_TOKEN"] = saved_chatgpt_access
+        if saved_chatgpt_account is None:
+            os.environ.pop("HG_AB_CHATGPT_ACCOUNT_ID", None)
+        else:
+            os.environ["HG_AB_CHATGPT_ACCOUNT_ID"] = saved_chatgpt_account
     service_controller.docker = original_service_docker
     for statement in (
         "1.8.0 has not been officially released",
@@ -547,6 +579,26 @@ DELETE /graphspaces/{graphspace}/graphs/{graph}?confirm_message=I'm sure; Expect
         model_policy_identity="policy-v1", model_egress_target="model.example.invalid",
     ))
     assert "wrap_socket" in prompt_environment and "set_tunnel" not in prompt_environment
+    local_prompt_args = SimpleNamespace(
+        runtime="opensandbox", sandbox_template="test-template", reasoning_effort="medium",
+        opensandbox_base_url="http://127.0.0.1:8080",
+        model="test-model", model_base_url="http://host.docker.internal:19000/v1",
+        model_policy_url="http://host.docker.internal:19000/policy",
+        model_policy_identity="policy-v1", model_egress_target="host.docker.internal",
+        timeout_seconds=60, max_turns=10,
+    )
+    suite.require_prompt_policy(local_prompt_args)
+    local_prompt_environment = suite.prompt_environment_block(local_prompt_args)
+    assert "if False else raw" in local_prompt_environment
+    for bad_url in ("http://model.internal:19000/v1", "http://host.docker.internal:19000/other"):
+        bad_args = SimpleNamespace(**vars(local_prompt_args))
+        bad_args.model_base_url = bad_url
+        try:
+            suite.require_prompt_policy(bad_args)
+        except suite.SuiteError:
+            pass
+        else:
+            raise AssertionError(f"unsafe local model URL was accepted: {bad_url}")
     prompt_attestation_path = root / "prompt-runtime-attestation.json"
     prompt_attestation = {
         "schema_version": 1, "runtime": "opensandbox", "sandbox_template": "test-template",

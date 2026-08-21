@@ -139,6 +139,8 @@ class Handler(BaseHTTPRequestHandler):
         }
         headers["Content-Type"] = "application/json"
         headers["Authorization"] = f"Bearer {self.server.provider_key}"
+        if self.server.upstream_mode == "chatgpt_codex":
+            headers["ChatGPT-Account-Id"] = self.server.chatgpt_account_id
         request = urllib.request.Request(upstream, data=body, headers=headers, method=self.command)
         try:
             with urllib.request.urlopen(request, context=ssl.create_default_context(), timeout=900) as response:
@@ -172,6 +174,8 @@ def main() -> int:
     parser.add_argument("--listen", default="0.0.0.0")
     parser.add_argument("--port", type=int, default=9000)
     parser.add_argument("--upstream", required=True)
+    parser.add_argument("--upstream-mode", choices=("openai_api", "chatgpt_codex"),
+                        default="openai_api")
     parser.add_argument("--policy-identity", required=True)
     parser.add_argument("--allowed-model", required=True)
     parser.add_argument("--client-token", required=True)
@@ -179,16 +183,27 @@ def main() -> int:
     parsed = urllib.parse.urlsplit(args.upstream)
     if parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password:
         raise SystemExit("upstream must be a credential-free HTTPS URL")
+    if args.upstream_mode == "chatgpt_codex" and (
+            parsed.hostname != "chatgpt.com" or parsed.path.rstrip("/") != "/backend-api/codex"):
+        raise SystemExit("chatgpt_codex upstream must be https://chatgpt.com/backend-api/codex")
     server = LimitedThreadingHTTPServer((args.listen, args.port), Handler)
     server.upstream = args.upstream
     server.policy_identity = args.policy_identity
     server.allowed_model = args.allowed_model
     server.client_token = args.client_token
-    server.provider_key = os.environ.get("OPENAI_API_KEY")
+    server.upstream_mode = args.upstream_mode
+    if args.upstream_mode == "chatgpt_codex":
+        server.provider_key = os.environ.get("CHATGPT_ACCESS_TOKEN")
+        server.chatgpt_account_id = os.environ.get("CHATGPT_ACCOUNT_ID")
+    else:
+        server.provider_key = os.environ.get("OPENAI_API_KEY")
+        server.chatgpt_account_id = None
     server.request_lock = threading.Lock()
     server.request_count = 0
     if not server.provider_key:
         raise SystemExit("trusted provider key is required")
+    if args.upstream_mode == "chatgpt_codex" and not server.chatgpt_account_id:
+        raise SystemExit("trusted ChatGPT account identity is required")
     server.serve_forever()
     return 0
 

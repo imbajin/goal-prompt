@@ -709,7 +709,8 @@ def prompt_environment_block(args: argparse.Namespace) -> str:
         effort = json.dumps(args.reasoning_effort)
         parsed = urlparse(args.model_base_url)
         provider_host = str(parsed.hostname)
-        provider_port = parsed.port or 443
+        provider_port = parsed.port or (443 if parsed.scheme == "https" else 80)
+        provider_tls = parsed.scheme == "https"
         probe_code = (
             "import json,os,socket,ssl,urllib.request\n"
             f"policy=json.load(urllib.request.urlopen({args.model_policy_url!r},timeout=10))\n"
@@ -727,7 +728,7 @@ def prompt_environment_block(args: argparse.Namespace) -> str:
             "c=None\n"
             "try:\n"
             f"    raw=socket.create_connection(({provider_host!r},{provider_port}),8)\n"
-            f"    c=ssl.create_default_context().wrap_socket(raw,server_hostname={provider_host!r})\n"
+            f"    c=ssl.create_default_context().wrap_socket(raw,server_hostname={provider_host!r}) if {provider_tls!r} else raw\n"
             "    request=('CONNECT github.com:443 HTTP/1.1\\r\\nHost: github.com:443\\r\\nAuthorization: Bearer '+auth+'\\r\\nProxy-Authorization: Bearer '+auth+'\\r\\nConnection: close\\r\\n\\r\\n').encode()\n"
             "    c.sendall(request)\n"
             "    reply=bytearray()\n"
@@ -944,16 +945,28 @@ def require_prompt_policy(args: argparse.Namespace) -> None:
             or not args.model_policy_identity or not args.opensandbox_base_url):
         fail("real or pair-specific prompt dry-run requires OpenSandbox/model base, egress, and policy identity")
     parsed = urlparse(args.model_base_url)
-    if parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password:
-        fail("--model-base-url must be a credential-free https URL")
+    local_provider = (
+        parsed.scheme == "http" and parsed.hostname == "host.docker.internal" and
+        parsed.port is not None and parsed.path.rstrip("/") == "/v1"
+    )
+    if ((parsed.scheme != "https" and not local_provider) or not parsed.hostname or
+            parsed.username or parsed.password or parsed.query or parsed.fragment):
+        fail("--model-base-url must be credential-free HTTPS or the exact local host.docker.internal Pilot proxy")
     if args.model_egress_target != parsed.hostname:
         fail("--model-egress-target must exactly match the model base URL hostname")
     policy = urlparse(args.model_policy_url)
-    if policy.scheme != "https" or policy.hostname != parsed.hostname or policy.username or policy.password:
-        fail("--model-policy-url must be credential-free HTTPS on the model endpoint host")
+    if (policy.scheme != parsed.scheme or policy.netloc != parsed.netloc or
+            policy.username or policy.password or policy.query or policy.fragment or
+            (local_provider and policy.path != "/policy")):
+        fail("--model-policy-url must be credential-free and use the exact model endpoint origin")
     control = urlparse(args.opensandbox_base_url)
-    if control.scheme != "https" or not control.hostname or control.username or control.password:
-        fail("--opensandbox-base-url must be a credential-free HTTPS URL")
+    local_control = (
+        control.scheme == "http" and control.hostname in {"127.0.0.1", "localhost", "::1"} and
+        control.port is not None and control.path in {"", "/"}
+    )
+    if ((control.scheme != "https" and not local_control) or not control.hostname or
+            control.username or control.password or control.query or control.fragment):
+        fail("--opensandbox-base-url must be credential-free HTTPS or an exact loopback Pilot endpoint")
     if args.timeout_seconds < 1 or args.max_turns < 1:
         fail("prompt timeout and max turns must be positive")
 
@@ -1444,8 +1457,11 @@ def command_execute(args: argparse.Namespace) -> None:
             fail("real execution requires an active pilot/formal fixture")
         if not args.model or not args.reasoning_effort or not args.executor_image or not args.oracle_image:
             fail("real execution requires explicit model/reasoning and executor/oracle images")
-        if not os.environ.get("HG_AB_MODEL_API_KEY"):
-            fail("real execution requires HG_AB_MODEL_API_KEY for the private provider endpoint")
+        has_api_auth = bool(os.environ.get("HG_AB_MODEL_API_KEY"))
+        has_chatgpt_auth = bool(os.environ.get("HG_AB_CHATGPT_ACCESS_TOKEN") and
+                                os.environ.get("HG_AB_CHATGPT_ACCOUNT_ID"))
+        if not (has_api_auth or has_chatgpt_auth):
+            fail("real execution requires API or ChatGPT credentials for the private provider endpoint")
         runtime_private = os.environ.get("HG_AB_RUNTIME_PRIVATE_CONFIG")
         if not runtime_private:
             fail("real execution requires HG_AB_RUNTIME_PRIVATE_CONFIG under .eval-work")
