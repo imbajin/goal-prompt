@@ -5,34 +5,38 @@ ARG TARGETARCH
 WORKDIR /seed
 COPY hugegraph/ /seed/hugegraph/
 COPY hugegraph-toolchain/ /seed/hugegraph-toolchain/
-RUN for attempt in 1 2 3; do \
+RUN --mount=type=cache,id=hg-ab-maven-cache,target=/root/.m2,sharing=locked \
+    for attempt in 1 2 3 4 5 6 7 8; do \
       mvn -f /seed/hugegraph/pom.xml \
         org.apache.maven.plugins:maven-dependency-plugin:3.1.1:go-offline \
-        -Pstore-core-test -Djacoco.skip=true -Dmaven.javadoc.skip=true -ntp \
+        -U -Pstore-core-test -Djacoco.skip=true -Dmaven.javadoc.skip=true -ntp \
         && exit 0; \
-      test "$attempt" -lt 3 && sleep "$((attempt * 5))"; \
+      test "$attempt" -lt 8 && sleep "$((attempt * 5))"; \
     done; exit 1
-RUN for attempt in 1 2 3; do \
+RUN --mount=type=cache,id=hg-ab-maven-cache,target=/root/.m2,sharing=locked \
+    for attempt in 1 2 3 4 5 6 7 8; do \
       mvn -f /seed/hugegraph-toolchain/pom.xml \
         install -pl hugegraph-client,hugegraph-loader -am \
-        -DskipTests -Dmaven.javadoc.skip=true -ntp \
+        -U -DskipTests -Dmaven.javadoc.skip=true -ntp \
         && exit 0; \
-      test "$attempt" -lt 3 && sleep "$((attempt * 5))"; \
+      test "$attempt" -lt 8 && sleep "$((attempt * 5))"; \
     done; exit 1
-RUN export MAVEN_OPTS="-Xmx768m"; \
-    for attempt in 1 2 3; do \
+RUN --mount=type=cache,id=hg-ab-maven-cache,target=/root/.m2,sharing=locked \
+    export MAVEN_OPTS="-Xmx768m"; \
+    for attempt in 1 2 3 4 5 6 7 8; do \
       mvn -f /seed/hugegraph-toolchain/pom.xml \
         install -pl hugegraph-hubble/hubble-be -am \
-        -DskipTests -Dmaven.javadoc.skip=true -ntp \
+        -U -DskipTests -Dmaven.javadoc.skip=true -ntp \
         && exit 0; \
-      test "$attempt" -lt 3 && sleep "$((attempt * 5))"; \
+      test "$attempt" -lt 8 && sleep "$((attempt * 5))"; \
     done; exit 1
 # The frontend Maven plugin's Java downloader repeatedly terminated its TLS
 # handshake against nodejs.org. Seed the two versioned archives with curl's
 # bounded retry support and verify their exact contents before Maven consumes
 # them. A complete but replaced executable archive would otherwise evade Git,
 # version, type, and ordinary runtime checks in both A/B images.
-RUN case "$TARGETARCH" in \
+RUN --mount=type=cache,id=hg-ab-maven-cache,target=/root/.m2,sharing=locked \
+    case "$TARGETARCH" in \
       arm64) node_arch=arm64; node_sha=2e3dfc51154e6fea9fc86a90c4ea8f3ecb8b60acaf7367c4b76691da192571c1 ;; \
       amd64) node_arch=x64; node_sha=27a9f3f14d5e99ad05a07ed3524ba3ee92f8ff8b6db5ff80b00f9feb5ec8097a ;; \
       *) echo "unsupported TARGETARCH: $TARGETARCH" >&2; exit 1 ;; \
@@ -47,13 +51,16 @@ RUN case "$TARGETARCH" in \
     && printf '%s  %s\n' "$node_sha" "$node_file" \
       a55bb4e85405f5dfd6e7154a444e7e33ad305d7ca858bad8546e932a6688df08 "$yarn_file" \
       | sha256sum -c -
-RUN for attempt in 1 2 3; do \
+RUN --mount=type=cache,id=hg-ab-maven-cache,target=/root/.m2,sharing=locked \
+    for attempt in 1 2 3 4 5 6 7 8; do \
       mvn -f /seed/hugegraph-toolchain/hugegraph-hubble/hubble-dist/pom.xml \
         'com.github.eirslett:frontend-maven-plugin:1.14.2:install-node-and-yarn@install node and yarn' \
-        -ntp \
+        -U -ntp \
         && exit 0; \
-      test "$attempt" -lt 3 && sleep "$((attempt * 5))"; \
+      test "$attempt" -lt 8 && sleep "$((attempt * 5))"; \
     done; exit 1
+RUN --mount=type=cache,id=hg-ab-maven-cache,target=/m2-cache,sharing=locked \
+    mkdir -p /root/.m2 && cp -a /m2-cache/. /root/.m2/
 FROM maven:3.9.9-eclipse-temurin-11@sha256:8d3b35643e52d707b16a3e9b52698be1b75c2b45beb5d0e37d35e881f0a18ced AS runtime-base
 ARG HUGO_VERSION=0.102.3
 ARG CODEX_VERSION=0.147.0

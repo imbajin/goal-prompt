@@ -65,6 +65,13 @@ mkdir -p "$context/hg-ab-runtime"
 cp -R "$runtime_dir/trusted" "$context/hg-ab-runtime/trusted"
 cp "$runtime_dir/codex-executor.sh" "$context/hg-ab-runtime/codex-executor.sh"
 
+# Complete the resumable Maven dependency cache before the browser/runtime
+# layers start.  On a flaky connection, a failed prewarm keeps partial
+# downloads in the BuildKit cache and avoids repeatedly canceling apt/npm.
+docker build \
+  --file "$runtime_dir/Dockerfile.executor-oracle" \
+  --target maven-cache \
+  "$context"
 docker build \
   --file "$runtime_dir/Dockerfile.executor-oracle" \
   --target executor \
