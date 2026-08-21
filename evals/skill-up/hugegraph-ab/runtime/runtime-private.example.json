@@ -1,0 +1,6 @@
+{
+  "provider_base_url": "https://provider.example.invalid/v1",
+  "provider_mode": "openai_api",
+  "model_policy_identity": "reviewed-provider-only-policy",
+  "allowed_model": "fixed-ab-model"
+}

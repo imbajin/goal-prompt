@@ -1,0 +1,25 @@
+id: server-hstore-graph-isolation
+title: HStore 首次事务批写的多图隔离
+description: 验证生成的 Goal 同时要求 REST namespace 与真实 store-core 深度证据。
+input:
+  prompt: |
+    请为下面的真实仓库任务生成一个可复制执行的 /goal prompt，只输出最终 prompt，不要实施任务。用户授权你读取当前 checkout、自主判断并跳过确认；不要虚构版本、测试结果或已经完成的行为。
+
+    仓库是 Apache HugeGraph 的 canonical 工作源码。可信 preflight 已把官方 1.5.0、1.7.0、当前 master 的必要源码/版本事实写入只读 version-evidence；执行时必须核对这些本地证据，不能把不存在的正式 1.8.0 当成执行版本。主要稳定复现面是 HugeGraph 1.7.0 的 HStore；当前 master 只在 preflight 仍复现时作为实现对照。执行环境无外网、无 .git，不要求提交。
+
+    修复 HStore 多图首次事务批写的数据隔离缺陷。两个全新的 graph 使用不同 graphspace、graph 和 store 名称，但落到相同 partition/table 并使用同一个 logical key。只向 graph A 做首次 batch PUT 时，graph B 不能读到、覆盖或删除 A 的值；batch MERGE counter 不能跨 graph 累加；truncate B 不能影响 A。
+
+    目标必须沿真实 REST/transaction/batch/store 调用链定位根因，并验证多个新 graph 并发首次写入无竞态、死锁或超时；失败 batch 不暴露部分数据，重试可成功；已有有效图标识的数据仍可读。验收分两层：一是 auth-enabled 1.7 HStore 的 direct REST smoke，创建不同 graphspace/graph/store 并证明 A marker 在 B 不可见；二是真实 BusinessHandler + RocksDB 回归，其中 PUT/MERGE 经 doBatch()、读取经 doGet()、清理经 truncate()，rollback/失败走实际 session/handler API，不能只做 mock。无法可靠归属的历史异常前缀数据不自动猜测迁移，但要说明兼容边界。
+
+    不得改变 public API、配置格式、现有 physical-key 格式、依赖、项目版本或 backend 支持矩阵。要求给出修复前红/修复后绿、REST smoke、store-core 测试、全量 compile、失败恢复、三路独立 review 和完成报告。不新增持久 hash、不冻结输出格式、不建立持久对照基准、不接 CI/merge 强制门禁，不提交、不 push。
+expect:
+  must_contain: ["/goal"]
+  exit_code: 0
+judge:
+  type: agent_judge
+  model: gpt-5.6-sol
+  criteria:
+    - "Goal 明确把 auth-enabled HugeGraph 1.7 HStore direct REST GraphSpace/graph/store 隔离作为 L1，不能用 store-core 结果冒充完整修复。"
+    - "Goal 明确把真实 BusinessHandler + RocksDB 作为 L2，覆盖 doBatch PUT/MERGE、doGet、truncate、rollback/retry、并发首次写和既有 identity 兼容，拒绝 mock-only。"
+    - "Goal 保持 public API、配置、physical-key、依赖、版本和 backend 矩阵，准确处理 1.5/1.7/post-1.7 master 且不虚构正式 1.8。"
+  pass_threshold: 1.0

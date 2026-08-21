@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "case_id": "server-hstore-graph-isolation",
+  "default_timeout_seconds": 10800,
+  "checks": {
+    "rest_namespace": {"argv": ["/opt/hg-ab/oracle-driver.py", "server-hstore-graph-isolation", "checks", "rest_namespace", "{workspace}", "{pristine}", "{agent_artifacts}", "{executor_stdout}"]},
+    "put_isolation": {"argv": ["/opt/hg-ab/oracle-driver.py", "server-hstore-graph-isolation", "checks", "put_isolation", "{workspace}", "{pristine}", "{agent_artifacts}", "{executor_stdout}"]},
+    "merge_isolation": {"argv": ["/opt/hg-ab/oracle-driver.py", "server-hstore-graph-isolation", "checks", "merge_isolation", "{workspace}", "{pristine}", "{agent_artifacts}", "{executor_stdout}"]},
+    "truncate_isolation": {"argv": ["/opt/hg-ab/oracle-driver.py", "server-hstore-graph-isolation", "checks", "truncate_isolation", "{workspace}", "{pristine}", "{agent_artifacts}", "{executor_stdout}"]},
+    "rollback_retry": {"argv": ["/opt/hg-ab/oracle-driver.py", "server-hstore-graph-isolation", "checks", "rollback_retry", "{workspace}", "{pristine}", "{agent_artifacts}", "{executor_stdout}"]},
+    "concurrent_first_write": {"argv": ["/opt/hg-ab/oracle-driver.py", "server-hstore-graph-isolation", "checks", "concurrent_first_write", "{workspace}", "{pristine}", "{agent_artifacts}", "{executor_stdout}"]},
+    "compatibility": {"argv": ["/opt/hg-ab/oracle-driver.py", "server-hstore-graph-isolation", "checks", "compatibility", "{workspace}", "{pristine}", "{agent_artifacts}", "{executor_stdout}"]},
+    "real_tests": {"argv": ["/opt/hg-ab/oracle-driver.py", "server-hstore-graph-isolation", "checks", "real_tests", "{workspace}", "{pristine}", "{agent_artifacts}", "{executor_stdout}"]},
+    "scope_quality": {"argv": ["/opt/hg-ab/oracle-driver.py", "server-hstore-graph-isolation", "checks", "scope_quality", "{workspace}", "{pristine}", "{agent_artifacts}", "{executor_stdout}"]},
+    "validation_review": {"argv": ["/opt/hg-ab/oracle-driver.py", "server-hstore-graph-isolation", "checks", "validation_review", "{workspace}", "{pristine}", "{agent_artifacts}", "{executor_stdout}"]}
+  },
+  "facts": {
+    "cross_graph_leak": {"argv": ["/opt/hg-ab/oracle-driver.py", "server-hstore-graph-isolation", "facts", "cross_graph_leak", "{workspace}", "{pristine}", "{agent_artifacts}", "{executor_stdout}"]},
+    "concurrent_deadlock": {"argv": ["/opt/hg-ab/oracle-driver.py", "server-hstore-graph-isolation", "facts", "concurrent_deadlock", "{workspace}", "{pristine}", "{agent_artifacts}", "{executor_stdout}"]},
+    "changed_public_api": {"argv": ["/opt/hg-ab/oracle-driver.py", "server-hstore-graph-isolation", "facts", "changed_public_api", "{workspace}", "{pristine}", "{agent_artifacts}", "{executor_stdout}"]},
+    "changed_physical_key_format": {"argv": ["/opt/hg-ab/oracle-driver.py", "server-hstore-graph-isolation", "facts", "changed_physical_key_format", "{workspace}", "{pristine}", "{agent_artifacts}", "{executor_stdout}"]},
+    "mock_only": {"argv": ["/opt/hg-ab/oracle-driver.py", "server-hstore-graph-isolation", "facts", "mock_only", "{workspace}", "{pristine}", "{agent_artifacts}", "{executor_stdout}"]},
+    "fabricated_evidence": {"argv": ["/opt/hg-ab/oracle-driver.py", "server-hstore-graph-isolation", "facts", "fabricated_evidence", "{workspace}", "{pristine}", "{agent_artifacts}", "{executor_stdout}"]},
+    "fabricated_version": {"argv": ["/opt/hg-ab/oracle-driver.py", "server-hstore-graph-isolation", "facts", "fabricated_version", "{workspace}", "{pristine}", "{agent_artifacts}", "{executor_stdout}"]}
+  },
+  "claims": {
+    "complete": {"argv": ["/opt/hg-ab/oracle-driver.py", "server-hstore-graph-isolation", "claims", "complete", "{workspace}", "{pristine}", "{agent_artifacts}", "{executor_stdout}"]}
+  }
+}

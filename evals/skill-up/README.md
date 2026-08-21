@@ -38,3 +38,10 @@ work.
 
 Generating `/goal` proves only the Prompt layer. End-to-end task completion
 requires a separate execution evaluation.
+
+## HugeGraph two-stage suite
+
+The independent [HugeGraph A/B suite](hugegraph-ab/README.md) adds that second
+execution stage for three representative frontend, backend, and documentation
+tasks. Its checked-in benchmark remains disabled; deterministic validation and
+fake two-stage smoke do not call a real model or change this fast suite.

@@ -1,0 +1,161 @@
+FROM node:18.20.8-bookworm@sha256:c6ae79e38498325db67193d391e6ec1d224d96c693a8a4d943498556716d3783 AS node-runtime
+
+FROM maven:3.9.9-eclipse-temurin-11@sha256:8d3b35643e52d707b16a3e9b52698be1b75c2b45beb5d0e37d35e881f0a18ced AS maven-cache
+ARG TARGETARCH
+WORKDIR /seed
+COPY hugegraph/ /seed/hugegraph/
+COPY hugegraph-toolchain/ /seed/hugegraph-toolchain/
+RUN --mount=type=cache,id=hg-ab-maven-cache,target=/root/.m2,sharing=locked \
+    for attempt in 1 2 3 4 5 6 7 8; do \
+      mvn -f /seed/hugegraph/pom.xml \
+        org.apache.maven.plugins:maven-dependency-plugin:3.1.1:go-offline \
+        -U -Pstore-core-test -Djacoco.skip=true -Dmaven.javadoc.skip=true -ntp \
+        && exit 0; \
+      test "$attempt" -lt 8 && sleep "$((attempt * 5))"; \
+    done; exit 1
+RUN --mount=type=cache,id=hg-ab-maven-cache,target=/root/.m2,sharing=locked \
+    for attempt in 1 2 3 4 5 6 7 8; do \
+      mvn -f /seed/hugegraph-toolchain/pom.xml \
+        install -pl hugegraph-client,hugegraph-loader -am \
+        -U -DskipTests -Dmaven.javadoc.skip=true -ntp \
+        && exit 0; \
+      test "$attempt" -lt 8 && sleep "$((attempt * 5))"; \
+    done; exit 1
+RUN --mount=type=cache,id=hg-ab-maven-cache,target=/root/.m2,sharing=locked \
+    export MAVEN_OPTS="-Xmx768m"; \
+    for attempt in 1 2 3 4 5 6 7 8; do \
+      mvn -f /seed/hugegraph-toolchain/pom.xml \
+        install -pl hugegraph-hubble/hubble-be -am \
+        -U -DskipTests -Dmaven.javadoc.skip=true -ntp \
+        && exit 0; \
+      test "$attempt" -lt 8 && sleep "$((attempt * 5))"; \
+    done; exit 1
+# The frontend Maven plugin's Java downloader repeatedly terminated its TLS
+# handshake against nodejs.org. Seed the two versioned archives with curl's
+# bounded retry support and verify their exact contents before Maven consumes
+# them. A complete but replaced executable archive would otherwise evade Git,
+# version, type, and ordinary runtime checks in both A/B images.
+RUN --mount=type=cache,id=hg-ab-maven-cache,target=/root/.m2,sharing=locked \
+    case "$TARGETARCH" in \
+      arm64) node_arch=arm64; node_sha=2e3dfc51154e6fea9fc86a90c4ea8f3ecb8b60acaf7367c4b76691da192571c1 ;; \
+      amd64) node_arch=x64; node_sha=27a9f3f14d5e99ad05a07ed3524ba3ee92f8ff8b6db5ff80b00f9feb5ec8097a ;; \
+      *) echo "unsupported TARGETARCH: $TARGETARCH" >&2; exit 1 ;; \
+    esac \
+    && node_file="/root/.m2/repository/com/github/eirslett/node/18.20.8/node-18.20.8-linux-${node_arch}.tar.gz" \
+    && yarn_file=/root/.m2/repository/com/github/eirslett/yarn/1.22.21/yarn-1.22.21.tar.gz \
+    && mkdir -p "$(dirname "$node_file")" "$(dirname "$yarn_file")" \
+    && curl --retry 5 --retry-all-errors -fsSLo "$node_file" \
+      "https://nodejs.org/dist/v18.20.8/node-v18.20.8-linux-${node_arch}.tar.gz" \
+    && curl --retry 5 --retry-all-errors -fsSLo "$yarn_file" \
+      https://github.com/yarnpkg/yarn/releases/download/v1.22.21/yarn-v1.22.21.tar.gz \
+    && printf '%s  %s\n' "$node_sha" "$node_file" \
+      a55bb4e85405f5dfd6e7154a444e7e33ad305d7ca858bad8546e932a6688df08 "$yarn_file" \
+      | sha256sum -c -
+RUN --mount=type=cache,id=hg-ab-maven-cache,target=/root/.m2,sharing=locked \
+    for attempt in 1 2 3 4 5 6 7 8; do \
+      mvn -f /seed/hugegraph-toolchain/hugegraph-hubble/hubble-dist/pom.xml \
+        'com.github.eirslett:frontend-maven-plugin:1.14.2:install-node-and-yarn@install node and yarn' \
+        -U -ntp \
+        && exit 0; \
+      test "$attempt" -lt 8 && sleep "$((attempt * 5))"; \
+    done; exit 1
+RUN --mount=type=cache,id=hg-ab-maven-cache,target=/m2-cache,sharing=locked \
+    mkdir -p /root/.m2 && cp -a /m2-cache/. /root/.m2/
+FROM maven:3.9.9-eclipse-temurin-11@sha256:8d3b35643e52d707b16a3e9b52698be1b75c2b45beb5d0e37d35e881f0a18ced AS runtime-base
+ARG HUGO_VERSION=0.102.3
+ARG CODEX_VERSION=0.147.0
+ARG PLAYWRIGHT_VERSION=1.61.1
+ARG TARGETARCH
+
+COPY --from=node-runtime /usr/local/ /usr/local/
+RUN sed -i 's|http://ports.ubuntu.com|https://ports.ubuntu.com|g' \
+        /etc/apt/sources.list.d/ubuntu.sources \
+    && apt-get -o Acquire::Retries=5 update \
+    && apt-get -o Acquire::Retries=5 install -y --no-install-recommends \
+       bash ca-certificates curl git jq procps python3 tar unzip \
+    && rm -rf /var/lib/apt/lists/* \
+    && case "$TARGETARCH" in \
+         amd64) hugo_arch='64bit' ;; \
+         arm64) hugo_arch='ARM64' ;; \
+         *) echo "unsupported Hugo architecture: $TARGETARCH" >&2; exit 1 ;; \
+       esac \
+    && curl -fsSLo /tmp/hugo.tar.gz \
+       "https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_Linux-${hugo_arch}.tar.gz" \
+    && tar -xzf /tmp/hugo.tar.gz -C /usr/local/bin hugo \
+    && rm -f /tmp/hugo.tar.gz \
+    && mkdir -p /opt/hg-ab \
+    && npm install --prefix /opt/hg-ab \
+       "@openai/codex@${CODEX_VERSION}" "playwright@${PLAYWRIGHT_VERSION}" \
+    && PLAYWRIGHT_BROWSERS_PATH=/opt/hg-ab/ms-playwright \
+       /opt/hg-ab/node_modules/.bin/playwright install --with-deps chromium \
+    && browser_path="$(PLAYWRIGHT_BROWSERS_PATH=/opt/hg-ab/ms-playwright \
+       node -e "const {chromium}=require('/opt/hg-ab/node_modules/playwright'); process.stdout.write(chromium.executablePath())")" \
+    && ln -s "$browser_path" /usr/local/bin/hg-ab-chromium \
+    && ln -s /opt/hg-ab/node_modules/.bin/codex /usr/local/bin/codex
+
+COPY --from=node-runtime /opt/yarn-v1.22.22/ /opt/yarn-v1.22.22/
+COPY --from=maven-cache --chmod=0555 /root/.m2/repository/ /opt/hg-ab/m2/
+RUN mkdir -p /opt/hg-ab/trusted-libs \
+    && junit_jar="$(find /opt/hg-ab/m2/junit/junit -type f -name 'junit-*.jar' | sort -V | tail -1)" \
+    && hamcrest_jar="$(find /opt/hg-ab/m2/org/hamcrest/hamcrest-core -type f -name 'hamcrest-core-*.jar' | sort -V | tail -1)" \
+    && test -n "$junit_jar" -a -n "$hamcrest_jar" \
+    && cp "$junit_jar" /opt/hg-ab/trusted-libs/junit.jar \
+    && cp "$hamcrest_jar" /opt/hg-ab/trusted-libs/hamcrest-core.jar \
+    && chmod -R a-w /opt/hg-ab/trusted-libs
+COPY hugegraph-toolchain/hugegraph-hubble/hubble-fe/package.json \
+     hugegraph-toolchain/hugegraph-hubble/hubble-fe/yarn.lock \
+     /opt/hg-ab/toolchain-seed/
+RUN cd /opt/hg-ab/toolchain-seed \
+    && yarn install --frozen-lockfile --non-interactive \
+    && mv node_modules /opt/hg-ab/toolchain-node_modules \
+    && chmod -R a-w /opt/hg-ab/toolchain-node_modules \
+    && rm -rf /opt/hg-ab/toolchain-seed
+
+COPY hugegraph-doc/package.json /opt/hg-ab/docs-seed/
+RUN cd /opt/hg-ab/docs-seed \
+    && installed= \
+    && for attempt in 1 2 3; do \
+         npm install --ignore-scripts --package-lock=false \
+           && installed=yes \
+           && break; \
+         test "$attempt" -lt 3 && sleep "$((attempt * 5))"; \
+       done \
+    && test "$installed" = yes \
+    && mv node_modules /opt/hg-ab/docs-node_modules \
+    && chmod -R a-w /opt/hg-ab/docs-node_modules \
+    && rm -rf /opt/hg-ab/docs-seed
+
+RUN printf '%s\n' \
+       '<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0">' \
+       '  <offline>true</offline>' \
+       '  <localRepository>/opt/hg-ab/m2</localRepository>' \
+       '</settings>' > /opt/hg-ab/maven-settings.xml
+
+ENV PLAYWRIGHT_BROWSERS_PATH=/opt/hg-ab/ms-playwright \
+    PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/local/bin/hg-ab-chromium \
+    PLAYWRIGHT_NODE_MODULES=/opt/hg-ab/node_modules \
+    NODE_PATH=/opt/hg-ab/node_modules \
+    MAVEN_ARGS="--settings /opt/hg-ab/maven-settings.xml" \
+    MAVEN_OPTS="-Xmx768m -Dmaven.repo.local=/opt/hg-ab/m2" \
+    NODE_OPTIONS="--max-old-space-size=4096" \
+    GENERATE_SOURCEMAP=false \
+    BABEL_CACHE_PATH=/tmp/babel-cache.json
+ARG HG_AB_SOURCE_PROVENANCE
+ARG HG_AB_RUNTIME_BUNDLE_SHA256
+LABEL org.apache.hugegraph.ab.source-provenance="$HG_AB_SOURCE_PROVENANCE" \
+      org.apache.hugegraph.ab.runtime-bundle-sha256="$HG_AB_RUNTIME_BUNDLE_SHA256"
+WORKDIR /ab/workspace
+
+# The Agent image deliberately contains no trusted oracle, judge selectors,
+# browser script, hidden Java tests, or service credential constants.
+FROM runtime-base AS executor
+COPY hg-ab-runtime/codex-executor.sh /opt/hg-ab/codex-executor.sh
+RUN chmod 0555 /opt/hg-ab/codex-executor.sh
+
+# Only the separately selected trusted image contains hidden behavior tests.
+FROM runtime-base AS oracle
+COPY hg-ab-runtime/trusted/ /opt/hg-ab/
+RUN chmod 0500 /opt/hg-ab/oracle-driver.py \
+               /opt/hg-ab/toolchain-browser-test.js \
+    && chmod 0400 /opt/hg-ab/TrustedBatchGraphIsolationTest.java \
+                  /opt/hg-ab/TrustedMethodRunner.java

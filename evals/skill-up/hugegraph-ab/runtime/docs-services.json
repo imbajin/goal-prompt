@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "case_id": "docs-graphs-api-version-truth",
+  "service_config_identity": "docs-rocksdb-1.7-auth-model-proxy-v1",
+  "prepare_argv": [
+    "python3", "service-controller.py", "prepare", "{case}", "{run_id}",
+    "{data_dir}", "{output}", "{service_config_identity}"
+  ],
+  "reset_argv": [
+    "python3", "service-controller.py", "reset", "{case}", "{run_id}",
+    "{data_dir}", "{output}", "{service_config_identity}"
+  ],
+  "cleanup_argv": [
+    "python3", "service-controller.py", "cleanup", "{case}", "{run_id}",
+    "{data_dir}", "{output}", "{service_config_identity}"
+  ],
+  "timeout_seconds": 900
+}

@@ -1,0 +1,25 @@
+id: toolchain-empty-graph-edit
+title: Hubble 空图首顶点与 nullable 属性编辑闭环
+description: 验证生成的 Goal 同时覆盖真实点击、状态、API、失败语义和版本边界。
+input:
+  prompt: |
+    请为下面的真实仓库任务生成一个可复制执行的 /goal prompt，只输出最终 prompt，不要实施任务。用户授权你读取当前 checkout、自主判断并跳过确认；不要虚构版本、测试结果或已经完成的行为。
+
+    仓库是 Apache HugeGraph Toolchain 的 canonical 工作源码。可信 preflight 已把当前根 POM、HugeGraph 依赖以及官方 1.5.0/1.7.0 的必要源码证据写入只读 version-evidence；执行时必须核对这些本地证据，准确说明 master 是什么开发线，不得把不存在的正式版本写成已发布。执行环境无外网、无 .git，不要求提交。
+
+    需要修复一个完整交互闭环：在 0 vertex/0 edge 的空图上执行空查询后，用户应能通过“新建 → 添加顶点”创建第一个顶点。fixture 的 vertex label 是 person，PRIMARY_KEY 是 name，可空属性是 description。先只填 name=alice 创建；节点应出现在 2D canvas，计数为 1。随后真实点击该节点进入编辑，即使返回对象没有 description，schema 中声明的可空 description 也必须作为空输入框出现；填 first vertex 保存，刷新或重查后仍存在。
+
+    目标必须覆盖视觉空状态、按钮/Drawer 可达性、真实点击、当前 graphspace/graph 的 POST/PUT、请求次数、成功与失败状态。空图没有端点时，边操作不能错误启用；POST/PUT 失败不能产生幽灵节点、假成功或无条件清空输入。先验证现有后端契约，后端已有能力时不要改 API。
+
+    要求给出范围、非目标、1.5.0/1.7.0/当前开发线的只读版本矩阵、组件测试、浏览器 E2E、Server 1.7.0 持久化验证、失败恢复、独立 review 和完成报告。不要 backport，不做全面视觉改版，不新增持久 hash、不冻结输出格式、不建立持久对照基准、不接 CI/merge 强制门禁，不提交、不 push。
+expect:
+  must_contain: ["/goal"]
+  exit_code: 0
+judge:
+  type: agent_judge
+  model: gpt-5.6-sol
+  criteria:
+    - "Goal 保留空图真实点击创建首顶点、2D canvas/count、点击编辑缺失 nullable description、POST/PUT 和 Server 1.7 重查的完整闭环。"
+    - "Goal 同时覆盖成功与失败状态、请求 URL/method/body/count、无端点边操作限制、组件测试和浏览器网络证据，不能只改视觉。"
+    - "Goal 准确区分正式 1.5/1.7 与 Toolchain master 的 1.8 开发线，不虚构正式 1.8，不 backport、不提交或 push。"
+  pass_threshold: 1.0
