@@ -1,0 +1,25 @@
+id: goal-char-limit
+title: 深度模式最终 /goal 不得超出 Claude Code 字符硬限制
+description: 验证细节繁多的深度任务压缩后仍低于 4000 字符，且不通过丢弃门槛来达成。
+input:
+  prompt: |
+    你已经调查过并给了我 brief，我确认使用深度模式和现有初始化方案，目标 harness 是 Claude Code。
+    请把下面这项工作写成最终 /goal：把 payments、ledger、reconciliation、reporting
+    四个模块迁移到新的幂等事件总线，同时保持所有现有公开 API 和 webhook 契约不变。
+    每个模块要求：单元测试全绿、契约测试全绿、性能回归在 5% 以内、迁移前后数据一致性校验、
+    回滚脚本可用并已演练。全局要求：4 个模块共 12 项子门槛全部通过、CI 全绿、
+    安全审查通过、5 名独立只读 reviewer 批准、每条 reviewer 意见修复后必须复审、
+    迁移文档和运维手册齐全、灰度发布计划分 4 个阶段且每阶段有明确回退条件。
+    .goal-task/event-bus-migration/state.md 是执行契约和状态入口，所有细节都可以写进去。
+    请不要因为细节多就删掉任何一项门槛,只允许精简措辞和把细节挪到 state.md。
+expect:
+  must_contain: ["/goal", "state.md"]
+  exit_code: 0
+judge:
+  type: agent_judge
+  model: gpt-5.6-sol
+  criteria:
+    - "最终渲染的 /goal 正文(去掉开头的 /goal 前缀后)长度低于 4000 字符。"
+    - "为了控制长度,细节被移入 state.md 执行契约,而不是通过删除任一完成门槛或子门槛来压缩,四个模块、12 项子门槛、CI、安全审查、5 名独立只读 reviewer、修复后复审、灰度发布分阶段回退条件在语义上均可追溯保留(可在 /goal 或其明确引用的 state.md 中)。"
+    - "/goal 明确以 state.md 作为真相入口,而不是简单截断或模糊化原始要求。"
+  pass_threshold: 1.0

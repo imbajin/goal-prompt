@@ -356,6 +356,13 @@ resolution part of execution rather than presenting guesses as facts.
   gates, and required execution semantics even when that exceeds the target.
 - Keep deep-mode `/goal` concise. Near 700 tokens, reference the full contract in
   `state.md` instead of repeating it.
+- The token targets above are a style guide, not a hard limit; the consuming
+  harness's own hard limit still governs. Claude Code rejects a `/goal` whose
+  text exceeds 4000 characters (observed error: `Goal condition is limited to
+  4000 characters (got 4145)`); Codex has no such limit and converts long goals
+  automatically. When the target harness is Claude Code, or unknown, keep the
+  final rendered `/goal` under 4000 characters. Trim by moving detail into the
+  `state.md` execution contract, never by weakening or dropping gates.
 - Do not create files merely to shorten the prompt; every truth file needs a
   distinct responsibility.
 

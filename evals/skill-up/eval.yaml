@@ -32,6 +32,7 @@ cases:
     - skill-up/cases/no-fabrication.yaml
     - skill-up/cases/fast-small-task.yaml
     - skill-up/cases/deep-compression-gates.yaml
+    - skill-up/cases/goal-char-limit.yaml
     - skill-up/cases/repository-rule-conflict.yaml
     - skill-up/cases/existing-spec-plan.yaml
     - skill-up/cases/existing-requirement-design-todo.yaml
