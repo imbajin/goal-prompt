@@ -356,6 +356,10 @@ resolution part of execution rather than presenting guesses as facts.
   gates, and required execution semantics even when that exceeds the target.
 - Keep deep-mode `/goal` concise. Near 700 tokens, reference the full contract in
   `state.md` instead of repeating it.
+- Token targets are a style guide; the consuming harness's hard character
+  limit still governs. Unless the harness is known to accept more, keep the
+  rendered `/goal` under 4000 characters. Trim by moving detail into the
+  `state.md` execution contract, never by weakening or dropping gates.
 - Do not create files merely to shorten the prompt; every truth file needs a
   distinct responsibility.
 
