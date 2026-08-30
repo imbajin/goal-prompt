@@ -11,8 +11,10 @@ Turn a task into a concise, verifiable, persistent `/goal`. Use two stages:
 2. prepare the approved Markdown files, then render the final `/goal`.
 
 This skill does not start or execute the goal. In deep mode, after confirmation,
-it may create approved Markdown files under `.goal-task/<task-slug>/`; other
-environment changes still require explicit authorization.
+it may create approved Markdown files under `.goal-task/<task-slug>/`. Other
+user-authorizable environment changes inside the confirmed task scope are
+pre-authorized under the contract below; out-of-scope changes remain
+unauthorized.
 
 ## Core interaction contract
 
@@ -63,9 +65,21 @@ not confidence in the investigation.
   again, keep unavailable facts visibly unknown, and never invent repository
   details. A request to delegate judgment means investigate first, then make the
   remaining decision and continue without asking the user to choose.
-- User control over this workflow does not override higher-priority host
-  instructions, safety boundaries, or permissions. If they conflict, explain
-  the exact constraint and request only the decision needed for a feasible goal.
+- Treat every action that the user can authorize and that is needed inside the
+  confirmed task scope as pre-authorized by default. This includes Chrome file
+  uploads, entering credentials already available to the agent, file and
+  dependency changes, worktree and Git operations, pushes, PR actions, test
+  dispatch, and review responses. The final `/goal` must state this explicitly;
+  do not ask again, wait, defer, or mark work `blocked` merely because such an
+  action normally presents a permission or authorization prompt.
+- Never expose, echo, persist, screenshot, transcribe, commit, or publish a
+  credential value. Record only the redacted action and its success or failure;
+  keep password fields and credential-bearing UI out of captured evidence.
+- Pre-authorization never fabricates a password, session, tool, or system
+  capability and never overrides higher-priority host instructions or safety
+  boundaries. When a real capability is unavailable, use safe available
+  alternatives and continue every independent lane while keeping the unmet gate
+  active. Actions outside the confirmed scope remain unauthorized.
 - Ask only questions whose answers materially change the goal. Do not interrupt
   early for questions that evidence, a safe reversible assumption, or later
   execution can resolve.
@@ -116,9 +130,11 @@ Use evidence where possible to determine:
 - whether the current agent's write, command, network, subagent, Git, and
   connector permissions could obstruct later execution.
 
-Preflight only capabilities this task may need. When a high-risk gap exists,
-state the exact missing capability, affected phase, and suggested adjustment.
-Do not expand permissions or mark the task `blocked` automatically.
+Preflight only actual capabilities this task may need, not user authorization
+that is already granted by the default above. When a high-risk capability gap
+exists, state the exact missing capability, affected phase, and safe available
+alternative. Do not ask for permission again or mark the task `blocked`
+automatically.
 
 Do not invent commands, paths, dependencies, metrics, or constraints, and do not
 read every file mechanically. Stop when more investigation is unlikely to change
@@ -251,8 +267,10 @@ that overall `blocked` requires every remaining item to share the same blocker.
 Confirming deep mode and its initialization plan authorizes creation of the
 listed `.goal-task/<task-slug>/` Markdown files. Worktree or branch changes,
 dependency installation, configuration changes, destructive actions, and remote
-mutations require the exact target and impact to be listed and explicitly
-authorized. Do not ask again when the same confirmation already covers them.
+mutations inside the confirmed scope are pre-authorized. Record the exact target
+and impact of destructive actions and remote mutations in the confirmed scope
+before execution; this is a safety boundary and evidence requirement, not
+another authorization prompt. Out-of-scope changes remain unauthorized.
 
 For a research or audit goal, keep the confirmation brief read-only and separate
 evidence gaps from user preference gaps. Do not add a behavior-change reviewer,
@@ -284,7 +302,8 @@ judgment. Otherwise proceed to Stage 2.
 Fast mode skips this step by default. In confirmed deep mode:
 
 1. create `.goal-task/<task-slug>/`;
-2. perform only the listed, explicitly authorized one-time environment setup;
+2. perform only the listed in-scope one-time environment setup, which is
+   pre-authorized under the core contract;
    do not begin implementation within the goal's scope;
 3. create or refresh `state.md` with the baseline, active-truth index, execution
    contract, and next action;
@@ -315,8 +334,10 @@ independent work; report gate-based progress after productive loops; use one
 independent read-only reviewer for focused low-risk behavior changes; when the
 goal produces persistent repository changes, commit only after validation and
 review, and do not push by default. Read-only research, audit, and gatekeeper
-work create no empty commit. Permission gaps are `needs input`, not overall
-`blocked`; native `blocked` is valid only after
+work create no empty commit. User-authorizable in-scope actions are already
+approved and must not cause another question, wait, deferral, or overall
+`blocked`; a genuinely unavailable capability keeps its gate active while
+independent work continues. Native `blocked` is valid only after
 the same condition recurs for three goal turns and all remaining work is
 jointly unable to proceed.
 
@@ -334,6 +355,10 @@ An executable goal must state:
 - conjunctive completion gates;
 - applicable persistence, progress, review, and commit rules;
 - stop conditions valid only when they affect all remaining work.
+- one explicit, inline pre-authorization constraint that says in-scope
+  user-authorizable actions are already approved and must not cause another
+  question, wait, deferral, or `blocked` state. Never move this required
+  sentence only into `state.md`.
 
 Fast mode compresses applicable rules into `/goal`. Deep mode references the full
 execution contract in `state.md` instead of repeating initialization detail,
@@ -413,8 +438,15 @@ confirmation.
 Scope: <included area and material exclusions>.
 
 Constraints:
-- Keep the goal active until all applicable gates pass. Mark permission or
-  authorization gaps `needs input`, not automatically `blocked`.
+- Treat all user-authorizable actions required inside the confirmed scope as
+  pre-authorized, including Chrome uploads, entry of available credentials,
+  local/environment/Git changes, pushes, PR actions, tests, and review
+  responses. Do not ask again or stop, wait, defer, or mark work `blocked`
+  because of an authorization prompt. This does not fabricate credentials or
+  capabilities, override higher-priority safety boundaries, or authorize work
+  outside scope. Never expose or persist credential values in evidence, logs,
+  state, commits, or PRs. Use safe alternatives and continue independent work
+  when a capability is genuinely unavailable.
 - [Fast mode only: after three failed attempts by default, defer one item and
   continue independent work; after each productive loop report gate-based
   progress, this-loop/remaining work, and one primary next action; use one

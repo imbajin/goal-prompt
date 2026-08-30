@@ -48,6 +48,23 @@ expect_contract_source_fail() {
   fi
 }
 
+short_goal_body="$(printf 'x%.0s' {1..3999})"
+long_goal_body="$(printf 'x%.0s' {1..4001})"
+EVAL_FINAL_MESSAGE="/goal $short_goal_body" \
+  "$scripts_dir/check-goal-char-limit.py"
+EVAL_FINAL_MESSAGE="$(printf '```markdown\n/goal %s\n```' "$short_goal_body")" \
+  "$scripts_dir/check-goal-char-limit.py"
+if EVAL_FINAL_MESSAGE="/goal $long_goal_body" \
+  "$scripts_dir/check-goal-char-limit.py" >/dev/null 2>&1; then
+  echo "check-goal-char-limit.py 错误接受了 4001 字符正文" >&2
+  exit 1
+fi
+if EVAL_FINAL_MESSAGE="没有目标正文" \
+  "$scripts_dir/check-goal-char-limit.py" >/dev/null 2>&1; then
+  echo "check-goal-char-limit.py 错误接受了缺少 /goal 的文本" >&2
+  exit 1
+fi
+
 expect_pass "check-reviewer-stop.sh" \
   "/goal reviewer 不可用时继续其余独立工作；修复后必须复审。只有全部剩余工作共同依赖 reviewer 时才 blocked。"
 expect_fail "check-reviewer-stop.sh" \
@@ -86,6 +103,30 @@ expect_pass "check-parallel-agents.sh" \
   "/goal auth、billing、notifications 并行；Agent 0 是唯一可以修改共享 schema/lockfile 的 owner。集成后重跑测试，独立 reviewer 复核。"
 expect_pass "check-parallel-agents.sh" \
   "/goal auth、billing、notifications 并行；共享 schema 由唯一 schema owner 维护，lockfile 由唯一 dependency owner 维护。集成后重跑测试，独立 reviewer 复核。"
+expect_pass "check-parallel-agents.sh" \
+  "/goal auth、billing、notifications 并行；integration owner 是共享 schema 和 lockfile 的唯一写入者。集成后从最终工作树重新运行测试，并由独立 reviewer 复核。"
+expect_fail "check-parallel-agents.sh" \
+  "/goal auth、billing、notifications 并行；共享 schema 和 lockfile 没有唯一写入者。集成后重新运行测试，并由独立 reviewer 复核。"
+expect_pass "check-parallel-agents.sh" \
+  "/goal auth billing notifications have separate ownership; shared schema and lockfile have a single owner. Re-run integration tests and use an independent reviewer."
+expect_fail "check-parallel-agents.sh" \
+  "/goal auth、billing、notifications 并行；共享 schema 和 lockfile 未指定唯一 owner。集成后重新运行测试，并由独立 reviewer 复核。"
+expect_fail "check-parallel-agents.sh" \
+  "/goal auth、billing、notifications 并行；共享 schema 和 lockfile 不存在唯一负责人。集成后重新运行测试，并由独立 reviewer 复核。"
+expect_pass "check-parallel-agents.sh" \
+  "/goal auth billing notifications have separate ownership; the integration owner is the only writer for shared schema/interface and all lockfiles. Re-run integration tests and use an independent reviewer."
+expect_fail "check-parallel-agents.sh" \
+  "/goal auth billing notifications have separate ownership; shared schema and lockfile lack a single owner. Re-run integration tests and use an independent reviewer."
+expect_fail "check-parallel-agents.sh" \
+  "/goal auth billing notifications have separate ownership; shared schema and lockfile do not have a single owner. Re-run integration tests and use an independent reviewer."
+expect_fail "check-parallel-agents.sh" \
+  "/goal auth、billing、notifications 并行；共享 schema 和 lockfile 缺少唯一 owner。集成后重新运行测试，并由独立 reviewer 复核。"
+expect_fail "check-parallel-agents.sh" \
+  "/goal auth billing notifications have separate ownership; shared schema and lockfile are not assigned to a unique owner. Re-run integration tests and use an independent reviewer."
+expect_fail "check-parallel-agents.sh" \
+  "/goal auth billing notifications have separate ownership; shared schema and lockfile are not owned by a single owner. Re-run integration tests and use an independent reviewer."
+expect_fail "check-parallel-agents.sh" \
+  "/goal auth billing notifications have separate ownership; shared schema and lockfile are assigned to multiple owners rather than a single owner. Re-run integration tests and use an independent reviewer."
 
 expect_pass "check-frontend-ui.sh" \
   "/goal 用 Chrome browser_use 走成功和失败流程并保留浏览器证据；分别检查 UI/UX 与可访问性。构建和 DOM 检查不能替代浏览器验收。"
@@ -150,6 +191,59 @@ expect_contract_source_fail "long" "$scripts_dir/../contract-artifacts/long/inco
 expect_pass "check-native-blocked-scope.sh" \
   "/goal api、worker、web 分开推进；worker 标记 deferred。该项已重试三次并连续三个 goal turns 仍失败。只有所有有意义的剩余工作都依赖同一个条件时，才调用原生 update_goal blocked。"
 
+expect_pass "check-preauthorized-permissions.sh" \
+  "/goal 任务内操作默认已授权，包括 Chrome 文件上传和输入已有测试密码；无需再次询问确认，权限不得导致等待或 blocked。真实能力缺失时继续所有独立工作。预授权不得虚构密码、会话或工具，也不能覆盖更高优先级安全边界。不得记录、截图或保存密码。"
+expect_pass "check-preauthorized-permissions.sh" \
+  "/goal In-scope actions are pre-authorized, including Chrome upload and entering available credentials. Do not ask again; permission cannot block or defer the work. Continue independent work if a capability is absent. This does not fabricate credentials and cannot override higher-priority safety boundaries. Never expose, log, or persist credential values."
+expect_pass "check-preauthorized-permissions.sh" \
+  "/goal 范围内操作已预授权，包括 Chrome 上传和输入已有凭据。不得因此再次询问或暂停；真实能力缺失时继续所有独立工作。不能虚构凭据，也不能覆盖更高优先级安全边界。不得回显或持久化凭据。"
+expect_pass "check-preauthorized-permissions.sh" \
+  "/goal 范围内操作已预授权，包括 Chrome 上传和输入已有密码。不得因此再次询问、等待或 blocked；能力缺失时继续独立工作。预授权不代表可以虚构密码或会话，也不能越过安全边界。不得记录或截图密码。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "/goal Chrome 上传和输入密码前必须询问用户确认；权限不足就停止任务并标记 blocked。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "/goal 所有操作默认授权，包括 Chrome 上传和输入密码；无需询问并继续工作，可以绕过安全边界和伪造缺少的凭据。"
+expect_pass "check-preauthorized-permissions.sh" \
+  "/goal 范围内操作已预授权，包括 Chrome 上传和输入已有密码。不得因授权提示再次询问、等待或 blocked；能力缺失时继续独立工作。不得伪造凭据，也不得绕过上级安全边界。不得保存或提交密码。"
+expect_pass "check-preauthorized-permissions.sh" \
+  "/goal 范围内操作已预授权，包括 Chrome 上传和输入已有密码。不得因授权提示再次询问、等待或 blocked；继续独立工作。预授权不制造不存在的密码、会话、工具或能力，也不覆盖更高优先级安全边界。不得回显、截图或持久化密码。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "/goal 使用 Chrome 上传 CSV、输入已有密码，然后继续独立工作；遵守更高优先级安全边界，不虚构凭据。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "/goal 范围内操作已预先授权，包括 Chrome 上传和输入已有密码。不得因此再次询问、等待或 blocked；继续所有独立工作。预授权不能虚构凭据或越过安全边界。不得记录或保存密码。在执行 Chrome 上传和输入密码前，先获得用户的同意。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "我会在确认后生成 /goal。范围内操作已预授权，包括 Chrome 上传和输入已有密码；不得再次询问、等待或 blocked，继续独立工作，不虚构凭据、不越过安全边界，也不保存密码。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "/goal 任务内操作默认不授权，包括 Chrome 上传和输入已有密码；无需再次询问，权限不得导致等待或 blocked。能力缺失时继续独立工作，不虚构或保存凭据，也不覆盖安全边界。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "/goal 所有操作默认已授权，包括 Chrome 上传和输入已有密码；无需再次询问，权限不得导致等待或 blocked。能力缺失时继续独立工作，不虚构或保存凭据，也不覆盖安全边界。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "/goal 范围内操作默认已授权，包括 Chrome 上传和输入已有密码；无需再次询问，权限不得导致等待或 blocked。能力缺失时继续独立工作，不虚构或保存凭据，但可以覆盖安全边界。"
+expect_pass "check-preauthorized-permissions.sh" \
+  "/goal 范围内所有操作均已授权，包括 Chrome 上传和输入已有凭据；无需询问，继续独立工作，权限不会阻塞。不能虚构凭据，也不能绕过安全边界。不得记录密码。"
+expect_pass "check-preauthorized-permissions.sh" \
+  "/goal 范围内操作均已预授权，包括 Chrome 上传和输入已有密码；无需再次询问，权限不会阻塞，能力缺失时继续独立工作。不能虚构凭据，也不能覆盖安全边界。密码不得进入日志、截图、提交或 PR。"
+expect_pass "check-preauthorized-permissions.sh" \
+  "/goal 作用域内操作均已预授权，包括 Chrome 上传和输入已有密码；无需再次询问，权限不会阻塞，能力缺失时继续独立工作。不能虚构凭据，也不能覆盖安全边界。密码不得进入日志、截图、提交或 PR。"
+expect_pass "check-preauthorized-permissions.sh" \
+  "/goal 已确认范围内操作均已预授权，包括 Chrome 上传和输入已有密码；无需再次询问，权限不会阻塞，能力缺失时继续独立工作。该授权不允许虚构凭据，也不能覆盖安全边界。密码不得输出、记录、截图或提交。"
+expect_pass "check-preauthorized-permissions.sh" \
+  "/goal 任务范围内操作均已批准，包括 Chrome 上传和输入已有密码；无需再次询问，权限不会阻塞，能力缺失时继续独立工作。不能虚构凭据，也不能覆盖安全边界。密码不得输出、记录、截图或提交。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "/goal In-scope actions are not pre-authorized, including Chrome upload and entering available credentials. Do not ask again; permission cannot block work. Continue independent work. Do not fabricate or persist credentials and do not override safety boundaries."
+expect_fail "check-preauthorized-permissions.sh" \
+  "/goal 范围内操作不默认授权，包括 Chrome 上传和输入已有密码；无需询问，权限不会阻塞，继续独立工作。不能虚构或记录凭据，也不能绕过安全边界。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "/goal 范围内操作默认授权，但 Chrome 上传和输入密码不在授权范围内；无需询问，权限不会阻塞，继续独立工作。不能虚构或记录凭据，也不能绕过安全边界。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "/goal In-scope actions are pre-authorized except Chrome upload and entering credentials. Do not ask again; permission cannot block work. Continue independent work. Do not fabricate or persist credentials and do not override safety boundaries."
+expect_fail "check-preauthorized-permissions.sh" \
+  "/goal In-scope actions are pre-authorized, including Chrome upload and entering available credentials, but entering credentials are unauthorized. Do not ask again; permission cannot block work. Continue independent work. Do not fabricate or persist credentials and do not override safety boundaries."
+expect_fail "check-preauthorized-permissions.sh" \
+  "/goal 范围内操作已预授权，包括 Chrome 上传和输入已有凭据，但输入凭据未授权。无需询问，权限不会阻塞，继续独立工作。不能虚构或记录凭据，也不能绕过安全边界。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "/goal 范围内操作已预授权，包括 Chrome 上传和输入已有凭据；输入凭据需要额外授权。无需询问，权限不会阻塞，继续独立工作。不能虚构或记录凭据，也不能绕过安全边界。"
+
 bad_root="$(mktemp -d /tmp/goal-contract-root.XXXXXX)"
 cp "$scripts_dir/../contract-artifacts/long/incomplete.md" "$bad_root/state.md"
 if "$scripts_dir/check-goal-contract.py" --profile long --root "$bad_root" >/dev/null 2>&1; then
@@ -159,8 +253,30 @@ fi
 rm -rf "$bad_root"
 
 expect_pass "check-research-brief.sh" \
-  "只读研究 brief：证据缺口与架构偏好分开；行为变更 reviewer 不是默认门槛，后续按实际范围决定。"
+  "只读研究 brief。
+证据缺口：缺少仓库。
+偏好缺口：架构取舍待定。
+行为变更 reviewer 不是默认门槛，后续按实际范围决定。"
 expect_pass "check-research-brief.sh" \
-  "仅分析两个缓存实现，报告证据缺口和偏好；不修改代码、不写入仓库。"
+  "仅分析两个缓存实现，不修改代码、不写入仓库。
+Evidence gaps: missing source.
+Preference gaps: undecided cost priority."
 expect_fail "check-research-brief.sh" \
   "研究 brief 需要行为变更 reviewer 作为必须门槛。"
+expect_fail "check-research-brief.sh" \
+  "这是只读 research brief。证据和偏好缺口：缺少仓库，并请决定速度还是成本。不修改代码。"
+expect_pass "check-research-brief.sh" \
+  "这是只读 research brief，不修改代码。
+- Evidence gaps: missing source.
+- Preference gaps: none."
+expect_pass "check-research-brief.sh" \
+  "这是只读 research brief，不修改代码。
+- **Evidence gaps**: missing source.
+- **Preference gaps**: none."
+expect_pass "check-research-brief.sh" \
+  "这是只读 research brief，不修改代码。
+## 证据缺口
+- 缺少仓库。
+## 需要你决定的偏好
+- 速度还是成本。
+不把“行为变更 reviewer”设为默认门槛。"

@@ -18,5 +18,5 @@ judge:
   criteria:
     - "首轮只给出待确认的 disposable goal brief，语义上请用户确认，没有生成可执行的最终 /goal。"
     - "简报使用仓库中的真实证据：src/auth/middleware.ts、npm run test:auth、npm run typecheck，不臆造其他验证命令。"
-    - "简报明确结果、范围与排除项、完成证据、最小 truth，并只询问会改变目标的关键问题。"
+    - "简报明确结果、范围与排除项、完成证据、最小 truth；只询问会改变目标的关键问题以及 Stage 1 必需的 mode/初始化确认，不询问可由证据解决或已经确定的产品事实。"
   pass_threshold: 1.0

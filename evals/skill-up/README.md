@@ -16,11 +16,13 @@ skill-up validate evals/skill-up/eval.yaml
 Run from the repository root. All snapshots, isolated HOME data, and results
 stay under `.eval-work/`.
 
-The suite pins the execution agent to `gpt-5.6-luna`. Use Codex reasoning
-effort `high` for full runs. Escalate only failed or flaky cases to `xhigh` for
-targeted reruns. Keep deterministic `expect` and `script` checks as the default;
-use `gpt-5.6-sol` only for cases that require semantic judging, not as the
-long-running execution agent.
+The committed suite pins the execution agent to `gpt-5.6-luna`. Use
+`skill-up 0.9.1` or later and Codex reasoning effort `high` for full runs.
+Escalate only failed or flaky cases to `xhigh` for targeted reruns. Keep
+deterministic `expect` and `script` checks as the default; use
+`gpt-5.6-sol` for semantic judges. A controlled SOL execution cohort may use
+`--model gpt-5.6-sol`, but report it separately and do not silently replace the
+committed Luna baseline.
 
 ```bash
 commit="$(git rev-parse HEAD)"
@@ -32,6 +34,7 @@ mkdir -p "$target" "$workdir/home" "$workdir/results"
 git archive "$commit:skills/goal-prompt" | tar -x -C "$target"
 
 test -f "$target/SKILL.md"
+test "$(skill-up --version)" = "skill-up version 0.9.1"
 skill-up validate "$PWD/evals/skill-up/eval.yaml"
 
 HOME="$workdir/home" CODEX_HOME="$codex_home" \
@@ -41,7 +44,9 @@ skill-up run "$PWD/evals/skill-up/eval.yaml" \
 
 Use `--dry-run` to inspect the selected cases without running them. A real run
 uses the configured Agent and judge, so local login or credentials must already
-work.
+work. Keep `--output-dir` absolute. With a relative output directory,
+`skill-up 0.9.1` can reject agent-judge materials such as `final_message.txt` as
+escaping the Judge context directory.
 
 Generating `/goal` proves only the Prompt layer. End-to-end task completion
 requires a separate execution evaluation.
@@ -61,6 +66,9 @@ EVAL_FINAL_MESSAGE="$(cat generated-goal.md)" \
 
 evals/skill-up/fixtures/scripts/check-goal-contract.py \
   --profile long --root .goal-task/example
+
+evals/skill-up/fixtures/scripts/check-goal-char-limit.py \
+  --source generated-response.md
 ```
 
 `long` requires a visible progress bar/percentage, milestone commit, current
@@ -70,65 +78,94 @@ shared schema or lockfile, integration re-run, and an independent reviewer.
 `ui` requires Chrome `browser_use`, real success/failure interaction, browser
 evidence, separate UI/UX and accessibility checks, and an explicit statement
 that static checks do not replace browser acceptance. The fixture tests include
-both passing and intentionally incomplete Markdown documents.
+both passing and intentionally incomplete Markdown documents. The character
+checker counts the rendered goal body as Unicode characters and requires fewer
+than 4000; fixtures prove 3999 passes, 4001 fails, and a missing goal is rejected.
 
 ## Evaluation summary
 
-本轮把评测分成两层。24 个既有 case 加 4 个新增 case，共 28 个 case；既有
-case 用同一批输入分别运行 with_skill 和 without_skill，结果保存在本地运行证据中，
-这些证据不随仓库提交。这是修改前的可落盘基线，作用是保留完整对照，不把一次波动
-误报成改进。
+### Current SOL cohort
+
+2026-08-31 的最终回归使用官方 `skill-up 0.9.1`、Codex
+`gpt-5.6-sol` execution agent、SOL semantic judges、`parallelism 4` 和绝对
+output directory，对冻结后的 30 个 case 执行同输入的 with_skill /
+without_skill 对照。Skill hash 为
+`c7f15395c10ade04700307daf0eb687fa19249f9e3f9e98d6886e75a552b4ac9`，
+评测输入 hash 为
+`94df3407c0f60a1324f219001e8551b4434c82a33d8b54ff6256aef94debaf9c`。
+运行时间为 27 分 13 秒，原始结果为 51/60 PASS、9 FAIL、0 ERROR。本地
+JSON、HTML、transcript、Judge context 和 grading evidence 不提交到仓库。
 
 | Case | with_skill | without_skill |
 | --- | --- | --- |
-| stage1-grounded-feature | FAIL | FAIL |
-| stage1-vague-draft | FAIL | FAIL |
-| stage1-long-running | PASS | FAIL |
+| stage1-grounded-feature | PASS | PASS |
+| stage1-vague-draft | PASS | PASS |
+| stage1-long-running | PASS | PASS |
 | stage2-doc | PASS | PASS |
-| stage2-migration | FAIL | FAIL |
-| multiturn-confirmation | PASS | ERROR |
-| multiturn-correction | FAIL | ERROR |
+| stage2-migration | PASS | PASS |
+| multiturn-confirmation | PASS | PASS |
+| multiturn-correction | PASS | PASS |
 | trigger-boundary | PASS | PASS |
-| research-goal | FAIL | FAIL |
-| audit-goal | FAIL | FAIL |
-| batch-goal | PASS | FAIL |
-| reviewer-stop-condition | FAIL | FAIL |
+| research-goal | PASS | PASS |
+| audit-goal | PASS | FAIL |
+| batch-goal | PASS | PASS |
+| reviewer-stop-condition | FAIL | PASS |
 | skip-investigation | PASS | PASS |
-| delegated-judgment | FAIL | ERROR |
-| no-fabrication | PASS | FAIL |
+| delegated-judgment | PASS | PASS |
+| no-fabrication | PASS | PASS |
 | fast-small-task | PASS | FAIL |
-| deep-compression-gates | PASS | FAIL |
-| repository-rule-conflict | FAIL | FAIL |
-| existing-spec-plan | PASS | PASS |
-| existing-requirement-design-todo | FAIL | FAIL |
-| frontend-ui-acceptance | PASS | PASS |
-| parallel-agents-goal | FAIL | FAIL |
-| compaction-checkpoint | FAIL | FAIL |
+| deep-compression-gates | PASS | PASS |
+| goal-char-limit | PASS | PASS |
+| repository-rule-conflict | PASS | PASS |
+| existing-spec-plan | FAIL | PASS |
+| existing-requirement-design-todo | PASS | FAIL |
+| frontend-ui-acceptance | FAIL | PASS |
+| parallel-agents-goal | PASS | PASS |
+| compaction-checkpoint | PASS | PASS |
 | native-blocked-scope | PASS | PASS |
+| preauthorized-permissions | FAIL | FAIL |
+| confirmation-brief | PASS | PASS |
+| research-brief-boundary | PASS | PASS |
+| deep-existing-docs | PASS | FAIL |
+| delegated-goal | PASS | PASS |
 
-基线合计为 with_skill 12/24 PASS、without_skill 6/24 PASS，另有
-without_skill 3 个 ERROR。FAIL 里既有真实行为缺口，也有判定脚本对等价措辞过窄的情况，
-所以只看总数不能替代逐 case 解释。
+原始分组为 with_skill 26/30 PASS、without_skill 25/30 PASS。所有 9 个
+非 PASS 已按实际输出分类，不用总分替代诊断：
 
-本轮新增 4 个回归 case，均对应之前的具体缺口。
+- `preauthorized-permissions` 的 with_skill 输出明确写明范围内预授权、
+  Chrome 上传、现有凭据输入、不再询问、不因授权停摆、继续独立工作、不虚构或
+  持久化密码以及安全边界；冻结 Judge 只接受“覆盖/绕过/越过”，没有接受等价的
+  “不得突破安全边界”，因此原始结果为假阴性。独立三次 SOL 实际输出用冻结后的
+  最终 Judge 规则重放为 with_skill 3/3 PASS、without_skill 0/3 PASS。
+- `reviewer-stop-condition` 的 with_skill 明确规定 reviewer 不可用时“但继续
+  完成”全部非审查工作，并仅在审查成为唯一剩余门禁且连续三个 goal turn 后
+  `blocked`；机械 Judge 要求“继续”之后同一句再出现“工作”等名词，分类为等价措辞
+  假阴性。
+- `frontend-ui-acceptance` 的 with_skill 明确要求 Chrome `browser_use`、
+  成功/失败真实流程、截图、功能、UI/UX、可访问性，并写明静态证据“均不得替代”
+  Chrome 实际验收；机械 Judge 只接受“不能替代”或“不得作为”，分类为等价措辞
+  假阴性。
+- `existing-spec-plan` 的 with_skill 完整复用了 `SPEC.md` 的产品决定，但末尾
+  又请用户确认范围、快速模式和初始化。Criterion 只允许单独确认未由 SPEC 决定的
+  执行模式，因此记录为单次模型输出缺口；此前完整 SOL 运行曾通过，不放宽
+  criterion。
+- without_skill 的 5 个 FAIL 是 `audit-goal`、`fast-small-task`、
+  `existing-requirement-design-todo`、`preauthorized-permissions` 和
+  `deep-existing-docs`。这些结果没有 ERROR，也没有用来反向修改 Skill。
 
-| 新 case | 检查意义 |
-| --- | --- |
-| confirmation-brief | 未确认时只给调查 brief，不能因为资料足够就提前输出最终目标 |
-| research-brief-boundary | 只读研究要分开证据缺口和偏好缺口，不能机械加入实现 reviewer 门槛 |
-| deep-existing-docs | 已有 requirement、design、todo 且已确认 deep 时，仍保留 state、恢复、重排和三名 reviewer |
-| delegated-goal | 用户委托剩余判断后继续生成诚实目标，缺少仓库事实要保留为未知，不能停在索要路径 |
+字符上限由程序独立验证，不依赖 semantic judge。三次 SOL with_skill 样本正文为
+1066、1313、1397 字符，最终全量样本为 1450 字符；四个样本都保留四模块、
+12 项子门槛、CI、安全审查、5 名 reviewer、修复后复审、迁移文档、运维手册、
+四阶段灰度和每阶段回退条件。
 
-新增 case 的 with_skill 实际输出在 Luna high 下经修正后的判定器复核为 4/4。首次运行中
-`research-brief-boundary` 被判定脚本误报，因为输出明确写了“行为变更 reviewer 不应作为默认门槛”，
-脚本却把“门槛”关键词当成正向要求。脚本随后改为识别正向强制语义，并加入否定语境回归，
-用同一份实际输出重跑通过。这个调整只修正判定器的语义等价误判，没有放宽 case 要求。
+### Historical Luna cohort
 
-当前 prompt 的改动集中在四个边界。第一，增加显式路由门，首轮 brief、确认、委托判断和明确跳过分别进入确定状态，避免首轮泄漏最终目标。第二，明确“跳过调查并跳过确认”可以直接进入 Stage 2，同时保留未知事实；只说“直接生成”仍要读取可用仓库资料。第三，复杂度、跨会话恢复、迁移兼容和多子系统任务保守推荐 deep，已有 truth 文档不会让任务降级。第四，研究和审计 brief 保持只读，代码 reviewer 只在用户要求 remediation 或证据明确需要时出现。
+此前 Luna high 基线包含 24 个 case，with_skill 为 12/24 PASS，
+without_skill 为 6/24 PASS，without_skill 另有 3 个运行器 ERROR。随后新增的
+`confirmation-brief`、`research-brief-boundary`、`deep-existing-docs` 和
+`delegated-goal` 在修正机械等价词后的 Luna 复核为 with_skill 4/4 PASS。
+历史 Luna 结果使用旧版 suite 和运行器，只用于保留模型 cohort 的演进背景，不能与
+当前 30-case SOL 分数直接合并或当作发布候选结果。
 
-判定器还补充了等价表达，例如“可继续”“不依赖”“独立推进”和
-“不应作为默认门槛”。这些变化不改变 case 的目标，只避免把同一语义的中文表达误判为失败。
-
-24 个历史 case 的最新全量重跑曾受到 skill-up/Codex 运行器错误影响，日志出现
-`invalid value ... expected i32` 以及 rollout thread flush 失败，未生成可信的完整 result.json。
-因此 README 保留上面的落盘基线，并单独报告新增回归结果，不用不完整日志冒充新的 24-case 总分。
+这仍是 Prompt-level 评测。静态 Judge、目标文本和浏览器验收条款不能证明真实代码、
+Chrome、CI、迁移或回滚已经执行。

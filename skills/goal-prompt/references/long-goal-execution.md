@@ -46,7 +46,7 @@ At initialization, audit the revision, existing materials, and execution
 permissions once. Refresh incrementally only when scope, baseline, key design, or
 environment materially changes.
 
-## Permission and environment preflight
+## Authorization, capability, and environment preflight
 
 In the first loop, verify only the write, command, network, subagent, Git,
 connector, and wakeup capabilities this task may use. Immediately flag a gap
@@ -56,13 +56,26 @@ that could affect a later phase:
 - affected work or gate;
 - the adjustment the user can make.
 
-Do not expand permissions. Mark a permission or authorization gap `needs input`,
-continue independent work, and do not set the overall goal `blocked`.
+All user-authorizable operations required inside the confirmed task scope are
+pre-authorized by default, including Chrome uploads, entering credentials
+already available to the agent, local and environment changes, Git and worktree
+operations, pushes, PR actions, tests, and review responses. Do not ask again,
+wait, defer, or set the overall goal `blocked` merely because an operation
+normally presents a permission or authorization prompt.
+
+Pre-authorization does not fabricate credentials, sessions, tools, or system
+capabilities and does not override higher-priority host instructions or safety
+boundaries. If a real capability is unavailable, use safe available
+alternatives, keep the unmet gate active, and continue every independent lane.
+Work outside the confirmed scope remains unauthorized. Never expose or persist
+credential values in logs, screenshots, transcripts, state files, commits, PRs,
+or other evidence; record only the redacted action and outcome.
 
 Worktree or branch changes, dependency installation, configuration changes,
-destructive actions, and remote mutations require the exact target and impact in
-the user's confirmation. Do not ask again when that confirmation already grants
-them.
+destructive actions, and remote mutations must remain inside the confirmed
+scope. For destructive actions and remote mutations, record the exact target
+and impact in that confirmed scope before execution. Once those boundaries are
+confirmed, do not ask again merely for authorization.
 
 ## Batch and validation cadence
 

@@ -62,15 +62,15 @@ jobs:
           cp -R skills/goal-prompt/. .eval-work/target/
           test -f .eval-work/target/SKILL.md
           mkdir -p /tmp/skill-up-bin
-          export SKILL_UP_VERSION=v0.7.0
+          export SKILL_UP_VERSION=v0.9.1
           export INSTALL_DIR=/tmp/skill-up-bin
           installer=/tmp/skill-up-install.sh
           curl -fsSL \
-            https://raw.githubusercontent.com/alibaba/skill-up/5ac7ce0467a164d07aacbbf7052bcffda68a446b/install.sh \
+            https://raw.githubusercontent.com/alibaba/skill-up/80c3147101f81017c66f882b767bdc532de5e74f/install.sh \
             -o "$installer"
           echo "2b7fbea303dc8b6feb09db6f9cc7307fb9263ff6cc4b0c68cdfe9c2897d109ef  $installer" \
             | sha256sum --check
           bash -n "$installer"
           bash "$installer"
-          /tmp/skill-up-bin/skill-up --version | grep -F "0.7.0"
+          test "$(/tmp/skill-up-bin/skill-up --version)" = "skill-up version 0.9.1"
           /tmp/skill-up-bin/skill-up validate evals/skill-up/eval.yaml
