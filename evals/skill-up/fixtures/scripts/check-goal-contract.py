@@ -47,6 +47,24 @@ def has(text: str, *patterns: str) -> bool:
 
 def negated_requirements(profile: str, text: str) -> list[str]:
     """Reject explicit negation of a contract gate, not ordinary caveats."""
+    if profile == "parallel":
+        checks = [
+            (
+                "single owner for shared schema or lockfile",
+                r"(?:schema|lockfile|共享).{0,120}(?:multiple|several|two|多个|多名|两个|共同|联合|co-owned|jointly owned).{0,80}(?:owners?|writers?|负责人|写入者|agent)|(?:multiple|several|two|多个|多名|两个).{0,80}(?:owners?|writers?|负责人|写入者|agent).{0,120}(?:schema|lockfile|共享)|(?:schema|lockfile|共享).{0,120}(?:may also|can also|也可|也能|也可以).{0,80}(?:modify|edit|write|修改|编辑|写入)|(?:any agent|任意 agent|任何 agent).{0,80}(?:modify|edit|write|修改|编辑|写入).{0,120}(?:schema|lockfile|共享)|(?:schema|lockfile|共享).{0,120}(?:advisory only|仅供参考|非强制)|(?:schema|lockfile|共享).{0,120}(?:writable|editable|modifiable|可写|可编辑|可修改).{0,60}(?:by\s+)?(?:all|every|any)\s+(?:agents?|workers?)|(?:schema|lockfile|共享).{0,120}(?:but|except|however|但|不过|除外).{0,80}(?:auth|billing|notifications|another agent|other agent|all agents|every agent|everyone|other workers?|non-owners?|另一个 agent|其他 agent|所有 agent|全部 agent|每个 agent|非 owner).{0,80}(?:may|can)\s+(?:modify|edit|write)|(?:another agent|other agent|all agents|every agent|everyone|other workers?|non-owners?|另一个 agent|其他 agent|所有 agent|全部 agent|每个 agent|非 owner).{0,80}(?:may|can)\s+(?:modify|edit|write).{0,80}(?:it|schema|lockfile|共享)|(?:another agent|other agent|all agents|every agent|everyone|other workers?|non-owners?|另一个 agent|其他 agent|所有 agent|全部 agent|每个 agent|非 owner).{0,80}(?:allowed|permitted|authorized|(?:has|have) permission|允许|获准|授权).{0,80}(?:modify|edit|write|修改|编辑|写入)",
+            ),
+        ]
+        return [label for label, pattern in checks if has(text, pattern)]
+
+    if profile == "ui":
+        checks = [
+            (
+                "Chrome browser_use",
+                r"(?:不要|不应|无需|不需要|禁止|跳过|省略|绕过).{0,80}(?:使用|运行)?.{0,80}(?:chrome|browser[_ -]?use)|(?:chrome|browser[_ -]?use).{0,80}(?:可选|非必需|不是必须|无需|不需要|跳过|省略|绕过|建议而非硬性门槛|不是硬性门槛|非硬性门槛|非强制门槛|可不执行|仅为建议|只是建议|仅作建议|只是指导|推荐做法|不是硬性要求|非强制要求|不是验收门槛|optional|not required|not mandatory|not a (?:hard|required|mandatory) gate|may\s+be\s+(?:skipped|omitted|bypassed)|can\s+be\s+(?:skipped|omitted|bypassed)|suggestion rather than a gate|guidance rather than a gate|non-binding|merely a suggestion)|(?:skip|omit|bypass).{0,80}(?:chrome|browser[_ -]?use)|do not.{0,80}(?:use|run).{0,80}(?:chrome|browser[_ -]?use)",
+            ),
+        ]
+        return [label for label, pattern in checks if has(text, pattern)]
+
     if profile != "long":
         return []
     checks = [

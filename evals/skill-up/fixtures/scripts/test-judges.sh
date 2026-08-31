@@ -105,6 +105,8 @@ expect_pass "check-parallel-agents.sh" \
   "/goal auth、billing、notifications 并行；共享 schema 由唯一 schema owner 维护，lockfile 由唯一 dependency owner 维护。集成后重跑测试，独立 reviewer 复核。"
 expect_pass "check-parallel-agents.sh" \
   "/goal auth、billing、notifications 并行；integration owner 是共享 schema 和 lockfile 的唯一写入者。集成后从最终工作树重新运行测试，并由独立 reviewer 复核。"
+expect_pass "check-parallel-agents.sh" \
+  "/goal auth、billing、notifications 并行；主 agent 是共享 schema/interface、所有 lockfile 和生成文件的唯一文件 owner。集成后重新运行测试，并由独立 reviewer 复核。"
 expect_fail "check-parallel-agents.sh" \
   "/goal auth、billing、notifications 并行；共享 schema 和 lockfile 没有唯一写入者。集成后重新运行测试，并由独立 reviewer 复核。"
 expect_pass "check-parallel-agents.sh" \
@@ -127,12 +129,70 @@ expect_fail "check-parallel-agents.sh" \
   "/goal auth billing notifications have separate ownership; shared schema and lockfile are not owned by a single owner. Re-run integration tests and use an independent reviewer."
 expect_fail "check-parallel-agents.sh" \
   "/goal auth billing notifications have separate ownership; shared schema and lockfile are assigned to multiple owners rather than a single owner. Re-run integration tests and use an independent reviewer."
+expect_fail "check-parallel-agents.sh" \
+  "/goal auth billing notifications have separate ownership; shared schema has a single owner, but lockfile has multiple owners. Re-run integration tests and use an independent reviewer."
+expect_fail "check-parallel-agents.sh" \
+  "/goal auth、billing、notifications 并行；明确文件 ownership；shared schema has a single owner, but billing may also modify it; lockfile has a single owner。集成后 rerun 测试，并安排 independent reviewer。"
+expect_fail "check-parallel-agents.sh" \
+  "/goal auth、billing、notifications 并行；明确文件 ownership；shared schema is co-owned by two agents; lockfile has a single owner。集成后 rerun 测试，并安排 independent reviewer。"
+expect_fail "check-parallel-agents.sh" \
+  "/goal auth、billing、notifications 并行；明确文件 ownership；shared schema has a single owner but any agent can edit the schema; lockfile has a single owner。集成后 rerun 测试，并安排 independent reviewer。"
+expect_fail "check-parallel-agents.sh" \
+  "/goal auth、billing、notifications 并行；明确文件 ownership；shared schema has a single owner, but billing can modify it; lockfile has a single owner。集成后 rerun 测试，并安排 independent reviewer。"
+expect_fail "check-parallel-agents.sh" \
+  "/goal auth、billing、notifications 并行；明确文件 ownership；shared schema has a single owner, but another agent may write it; lockfile has a single owner。集成后 rerun 测试，并安排 independent reviewer。"
+expect_fail "check-parallel-agents.sh" \
+  "/goal auth、billing、notifications 并行；明确文件 ownership；shared schema has a single owner, but auth can edit it; lockfile has a single owner。集成后 rerun 测试，并安排 independent reviewer。"
+expect_fail "check-parallel-agents.sh" \
+  "/goal auth billing notifications parallel agents; explicit ownership. shared schema has a single owner, but all agents may modify it; lockfile has a single owner. Re-run integration tests and use an independent reviewer."
+expect_fail "check-parallel-agents.sh" \
+  "/goal auth billing notifications parallel agents; explicit ownership; shared schema is writable by every agent, lockfile has a single owner. Re-run integration tests and use an independent reviewer."
+expect_fail "check-parallel-agents.sh" \
+  "/goal auth billing notifications parallel agents; explicit ownership; shared schema has a single owner, but all agents are allowed to modify it; lockfile has a single owner. Re-run integration tests and use an independent reviewer."
+expect_fail "check-parallel-agents.sh" \
+  "/goal auth billing notifications parallel agents; explicit ownership; shared schema has a single owner, but every agent is permitted to write it; lockfile has a single owner. Re-run integration tests and use an independent reviewer."
+expect_fail "check-parallel-agents.sh" \
+  "/goal auth billing notifications parallel agents; explicit ownership; shared schema has a single owner, but a non-owner is authorized to edit it; lockfile has a single owner. Re-run integration tests and use an independent reviewer."
+expect_fail "check-parallel-agents.sh" \
+  "/goal auth billing notifications parallel agents; explicit ownership; shared schema has a single owner, but all agents have permission to modify it; lockfile has a single owner. Re-run integration tests and use an independent reviewer."
 
 expect_pass "check-frontend-ui.sh" \
   "/goal 用 Chrome browser_use 走成功和失败流程并保留浏览器证据；分别检查 UI/UX 与可访问性。构建和 DOM 检查不能替代浏览器验收。"
+expect_fail "check-frontend-ui.sh" \
+  "/goal 不要使用 Chrome browser_use；只提及成功和失败状态，保存浏览器截图，检查 UI/UX 与可访问性。构建和 DOM 检查不能替代浏览器验收。"
+expect_fail "check-frontend-ui.sh" \
+  "/goal Chrome browser_use is optional；走成功和失败流程，保存 browser evidence，检查 UI/UX 与 accessibility。Build and DOM checks cannot replace browser acceptance."
+expect_fail "check-frontend-ui.sh" \
+  "/goal Chrome browser_use may be skipped；走成功和失败流程并保留浏览器证据；分别检查 UI/UX 与可访问性。构建和 DOM 检查不能替代浏览器验收。"
+expect_fail "check-frontend-ui.sh" \
+  "/goal Skip Chrome browser_use；走成功和失败流程并保留浏览器证据；分别检查 UI/UX 与可访问性。构建和 DOM 检查不能替代浏览器验收。"
+expect_fail "check-frontend-ui.sh" \
+  "/goal Chrome browser_use may be bypassed；走成功和失败流程并保留浏览器证据；分别检查 UI/UX 与可访问性。构建和 DOM 检查不能替代浏览器验收。"
+expect_fail "check-frontend-ui.sh" \
+  $'/goal Chrome browser_use may be\nskipped；走成功和失败流程并保留浏览器证据；分别检查 UI/UX 与可访问性。构建和 DOM 检查不能替代浏览器验收。'
+expect_fail "check-frontend-ui.sh" \
+  "/goal 用 Chrome browser_use 作为建议而非硬性门槛，走成功和失败流程，保存截图，检查 UI/UX 和可访问性。构建和 DOM 检查不能代替浏览器验收。"
+expect_fail "check-frontend-ui.sh" \
+  "/goal Chrome browser_use 非强制门槛；走成功和失败流程，保存浏览器证据，检查 UI/UX 和可访问性。构建和 DOM 检查不能替代浏览器验收。"
+expect_fail "check-frontend-ui.sh" \
+  "/goal Chrome browser_use 可不执行；走成功和失败流程，保存浏览器证据，检查 UI/UX 和可访问性。构建和 DOM 检查不能替代浏览器验收。"
+expect_fail "check-frontend-ui.sh" \
+  "/goal Chrome browser_use 只是建议，不是硬性要求；走成功和失败流程，保存浏览器证据，检查 UI/UX 和可访问性。构建和 DOM 检查不能替代浏览器验收。"
+expect_fail "check-frontend-ui.sh" \
+  "/goal Chrome browser_use 仅作建议，非强制要求；走成功和失败流程，保存浏览器证据，检查 UI/UX 和可访问性。构建和 DOM 检查不能替代浏览器验收。"
+expect_fail "check-frontend-ui.sh" \
+  "/goal Chrome browser_use 只是指导，不是验收门槛；走成功和失败流程，保存浏览器证据，检查 UI/UX 和可访问性。构建和 DOM 检查不能替代浏览器验收。"
+expect_fail "check-frontend-ui.sh" \
+  "/goal Chrome browser_use 是推荐做法，不是强制门槛；走成功和失败流程，保存浏览器证据，检查 UI/UX 和可访问性。构建和 DOM 检查不能替代浏览器验收。"
 
 expect_pass "check-confirmation-brief.sh" \
   "请决定是否确认这个 brief；范围和完成证据仍待验证。"
+expect_fail "check-confirmation-brief.sh" \
+  "Proposed goal brief. /goal do migration now. Scope is pending and evidence is pending. Please confirm."
+expect_fail "check-confirmation-brief.sh" \
+  "Proposed goal brief. ~~~text
+/goal do migration now.
+~~~ Scope is pending and evidence is pending. Please confirm."
 
 expect_contract_pass "long" \
   "/goal Progress [██░░] 50%（2/4 gates）。This loop: 完成本轮事项；Remaining: 两项；Next: 继续验证。每个里程碑验证后创建 commit，并在下一次报告总结当前完成事项。compaction 前把完成项和下一步写入 state.md。"
@@ -177,6 +237,28 @@ expect_contract_fail "parallel" \
   "/goal 并行让两个 agent 各自修改模块，最后合并。"
 expect_contract_pass "parallel" \
   "/goal auth、billing、notifications 并行由三个 agent 负责；明确文件归属。共享 schema 和 lockfile 由唯一负责人维护。集成接缝完成后再次运行测试，并安排独立评审。"
+expect_contract_fail "parallel" \
+  "/goal auth、billing、notifications 并行由三个 agent 负责；明确文件归属。shared schema has a single owner, but lockfile has multiple owners。集成后重新运行测试，并安排独立 reviewer。"
+expect_contract_fail "parallel" \
+  "/goal auth、billing、notifications 并行由三个 agent 负责；明确文件归属。shared schema has a single owner, but billing may also modify it; lockfile has a single owner。集成后重新运行测试，并安排独立 reviewer。"
+expect_contract_fail "parallel" \
+  "/goal auth、billing、notifications 并行由三个 agent 负责；明确文件归属。shared schema has a single owner, but billing can modify it; lockfile has a single owner。集成后重新运行测试，并安排独立 reviewer。"
+expect_contract_fail "parallel" \
+  "/goal auth、billing、notifications 并行由三个 agent 负责；明确文件归属。shared schema has a single owner, but another agent may write it; lockfile has a single owner。集成后重新运行测试，并安排独立 reviewer。"
+expect_contract_fail "parallel" \
+  "/goal auth、billing、notifications 并行由三个 agent 负责；明确文件归属。shared schema has a single owner, but auth can edit it; lockfile has a single owner。集成后重新运行测试，并安排独立 reviewer。"
+expect_contract_fail "parallel" \
+  "/goal auth billing notifications parallel agents; explicit ownership. shared schema has a single owner, but all agents may modify it; lockfile has a single owner. Re-run integration tests and use an independent reviewer."
+expect_contract_fail "parallel" \
+  "/goal auth billing notifications parallel agents; explicit ownership; shared schema is writable by every agent, lockfile has a single owner. Re-run integration tests and use an independent reviewer."
+expect_contract_fail "parallel" \
+  "/goal auth billing notifications parallel agents; explicit ownership; shared schema has a single owner, but all agents are allowed to modify it; lockfile has a single owner. Re-run integration tests and use an independent reviewer."
+expect_contract_fail "parallel" \
+  "/goal auth billing notifications parallel agents; explicit ownership; shared schema has a single owner, but every agent is permitted to write it; lockfile has a single owner. Re-run integration tests and use an independent reviewer."
+expect_contract_fail "parallel" \
+  "/goal auth billing notifications parallel agents; explicit ownership; shared schema has a single owner, but a non-owner is authorized to edit it; lockfile has a single owner. Re-run integration tests and use an independent reviewer."
+expect_contract_fail "parallel" \
+  "/goal auth billing notifications parallel agents; explicit ownership; shared schema has a single owner, but all agents have permission to modify it; lockfile has a single owner. Re-run integration tests and use an independent reviewer."
 
 expect_contract_pass "ui" \
   "/goal 用 Chrome browser_use 走成功和失败流程并保存截图；分别检查 UI/UX 与 accessibility。构建和 DOM 检查不能代替浏览器验收。"
@@ -184,6 +266,30 @@ expect_contract_fail "ui" \
   "/goal 运行构建和 DOM 检查，确认页面没有问题。"
 expect_contract_pass "ui" \
   "/goal 用 Chrome browser_use 走成功和失败流程并保留浏览器证据；分别检查 UI/UX 与可访问性。构建和 DOM 检查不能替代浏览器验收。"
+expect_contract_fail "ui" \
+  "/goal 不要使用 Chrome browser_use；只提及成功和失败状态，保存浏览器截图，检查 UI/UX 与可访问性。构建和 DOM 检查不能替代浏览器验收。"
+expect_contract_fail "ui" \
+  "/goal Chrome browser_use is optional；走成功和失败流程，保存 browser evidence，检查 UI/UX 与 accessibility。Build and DOM checks cannot replace browser acceptance."
+expect_contract_fail "ui" \
+  "/goal Chrome browser_use may be skipped；走成功和失败流程，保存 browser evidence，检查 UI/UX 与 accessibility。Build and DOM checks cannot replace browser acceptance."
+expect_contract_fail "ui" \
+  "/goal Chrome browser_use may be bypassed；走成功和失败流程，保存 browser evidence，检查 UI/UX 与 accessibility。Build and DOM checks cannot replace browser acceptance."
+expect_contract_fail "ui" \
+  $'/goal Chrome browser_use may be\nskipped；走成功和失败流程，保存 browser evidence，检查 UI/UX 与 accessibility。Build and DOM checks cannot replace browser acceptance.'
+expect_contract_fail "ui" \
+  "/goal 用 Chrome browser_use 作为建议而非硬性门槛，走成功和失败流程，保存截图，检查 UI/UX 和可访问性。构建和 DOM 检查不能代替浏览器验收。"
+expect_contract_fail "ui" \
+  "/goal Chrome browser_use 非强制门槛；走成功和失败流程，保存浏览器证据，检查 UI/UX 和可访问性。构建和 DOM 检查不能替代浏览器验收。"
+expect_contract_fail "ui" \
+  "/goal Chrome browser_use 可不执行；走成功和失败流程，保存浏览器证据，检查 UI/UX 和可访问性。构建和 DOM 检查不能替代浏览器验收。"
+expect_contract_fail "ui" \
+  "/goal Chrome browser_use 只是建议，不是硬性要求；走成功和失败流程，保存浏览器证据，检查 UI/UX 和可访问性。构建和 DOM 检查不能替代浏览器验收。"
+expect_contract_fail "ui" \
+  "/goal Chrome browser_use 仅作建议，非强制要求；走成功和失败流程，保存浏览器证据，检查 UI/UX 和可访问性。构建和 DOM 检查不能替代浏览器验收。"
+expect_contract_fail "ui" \
+  "/goal Chrome browser_use 只是指导，不是验收门槛；走成功和失败流程，保存浏览器证据，检查 UI/UX 和可访问性。构建和 DOM 检查不能替代浏览器验收。"
+expect_contract_fail "ui" \
+  "/goal Chrome browser_use 是推荐做法，不是强制门槛；走成功和失败流程，保存浏览器证据，检查 UI/UX 和可访问性。构建和 DOM 检查不能替代浏览器验收。"
 
 expect_contract_root_pass "long" "$scripts_dir/../contract-artifacts/long"
 expect_contract_source_fail "long" "$scripts_dir/../contract-artifacts/long/incomplete.md"
@@ -229,6 +335,14 @@ expect_pass "check-preauthorized-permissions.sh" \
   "/goal 已确认范围内操作均已预授权，包括 Chrome 上传和输入已有密码；无需再次询问，权限不会阻塞，能力缺失时继续独立工作。该授权不允许虚构凭据，也不能覆盖安全边界。密码不得输出、记录、截图或提交。"
 expect_pass "check-preauthorized-permissions.sh" \
   "/goal 任务范围内操作均已批准，包括 Chrome 上传和输入已有密码；无需再次询问，权限不会阻塞，能力缺失时继续独立工作。不能虚构凭据，也不能覆盖安全边界。密码不得输出、记录、截图或提交。"
+expect_pass "check-preauthorized-permissions.sh" \
+  "/goal 任务范围内操作均已预授权，包括 Chrome 上传和输入已有密码；无需再次询问，权限不会阻塞，能力缺失时继续独立工作。不能虚构凭据，也不能覆盖安全边界。不得把 CSV、密码或敏感数据写入源码、日志、截图、测试夹具或 PR。"
+expect_pass "check-preauthorized-permissions.sh" \
+  "/goal 任务范围内操作均已预授权，包括 Chrome 上传和输入已有密码；无需再次询问，权限不会阻塞。能力缺失时采用安全替代方案并持续完成所有独立工作。不能虚构凭据，也不能覆盖安全边界。不得把密码写入日志、截图或 PR。"
+expect_pass "check-preauthorized-permissions.sh" \
+  "/goal 任务范围内操作均已预授权，包括 Chrome 上传和输入已有密码；无需再次询问，权限不会阻塞。能力缺失时采用安全替代方案并持续完成所有独立工作。预授权不会凭空提供密码、会话、工具或权限，也不能覆盖安全边界。不得把密码写入日志、截图或 PR。"
+expect_pass "check-preauthorized-permissions.sh" \
+  "/goal 任务范围内操作均已预授权，包括 Chrome 上传和输入已有密码；无需再次询问，权限不会阻塞，继续独立工作。不能虚构凭据，也不能覆盖安全边界。绝不输出、记录、截图、提交或发布密码值；使用已有测试密码验证成功和失败状态，并分别记录功能、UI/UX 和可访问性观察。"
 expect_fail "check-preauthorized-permissions.sh" \
   "/goal In-scope actions are not pre-authorized, including Chrome upload and entering available credentials. Do not ask again; permission cannot block work. Continue independent work. Do not fabricate or persist credentials and do not override safety boundaries."
 expect_fail "check-preauthorized-permissions.sh" \
@@ -243,6 +357,42 @@ expect_fail "check-preauthorized-permissions.sh" \
   "/goal 范围内操作已预授权，包括 Chrome 上传和输入已有凭据，但输入凭据未授权。无需询问，权限不会阻塞，继续独立工作。不能虚构或记录凭据，也不能绕过安全边界。"
 expect_fail "check-preauthorized-permissions.sh" \
   "/goal 范围内操作已预授权，包括 Chrome 上传和输入已有凭据；输入凭据需要额外授权。无需询问，权限不会阻塞，继续独立工作。不能虚构或记录凭据，也不能绕过安全边界。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "/goal In-scope code changes are pre-authorized. Chrome upload and entering available credentials require permission. Do not ask again; permission cannot block work. Continue independent work. Do not fabricate or persist credentials and do not override safety boundaries."
+expect_fail "check-preauthorized-permissions.sh" \
+  "/goal 范围内代码修改已预授权。Chrome 上传和输入已有凭据仍需要权限。无需再次询问，权限不会阻塞，继续独立工作。不能虚构或记录凭据，也不能绕过安全边界。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "/goal 范围内操作已预授权，包括 Chrome 上传和输入已有密码；无需询问，权限不会阻塞，继续独立工作。不能虚构凭据，不得记录密码，也不能绕过安全边界。但为测试可以伪造密码。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "/goal 范围内操作已预授权，包括 Chrome 上传和输入已有密码；无需询问，权限不会阻塞，继续独立工作。不能虚构凭据，不得记录密码，也不能绕过安全边界。但为审计需要，可以截图并保存密码。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "/goal In-scope actions are pre-authorized, including Chrome upload and entering available credentials. Do not ask again; permission cannot block work. Continue independent work. Do not fabricate or persist credentials and do not override safety boundaries, but tests may fabricate passwords."
+expect_fail "check-preauthorized-permissions.sh" \
+  "/goal In-scope actions are pre-authorized, including Chrome upload and entering available credentials. Do not ask again; permission cannot block work. Continue independent work. Never expose or save credential values and do not override safety boundaries, but audit evidence can capture and save passwords."
+expect_fail "check-preauthorized-permissions.sh" \
+  "/goal 范围内操作已预授权，包括 Chrome 上传和输入已有密码；无需再次询问，权限不会阻塞，继续独立工作。不能虚构凭据，也不能覆盖安全边界。不得记录密码。但调试流程会将密码写入日志。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "/goal 范围内操作已预授权，包括 Chrome 上传和输入已有密码；无需再次询问，权限不会阻塞，继续独立工作。不能虚构凭据，也不能覆盖安全边界。不得记录密码。审计证据会截图并保存密码。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "/goal 范围内操作已预授权，包括 Chrome 上传和输入已有密码；无需再次询问，权限不会阻塞，继续独立工作。不能虚构凭据，也不能覆盖安全边界。不得记录密码。密码可在日志中输出。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "/goal 范围内操作已预授权，包括 Chrome 上传和输入已有密码；无需再次询问，权限不会阻塞，继续独立工作。不能虚构凭据。不得记录密码。但测试流程会伪造密码。也不能覆盖安全边界。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "/goal 范围内操作已预授权，包括 Chrome 上传和输入已有密码；无需再次询问，权限不会阻塞，继续独立工作。不能虚构凭据，也不能覆盖安全边界。不得记录密码，但审计证据会截图并保存密码。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "/goal 范围内操作已预授权，包括 Chrome 上传和输入已有密码；无需再次询问，权限不会阻塞，继续独立工作。不能虚构凭据，也不能覆盖安全边界。不得记录密码。缺少密码时使用占位密码。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "/goal 范围内操作已预授权，包括 Chrome 上传和输入已有密码；无需再次询问，权限不会阻塞，继续独立工作。不制造凭据；必要时使用伪造凭据完成测试。不得记录密码，也不能覆盖安全边界。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "/goal 范围内操作已预授权，包括 Chrome 上传和输入已有密码；无需再次询问，权限不会阻塞，继续独立工作。不能虚构凭据，也不能覆盖安全边界。密码不得泄露，除非写入日志。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "/goal In-scope actions are pre-authorized, including Chrome upload and entering available credentials. Do not ask again; permission cannot block work. Continue independent work. Never expose, log, persist, or commit credential values. But credential values may be committed. Do not override safety boundaries."
+expect_fail "check-preauthorized-permissions.sh" \
+  "/goal In-scope actions are pre-authorized, including Chrome upload and entering available credentials. Do not ask again; permission cannot block work. Continue independent work. Never expose credential values. But password may be displayed. Do not override safety boundaries."
+expect_fail "check-preauthorized-permissions.sh" \
+  "/goal In-scope actions are pre-authorized, including Chrome upload and entering available credentials. Do not ask again; permission cannot block work. Continue independent work. Never expose credential values. But credentials may be revealed. Do not override safety boundaries."
+expect_fail "check-preauthorized-permissions.sh" \
+  "/goal In-scope actions are pre-authorized, including Chrome upload and entering available credentials. Do not ask again; permission cannot block work. Continue independent work. Never expose credential values. But password leakage is allowed. Do not override safety boundaries."
 
 bad_root="$(mktemp -d /tmp/goal-contract-root.XXXXXX)"
 cp "$scripts_dir/../contract-artifacts/long/incomplete.md" "$bad_root/state.md"

@@ -92,8 +92,8 @@ output directory，对冻结后的 30 个 case 执行同输入的 with_skill /
 without_skill 对照。Skill hash 为
 `c7f15395c10ade04700307daf0eb687fa19249f9e3f9e98d6886e75a552b4ac9`，
 评测输入 hash 为
-`94df3407c0f60a1324f219001e8551b4434c82a33d8b54ff6256aef94debaf9c`。
-运行时间为 27 分 13 秒，原始结果为 51/60 PASS、9 FAIL、0 ERROR。本地
+`285aa531c2bb0a21586e3eadc704a031ea30c3342d945843ad99122e3d31127e`。
+运行时间为 35 分 20 秒，原始结果为 54/60 PASS、6 FAIL、0 ERROR。本地
 JSON、HTML、transcript、Judge context 和 grading evidence 不提交到仓库。
 
 | Case | with_skill | without_skill |
@@ -107,54 +107,48 @@ JSON、HTML、transcript、Judge context 和 grading evidence 不提交到仓库
 | multiturn-correction | PASS | PASS |
 | trigger-boundary | PASS | PASS |
 | research-goal | PASS | PASS |
-| audit-goal | PASS | FAIL |
+| audit-goal | PASS | PASS |
 | batch-goal | PASS | PASS |
-| reviewer-stop-condition | FAIL | PASS |
+| reviewer-stop-condition | PASS | PASS |
 | skip-investigation | PASS | PASS |
 | delegated-judgment | PASS | PASS |
 | no-fabrication | PASS | PASS |
-| fast-small-task | PASS | FAIL |
+| fast-small-task | PASS | PASS |
 | deep-compression-gates | PASS | PASS |
 | goal-char-limit | PASS | PASS |
 | repository-rule-conflict | PASS | PASS |
-| existing-spec-plan | FAIL | PASS |
-| existing-requirement-design-todo | PASS | FAIL |
-| frontend-ui-acceptance | FAIL | PASS |
-| parallel-agents-goal | PASS | PASS |
+| existing-spec-plan | PASS | FAIL |
+| existing-requirement-design-todo | FAIL | PASS |
+| frontend-ui-acceptance | PASS | PASS |
+| parallel-agents-goal | PASS | FAIL |
 | compaction-checkpoint | PASS | PASS |
-| native-blocked-scope | PASS | PASS |
-| preauthorized-permissions | FAIL | FAIL |
+| native-blocked-scope | PASS | FAIL |
+| preauthorized-permissions | PASS | FAIL |
 | confirmation-brief | PASS | PASS |
-| research-brief-boundary | PASS | PASS |
-| deep-existing-docs | PASS | FAIL |
+| research-brief-boundary | FAIL | PASS |
+| deep-existing-docs | PASS | PASS |
 | delegated-goal | PASS | PASS |
 
-原始分组为 with_skill 26/30 PASS、without_skill 25/30 PASS。所有 9 个
+原始分组为 with_skill 28/30 PASS、without_skill 26/30 PASS。所有 6 个
 非 PASS 已按实际输出分类，不用总分替代诊断：
 
-- `preauthorized-permissions` 的 with_skill 输出明确写明范围内预授权、
-  Chrome 上传、现有凭据输入、不再询问、不因授权停摆、继续独立工作、不虚构或
-  持久化密码以及安全边界；冻结 Judge 只接受“覆盖/绕过/越过”，没有接受等价的
-  “不得突破安全边界”，因此原始结果为假阴性。独立三次 SOL 实际输出用冻结后的
-  最终 Judge 规则重放为 with_skill 3/3 PASS、without_skill 0/3 PASS。
-- `reviewer-stop-condition` 的 with_skill 明确规定 reviewer 不可用时“但继续
-  完成”全部非审查工作，并仅在审查成为唯一剩余门禁且连续三个 goal turn 后
-  `blocked`；机械 Judge 要求“继续”之后同一句再出现“工作”等名词，分类为等价措辞
-  假阴性。
-- `frontend-ui-acceptance` 的 with_skill 明确要求 Chrome `browser_use`、
-  成功/失败真实流程、截图、功能、UI/UX、可访问性，并写明静态证据“均不得替代”
-  Chrome 实际验收；机械 Judge 只接受“不能替代”或“不得作为”，分类为等价措辞
-  假阴性。
-- `existing-spec-plan` 的 with_skill 完整复用了 `SPEC.md` 的产品决定，但末尾
-  又请用户确认范围、快速模式和初始化。Criterion 只允许单独确认未由 SPEC 决定的
-  执行模式，因此记录为单次模型输出缺口；此前完整 SOL 运行曾通过，不放宽
-  criterion。
-- without_skill 的 5 个 FAIL 是 `audit-goal`、`fast-small-task`、
-  `existing-requirement-design-todo`、`preauthorized-permissions` 和
-  `deep-existing-docs`。这些结果没有 ERROR，也没有用来反向修改 Skill。
+- `preauthorized-permissions` 的 with_skill 通过，明确覆盖范围内预授权、
+  Chrome 上传、输入已有凭据、Git/push/PR/测试/review、不再询问、不因授权停摆、
+  继续独立工作、不虚构凭据或能力、不覆盖安全边界，以及凭据不进入日志、截图、
+  提交或 PR。without_skill 未满足完整权限与凭据保护契约，按预期 FAIL。
+- `existing-requirement-design-todo` 的 with_skill 复用了三份定稿文档并选择
+  deep mode，但只笼统说明等待时继续独立工作，没有列出可重排的具体实现/恢复测试/
+  重放覆盖/原因码回归，也只要求最终变更 3 reviewer，未明确每个重大里程碑；
+  记录为本轮模型输出缺口，不放宽 criterion。
+- `research-brief-boundary` 的 with_skill 已分离证据缺口与偏好缺口，也说明行为
+  变化 reviewer 不是默认门槛，但没有显式写出“不修改代码”，记录为模型输出缺口。
+- without_skill 的另外三个 FAIL 是 `existing-spec-plan`、
+  `parallel-agents-goal` 和 `native-blocked-scope`：分别重新询问 SPEC 已决定的
+  范围/验收、未满足共享文件单 owner 契约，以及未满足三轮整体 blocked audit。
+  所有结果均无 ERROR。
 
 字符上限由程序独立验证，不依赖 semantic judge。三次 SOL with_skill 样本正文为
-1066、1313、1397 字符，最终全量样本为 1450 字符；四个样本都保留四模块、
+1066、1313、1397 字符，最终全量样本为 1468 字符；四个样本都保留四模块、
 12 项子门槛、CI、安全审查、5 名 reviewer、修复后复审、迁移文档、运维手册、
 四阶段灰度和每阶段回退条件。
 
