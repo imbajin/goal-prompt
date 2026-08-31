@@ -1,28 +1,27 @@
 # skill-up evaluation
 
-This directory contains the reproducible Prompt-level regression suite. The
-smaller `skills/goal-prompt/evals/` set ships with the Skill.
+This directory contains the 30-case Prompt-level regression suite for
+`goal-prompt`. The smaller `skills/goal-prompt/evals/` set ships with the
+Skill.
 
-## Validate
+The suite checks whether an Agent produces the required goal contract. It does
+not prove that the generated goal was executed successfully.
 
-This checks definitions only. It does not run an Agent or prove behavior.
+## Run the evaluation
+
+Validate the full suite before a run:
 
 ```bash
 skill-up validate evals/skill-up/eval.yaml
 ```
 
-## Run
+The committed release baseline uses `skill-up 0.9.1`, Codex
+`gpt-5.6-luna` with high reasoning, and `gpt-5.6-sol` semantic judges.
+Deterministic `expect` and `script` checks remain the default. Use SOL as an
+execution model only for a separately reported cohort.
 
-Run from the repository root. All snapshots, isolated HOME data, and results
-stay under `.eval-work/`.
-
-The committed suite pins the execution agent to `gpt-5.6-luna`. Use
-`skill-up 0.9.1` or later and Codex reasoning effort `high` for full runs.
-Escalate only failed or flaky cases to `xhigh` for targeted reruns. Keep
-deterministic `expect` and `script` checks as the default; use
-`gpt-5.6-sol` for semantic judges. A controlled SOL execution cohort may use
-`--model gpt-5.6-sol`, but report it separately and do not silently replace the
-committed Luna baseline.
+Run from the repository root. The command below prepares a frozen Skill copy
+and stores output under `.eval-work/`:
 
 ```bash
 commit="$(git rev-parse HEAD)"
@@ -42,39 +41,45 @@ skill-up run "$PWD/evals/skill-up/eval.yaml" \
   --output-dir "$workdir/results"
 ```
 
-The command above is suitable for a normal with-Skill run. A publishable paired
-run needs an additional isolation gate:
+Use `--dry-run` to inspect case selection without invoking an Agent. Keep
+`--output-dir` absolute. In `skill-up 0.9.1`, a relative output path can make
+Agent Judge materials such as `final_message.txt` appear outside the allowed
+Judge context.
 
-1. Freeze the repository commit, target Skill, cases, assertions, scripts, and
-   judges before either cohort starts.
-2. Give every case a fresh HOME and CODEX_HOME. Provision only the authentication
-   material required by the runner.
-3. Disable host Skill discovery, memories, apps, plugins, browser/computer
+The YAML pins both the Codex engine and its release-baseline model. A Claude
+Code run must override both values:
+
+```bash
+skill-up run evals/skill-up/eval.yaml \
+  --engine claude_code \
+  --model anthropic/<model>
+```
+
+## Isolation requirements
+
+A normal run is useful during development. A publishable with-Skill versus
+without-Skill comparison must also satisfy these conditions:
+
+1. Freeze the repository revision, target Skill, cases, assertions, scripts,
+   and judges before either cohort starts.
+2. Give each case a fresh `HOME` and `CODEX_HOME`. Reuse that state only for
+   turns within the same case.
+3. Disable host Skill discovery, memories, apps, plugins, browser and computer
    connectors, goals, multi-agent features, and Skill search.
-4. Hide global copies of the target Skill, the source repository, old results,
-   and historical state from the baseline Agent. An OS sandbox is preferred.
-5. Run both cohorts with the same execution model, reasoning effort, judges,
-   timeout, retry policy, and parallelism.
+4. Hide global copies of the target Skill, the source repository, historical
+   results, and saved state from the baseline Agent.
+5. Keep the execution model, reasoning effort, judges, timeout, retry policy,
+   and parallelism identical across both cohorts.
 6. Audit every baseline transcript. Reject the cohort if any case reads the
-   target Skill or historical target results.
+   target Skill or earlier target results.
 
-Use `--dry-run` to inspect the selected cases without running them. A real run
-uses the configured Agent and judge, so local login or credentials must already
-work. Keep `--output-dir` absolute. With a relative output directory,
-`skill-up 0.9.1` can reject agent-judge materials such as `final_message.txt` as
-escaping the Judge context directory.
+An operating-system sandbox is preferred because a clean `HOME` alone does not
+prevent an Agent from reading known host paths.
 
-Generating `/goal` proves only the Prompt layer. End-to-end task completion
-requires a separate execution evaluation.
+## Deterministic contracts
 
-## Deterministic execution-contract checks
-
-The cases for long-running, parallel, and UI work use self-contained structural
-judge scripts with the same contract. The reusable
-`fixtures/scripts/check-goal-contract.py` checker is also available for local
-checks and generated-document directories. It is deliberately a structural
-gate: it fails when the generated goal does not explicitly name the required
-contract, and it does not claim that the named work was actually executed.
+The reusable structural checker accepts a generated response or a directory of
+generated documents:
 
 ```bash
 EVAL_FINAL_MESSAGE="$(cat generated-goal.md)" \
@@ -87,35 +92,31 @@ evals/skill-up/fixtures/scripts/check-goal-char-limit.py \
   --source generated-response.md
 ```
 
-`long` requires a visible progress bar/percentage, milestone commit, current
-completed-item summary, compaction or handoff checkpoint in `state.md`, and
-remaining/next work. `parallel` requires lane ownership, a single owner for
-shared schema or lockfile, integration re-run, and an independent reviewer.
-`ui` requires Chrome `browser_use`, real success/failure interaction, browser
-evidence, separate UI/UX and accessibility checks, and an explicit statement
-that static checks do not replace browser acceptance. The fixture tests include
-both passing and intentionally incomplete Markdown documents. The character
-checker counts the rendered goal body as Unicode characters and requires fewer
-than 4000; fixtures prove 3999 passes, 4001 fails, and a missing goal is rejected.
+| Profile | Required evidence |
+| --- | --- |
+| `long` | Visible progress, milestone commits, completed and remaining work, the next action, and a `state.md` checkpoint before compaction or handoff |
+| `parallel` | Lane ownership, one writer for shared schema and lockfiles, integration reruns, and an independent reviewer |
+| `ui` | Chrome `browser_use`, successful and failed interactions, browser evidence, UI/UX review, and accessibility review |
+| character limit | A rendered goal body shorter than 4000 Unicode characters |
 
-## Evaluation summary
+The fixture suite includes passing and intentionally incomplete samples. It
+also proves that 3999 characters pass, 4001 fail, and a response without a goal
+is rejected.
 
-### Current Luna paired cohort
+## Recorded results
 
-发布回归使用 `skill-up 0.9.1`、Codex `gpt-5.6-luna` high
-execution agent、SOL semantic judges、`parallelism 1` 和绝对 output
-directory。两轮固定使用同一份 Skill、30 个 case、断言、脚本和 Judge。
+The paired cohort used 30 frozen cases, `gpt-5.6-luna` with high reasoning,
+SOL semantic judges, `parallelism: 1`, and the isolation requirements above.
 
-两轮使用独立的逐 case HOME 和 CODEX_HOME，并关闭宿主 Skill 自动发现、记忆、
-apps、plugins、browser/computer connectors、goals、multi-agent 和 Skill search。
-运行期间还移走了 `goal-prompt` 的两个常规全局安装，外层 macOS sandbox 禁止读取
-仓库、目标 Skill 路径、历史评测目录和记忆文件。with Skill 只安装 case workspace
-内的目标副本。
+| Cohort | PASS | FAIL | ERROR |
+| --- | ---: | ---: | ---: |
+| Luna with Skill | 24 | 6 | 0 |
+| Luna without Skill | 9 | 20 | 1 |
+| SOL with Skill | 28 | 2 | 0 |
 
-结果为 with Skill 24/30 PASS、without Skill 9/30 PASS。baseline 的
-`frontend-ui-acceptance` 两次达到 420 秒上限，原样保留为 ERROR。配对后有
-16 个 Skill-only PASS、1 个 baseline-only PASS、8 个共同 PASS 和 5 个共同
-non-PASS。
+The Luna pair contains 16 Skill-only passes, one baseline-only pass, eight
+shared passes, and five shared non-passes. The baseline
+`frontend-ui-acceptance` case timed out twice and remains an ERROR.
 
 | Case | with Skill | without Skill |
 | --- | --- | --- |
@@ -150,36 +151,28 @@ non-PASS。
 | stage2-migration | PASS | FAIL |
 | trigger-boundary | PASS | PASS |
 
-with Skill 的 6 个 FAIL 原样保留，没有修改 case、放宽断言或重跑到通过。
+The six Luna with-Skill failures were retained without weakening a case,
+assertion, or judge:
 
-- `research-goal` 没有完整写清研究所支持的架构决策和证据边界。
-- `no-fabrication` 诚实列出了未知项，但没有形成有限结果和请求确认的闭环。
-- `repository-rule-conflict` 没有显式引用 fixture 中的
-  `REPOSITORY_POLICY.md`。
-- `existing-requirement-design-todo` 复用了三份定稿文档，但恢复入口、
-  独立工作重排和重大里程碑 review 仍不够具体。
-- `preauthorized-permissions` 生成了目标，但没有满足预授权脚本的完整措辞契约。
-- `confirmation-brief` 的最终回复停在调查和补充问题；完整 transcript 仍触发了
-  premature-final-goal 检查。
+| Case | Observed gap |
+| --- | --- |
+| `research-goal` | Did not fully connect the research scope to the architecture decision and evidence boundary |
+| `no-fabrication` | Listed unknowns honestly but did not close with a bounded result and confirmation request |
+| `repository-rule-conflict` | Did not cite `REPOSITORY_POLICY.md` explicitly |
+| `existing-requirement-design-todo` | Reused the approved documents but underspecified recovery, independent work, and milestone review |
+| `preauthorized-permissions` | Generated a goal but missed part of the explicit preauthorization contract |
+| `confirmation-brief` | The transcript triggered the premature-final-goal check |
 
-隔离审计还记录了一处宿主元数据可见。baseline 的
-`reviewer-stop-condition` 枚举了宿主 `.codex` 元数据和无关全局 Skill 名称。
-它还检查了常规 `goal-prompt/SKILL.md` 路径。目标安装当时已移走，命令输出没有
-该路径或目标内容，transcript 也没有成功读取仓库、历史结果或记忆正文。因此这轮
-可称为目标隔离的对照评测，不称作完全 hermetic 的操作系统环境。
+The SOL result measures with-Skill behavior across execution models. It is not
+part of the paired Luna delta. A former SOL without-Skill result was discarded
+after 23 of 30 transcripts accessed the host copy of `goal-prompt`.
 
-原始 JSON、HTML、transcript、Judge context、grading evidence、逐 case HOME
-映射和脱敏配置保存在本地
-`.eval-work/luna-isolated-20260831-final/`。凭据与 Codex 状态数据库不在该目录。
+## Limitations
 
-### with-Skill across execution models
-
-with Skill 在 `gpt-5.6-sol` 下为 28/30 PASS、2 FAIL、0 ERROR。这组结果用于
-观察 execution model 对 Skill 表现的影响。严格的 with/without 差值仍以 Luna
-同环境配对为准。此前记录的 SOL without-Skill 26/30 在审计中发现 23/30
-transcript 读取了宿主
-`goal-prompt`，已从有效对照中撤下，不再用于 README 结论。没有为了补齐 SOL
-对照再跑一轮，避免不必要的模型开销。
-
-这仍是 Prompt-level 评测。静态 Judge、目标文本和浏览器验收条款不能证明真实代码、
-Chrome、CI、迁移或回滚已经执行。
+- This is a Prompt-level evaluation. A generated requirement for code, Chrome,
+  CI, migration, or rollback does not prove that the action occurred.
+- The paired cohort isolated the target, but it was not a fully hermetic
+  operating-system environment. One baseline case listed host metadata without
+  reading the target Skill, repository, memories, or prior results.
+- Static and semantic judges can still miss valid paraphrases or accept precise
+  wording that an execution Agent would not follow.
