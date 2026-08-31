@@ -28,7 +28,7 @@ goal until the authorization state changes. This gate is about authorization,
 not confidence in the investigation.
 
 - By default, do not render the final prompt from the user's first description.
-- Treat the conversation as a two-state protocol. Before explicit confirmation,
+- Treat the conversation as a three-state protocol. Before explicit confirmation,
   explicit skip, or explicit delegation of the remaining judgment, remain in
   Stage 1. A Stage 1 response must be a confirmation brief and must not contain
   a copyable `/goal`, a fenced final prompt, or language that presents one as

@@ -42,6 +42,22 @@ skill-up run "$PWD/evals/skill-up/eval.yaml" \
   --output-dir "$workdir/results"
 ```
 
+The command above is suitable for a normal with-Skill run. A publishable paired
+run needs an additional isolation gate:
+
+1. Freeze the repository commit, target Skill, cases, assertions, scripts, and
+   judges before either cohort starts.
+2. Give every case a fresh HOME and CODEX_HOME. Provision only the authentication
+   material required by the runner.
+3. Disable host Skill discovery, memories, apps, plugins, browser/computer
+   connectors, goals, multi-agent features, and Skill search.
+4. Hide global copies of the target Skill, the source repository, old results,
+   and historical state from the baseline Agent. An OS sandbox is preferred.
+5. Run both cohorts with the same execution model, reasoning effort, judges,
+   timeout, retry policy, and parallelism.
+6. Audit every baseline transcript. Reject the cohort if any case reads the
+   target Skill or historical target results.
+
 Use `--dry-run` to inspect the selected cases without running them. A real run
 uses the configured Agent and judge, so local login or credentials must already
 work. Keep `--output-dir` absolute. With a relative output directory,
@@ -84,82 +100,86 @@ than 4000; fixtures prove 3999 passes, 4001 fails, and a missing goal is rejecte
 
 ## Evaluation summary
 
-### Current SOL cohort
+### Current Luna paired cohort
 
-2026-08-31 的最终回归使用官方 `skill-up 0.9.1`、Codex
-`gpt-5.6-sol` execution agent、SOL semantic judges、`parallelism 4` 和绝对
-output directory，对冻结后的 30 个 case 执行同输入的 with_skill /
-without_skill 对照。Skill hash 为
-`c7f15395c10ade04700307daf0eb687fa19249f9e3f9e98d6886e75a552b4ac9`，
-评测输入 hash 为
-`285aa531c2bb0a21586e3eadc704a031ea30c3342d945843ad99122e3d31127e`。
-运行时间为 35 分 20 秒，原始结果为 54/60 PASS、6 FAIL、0 ERROR。本地
-JSON、HTML、transcript、Judge context 和 grading evidence 不提交到仓库。
+发布回归使用 `skill-up 0.9.1`、Codex `gpt-5.6-luna` high
+execution agent、SOL semantic judges、`parallelism 1` 和绝对 output
+directory。两轮固定使用同一份 Skill、30 个 case、断言、脚本和 Judge。
 
-| Case | with_skill | without_skill |
+两轮使用独立的逐 case HOME 和 CODEX_HOME，并关闭宿主 Skill 自动发现、记忆、
+apps、plugins、browser/computer connectors、goals、multi-agent 和 Skill search。
+运行期间还移走了 `goal-prompt` 的两个常规全局安装，外层 macOS sandbox 禁止读取
+仓库、目标 Skill 路径、历史评测目录和记忆文件。with Skill 只安装 case workspace
+内的目标副本。
+
+结果为 with Skill 24/30 PASS、without Skill 9/30 PASS。baseline 的
+`frontend-ui-acceptance` 两次达到 420 秒上限，原样保留为 ERROR。配对后有
+16 个 Skill-only PASS、1 个 baseline-only PASS、8 个共同 PASS 和 5 个共同
+non-PASS。
+
+| Case | with Skill | without Skill |
 | --- | --- | --- |
-| stage1-grounded-feature | PASS | PASS |
-| stage1-vague-draft | PASS | PASS |
-| stage1-long-running | PASS | PASS |
-| stage2-doc | PASS | PASS |
-| stage2-migration | PASS | PASS |
-| multiturn-confirmation | PASS | PASS |
-| multiturn-correction | PASS | PASS |
-| trigger-boundary | PASS | PASS |
-| research-goal | PASS | PASS |
-| audit-goal | PASS | PASS |
-| batch-goal | PASS | PASS |
-| reviewer-stop-condition | PASS | PASS |
-| skip-investigation | PASS | PASS |
-| delegated-judgment | PASS | PASS |
-| no-fabrication | PASS | PASS |
-| fast-small-task | PASS | PASS |
-| deep-compression-gates | PASS | PASS |
-| goal-char-limit | PASS | PASS |
-| repository-rule-conflict | PASS | PASS |
-| existing-spec-plan | PASS | FAIL |
-| existing-requirement-design-todo | FAIL | PASS |
-| frontend-ui-acceptance | PASS | PASS |
-| parallel-agents-goal | PASS | FAIL |
-| compaction-checkpoint | PASS | PASS |
-| native-blocked-scope | PASS | FAIL |
-| preauthorized-permissions | PASS | FAIL |
-| confirmation-brief | PASS | PASS |
-| research-brief-boundary | FAIL | PASS |
+| audit-goal | PASS | FAIL |
+| batch-goal | PASS | FAIL |
+| compaction-checkpoint | PASS | FAIL |
+| confirmation-brief | FAIL | FAIL |
+| deep-compression-gates | PASS | FAIL |
 | deep-existing-docs | PASS | PASS |
-| delegated-goal | PASS | PASS |
+| delegated-goal | PASS | FAIL |
+| delegated-judgment | PASS | FAIL |
+| existing-requirement-design-todo | FAIL | FAIL |
+| existing-spec-plan | PASS | PASS |
+| fast-small-task | PASS | FAIL |
+| frontend-ui-acceptance | PASS | ERROR |
+| goal-char-limit | PASS | PASS |
+| multiturn-confirmation | PASS | FAIL |
+| multiturn-correction | PASS | FAIL |
+| native-blocked-scope | PASS | PASS |
+| no-fabrication | FAIL | FAIL |
+| parallel-agents-goal | PASS | PASS |
+| preauthorized-permissions | FAIL | FAIL |
+| repository-rule-conflict | FAIL | FAIL |
+| research-brief-boundary | PASS | FAIL |
+| research-goal | FAIL | PASS |
+| reviewer-stop-condition | PASS | FAIL |
+| skip-investigation | PASS | PASS |
+| stage1-grounded-feature | PASS | FAIL |
+| stage1-long-running | PASS | FAIL |
+| stage1-vague-draft | PASS | FAIL |
+| stage2-doc | PASS | PASS |
+| stage2-migration | PASS | FAIL |
+| trigger-boundary | PASS | PASS |
 
-原始分组为 with_skill 28/30 PASS、without_skill 26/30 PASS。所有 6 个
-非 PASS 已按实际输出分类，不用总分替代诊断：
+with Skill 的 6 个 FAIL 原样保留，没有修改 case、放宽断言或重跑到通过。
 
-- `preauthorized-permissions` 的 with_skill 通过，明确覆盖范围内预授权、
-  Chrome 上传、输入已有凭据、Git/push/PR/测试/review、不再询问、不因授权停摆、
-  继续独立工作、不虚构凭据或能力、不覆盖安全边界，以及凭据不进入日志、截图、
-  提交或 PR。without_skill 未满足完整权限与凭据保护契约，按预期 FAIL。
-- `existing-requirement-design-todo` 的 with_skill 复用了三份定稿文档并选择
-  deep mode，但只笼统说明等待时继续独立工作，没有列出可重排的具体实现/恢复测试/
-  重放覆盖/原因码回归，也只要求最终变更 3 reviewer，未明确每个重大里程碑；
-  记录为本轮模型输出缺口，不放宽 criterion。
-- `research-brief-boundary` 的 with_skill 已分离证据缺口与偏好缺口，也说明行为
-  变化 reviewer 不是默认门槛，但没有显式写出“不修改代码”，记录为模型输出缺口。
-- without_skill 的另外三个 FAIL 是 `existing-spec-plan`、
-  `parallel-agents-goal` 和 `native-blocked-scope`：分别重新询问 SPEC 已决定的
-  范围/验收、未满足共享文件单 owner 契约，以及未满足三轮整体 blocked audit。
-  所有结果均无 ERROR。
+- `research-goal` 没有完整写清研究所支持的架构决策和证据边界。
+- `no-fabrication` 诚实列出了未知项，但没有形成有限结果和请求确认的闭环。
+- `repository-rule-conflict` 没有显式引用 fixture 中的
+  `REPOSITORY_POLICY.md`。
+- `existing-requirement-design-todo` 复用了三份定稿文档，但恢复入口、
+  独立工作重排和重大里程碑 review 仍不够具体。
+- `preauthorized-permissions` 生成了目标，但没有满足预授权脚本的完整措辞契约。
+- `confirmation-brief` 的最终回复停在调查和补充问题；完整 transcript 仍触发了
+  premature-final-goal 检查。
 
-字符上限由程序独立验证，不依赖 semantic judge。三次 SOL with_skill 样本正文为
-1066、1313、1397 字符，最终全量样本为 1468 字符；四个样本都保留四模块、
-12 项子门槛、CI、安全审查、5 名 reviewer、修复后复审、迁移文档、运维手册、
-四阶段灰度和每阶段回退条件。
+隔离审计还记录了一处宿主元数据可见。baseline 的
+`reviewer-stop-condition` 枚举了宿主 `.codex` 元数据和无关全局 Skill 名称。
+它还检查了常规 `goal-prompt/SKILL.md` 路径。目标安装当时已移走，命令输出没有
+该路径或目标内容，transcript 也没有成功读取仓库、历史结果或记忆正文。因此这轮
+可称为目标隔离的对照评测，不称作完全 hermetic 的操作系统环境。
 
-### Historical Luna cohort
+原始 JSON、HTML、transcript、Judge context、grading evidence、逐 case HOME
+映射和脱敏配置保存在本地
+`.eval-work/luna-isolated-20260831-final/`。凭据与 Codex 状态数据库不在该目录。
 
-此前 Luna high 基线包含 24 个 case，with_skill 为 12/24 PASS，
-without_skill 为 6/24 PASS，without_skill 另有 3 个运行器 ERROR。随后新增的
-`confirmation-brief`、`research-brief-boundary`、`deep-existing-docs` 和
-`delegated-goal` 在修正机械等价词后的 Luna 复核为 with_skill 4/4 PASS。
-历史 Luna 结果使用旧版 suite 和运行器，只用于保留模型 cohort 的演进背景，不能与
-当前 30-case SOL 分数直接合并或当作发布候选结果。
+### with-Skill across execution models
+
+with Skill 在 `gpt-5.6-sol` 下为 28/30 PASS、2 FAIL、0 ERROR。这组结果用于
+观察 execution model 对 Skill 表现的影响。严格的 with/without 差值仍以 Luna
+同环境配对为准。此前记录的 SOL without-Skill 26/30 在审计中发现 23/30
+transcript 读取了宿主
+`goal-prompt`，已从有效对照中撤下，不再用于 README 结论。没有为了补齐 SOL
+对照再跑一轮，避免不必要的模型开销。
 
 这仍是 Prompt-level 评测。静态 Judge、目标文本和浏览器验收条款不能证明真实代码、
 Chrome、CI、迁移或回滚已经执行。

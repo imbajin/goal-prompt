@@ -111,6 +111,8 @@ expect_fail "check-parallel-agents.sh" \
   "/goal auth、billing、notifications 并行；共享 schema 和 lockfile 没有唯一写入者。集成后重新运行测试，并由独立 reviewer 复核。"
 expect_pass "check-parallel-agents.sh" \
   "/goal auth billing notifications have separate ownership; shared schema and lockfile have a single owner. Re-run integration tests and use an independent reviewer."
+expect_pass "check-parallel-agents.sh" \
+  $'/goal auth billing notifications have separate ownership.\nShared schema and lockfile have a\nsingle owner.\nRe-run integration tests and use an independent reviewer.'
 expect_fail "check-parallel-agents.sh" \
   "/goal auth、billing、notifications 并行；共享 schema 和 lockfile 未指定唯一 owner。集成后重新运行测试，并由独立 reviewer 复核。"
 expect_fail "check-parallel-agents.sh" \

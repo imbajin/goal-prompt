@@ -11,10 +11,6 @@
 
 ![goal-prompt 如何解决常见的 /goal 问题](../assets/overview-zh.png)
 
-> **实际回测**
->
-> 已使用 [eval-system: skill-up](https://github.com/alibaba/skill-up) 确保核心行为稳定性 + 基本质量保障，[基础实测 case](../evals/skill-up/cases/) 直接可用，也欢迎补充 case 或提出更好的建议
-
 ## Why need it？
 
 自己写 `/goal` 时，最难拿捏的是尺度：
@@ -30,6 +26,14 @@
 | 小失败，提前终止 | CI 等待、权限缺口或单项失败就让整体 `blocked` | 只要还有独立工作就继续，只有全部剩余工作共同受阻才停止 |
 | 只依赖历史 context  | 踩坑/经验没有沉淀，下一轮重复试错 | 每轮简要反思，只记录高价值 + 可复用的内容 |
 | 写法绑定单一 Agent | 换到其他 Agent 后，调用方式/目录或指令对不上 | 指令/保持通用，只对平台入口做少量适配 |
+
+## 实测结果
+
+当前版本使用 `skill-up 0.9.1` 做了 30 个 case 的隔离回归。主对照统一使用 Codex `gpt-5.6-luna` high，同一批输入分别运行 with Skill 和 without Skill。with Skill 通过 24/30，without Skill 通过 9/30，后者另有 1 个超时 ERROR。
+
+![goal-prompt 的 30-case 同输入对照实测](../assets/eval-comparison-zh.png)
+
+同一模型的 Luna 对照中，启用 Skill 后从 9/30 提升到 24/30；Sol with Skill 为 28/30。完整的隔离方法、逐项结果、失败分类和评测边界见 [skill-up 评测说明](../evals/skill-up/README.md)。
 
 ## 核心设计
 
@@ -128,7 +132,7 @@ Codex 可以把生成的文本交给原生 `/goal` 持续执行。Claude Code �
 
 ## 参考资料
 
-为了避免闭门造车 or 重复造轮， 先广搜并实测了 top5 的 goal-skills，并参考了下面引用的部分思路/设计 （并使用 20+ cases 进行对比评测）
+为了避免闭门造车 or 重复造轮，先广搜并实测了 top5 的 goal-skills，并参考了下面引用的部分思路和设计。对比评测的方法、结果和复现方式统一收录在 [skill-up 评测说明](../evals/skill-up/README.md)
 - OpenAI 官方 [`define-goal`](https://github.com/openai/skills/blob/main/skills/.curated/define-goal/SKILL.md) skill
 - [`goal-prompt-builder`](https://github.com/win4r/goal-prompt-builder) skill
 - `goal + spec` skill
