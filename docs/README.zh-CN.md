@@ -135,7 +135,8 @@ Codex 可以把生成的文本交给原生 `/goal` 持续执行。Claude Code �
 为了避免闭门造车 or 重复造轮，先广搜并实测了 top5 的 goal-skills，并参考了下面引用的部分思路和设计。对比评测的方法、结果和复现方式统一收录在 [skill-up 评测说明](../evals/skill-up/README.md)
 - OpenAI 官方 [`define-goal`](https://github.com/openai/skills/blob/main/skills/.curated/define-goal/SKILL.md) skill
 - [`goal-prompt-builder`](https://github.com/win4r/goal-prompt-builder) skill
-- `goal + spec` skill
+- [`goal-forge`](https://github.com/michaelpersonal/goal-forge) skill
+- [`leader`](https://github.com/KKKKhazix/khazix-skills/blob/main/leader/SKILL.md) skill
 
 >设计细节见 [`fusion-notes.md`](fusion-notes.md)，版本历史见 [CHANGELOG.md](../CHANGELOG.md)
 
