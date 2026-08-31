@@ -11,10 +11,6 @@ It adapts to the task's complexity and balances efficiency with quality.
 
 ![How goal-prompt addresses common /goal problems](assets/overview-en.png)
 
-> **Tested with real evals**
->
-> We use [skill-up](https://github.com/alibaba/skill-up) to keep core behavior stable and provide a basic quality baseline. The [test cases](evals/skill-up/cases/) are ready to run, and better cases and suggestions are welcome.
-
 ## Why use it?
 
 Writing `/goal` by hand makes prompt size hard to judge:
@@ -31,6 +27,14 @@ Writing `/goal` by hand makes prompt size hard to judge:
 | Stop after a small failure | A CI wait, permission gap, or failed item can mark the whole goal `blocked` | Keep doing independent work and stop only when all meaningful remaining work is jointly blocked |
 | Depend on chat history | Lessons disappear with the conversation, so the next run repeats the same mistakes | Reflect briefly after each loop and keep only high-value, reusable lessons |
 | Tie the workflow to one agent | Commands, paths, or instructions break when moving to another agent | Keep the instructions portable and adapt only the platform entrypoint |
+
+## Evaluation
+
+The current release was evaluated on 30 isolated cases with `skill-up 0.9.1`. The paired run held the inputs and Codex `gpt-5.6-luna` high constant; the baseline also had one timeout ERROR.
+
+![goal-prompt before and after evaluation](assets/eval-comparison-en.png)
+
+With the same Luna model, the pass count rose from 9/30 to 24/30 after enabling the Skill; Sol with Skill reached 28/30. See the [skill-up evaluation guide](evals/skill-up/README.md) for the isolation protocol, case results, failure analysis, and evaluation limits.
 
 ## Core design
 
@@ -129,11 +133,12 @@ Codex can pass the generated text to its native `/goal` runtime for continuous e
 
 ## References
 
-To avoid designing in isolation or rebuilding existing work, we surveyed and tested five goal-related Skills, then incorporated selected ideas from:
+To avoid designing in isolation or rebuilding existing work, we surveyed and tested five goal-related Skills, then incorporated selected ideas from the references below. The [skill-up evaluation guide](evals/skill-up/README.md) documents the comparison method and results.
 
 - OpenAI's [`define-goal`](https://github.com/openai/skills/blob/main/skills/.curated/define-goal/SKILL.md) Skill
 - the [`goal-prompt-builder`](https://github.com/win4r/goal-prompt-builder) Skill
-- a `goal + spec` Skill
+- the [`goal-forge`](https://github.com/michaelpersonal/goal-forge) Skill
+- the [`leader`](https://github.com/KKKKhazix/khazix-skills/blob/main/leader/SKILL.md) Skill
 
 See [`fusion-notes.md`](docs/fusion-notes.md) for design details and
 [CHANGELOG.md](CHANGELOG.md) for version history.
