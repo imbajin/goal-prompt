@@ -29,7 +29,7 @@
 
 ## 实测结果
 
-1.2 候选版本使用 `skill-up 0.9.1` 做了 30 个 case 的隔离回归。主对照统一使用 Codex `gpt-5.6-luna` high，同一批输入分别运行 with Skill 和 without Skill。with Skill 通过 24/30，without Skill 通过 6/30，后者另有 1 个超时 ERROR。最终补充的操作目标边界已做定向契约覆盖，但没有重新执行完整 A/B。
+最新版本使用 `skill-up 0.9.1` 做了 30 个 case 的隔离回归。主对照统一使用 Codex `gpt-5.6-luna` high，同一批输入分别运行 with Skill 和 without Skill。with Skill 通过 24/30，without Skill 通过 6/30，后者另有 1 个超时 ERROR。最终补充的操作目标边界已做定向契约覆盖，但没有重新执行完整 A/B。
 
 ![goal-prompt 的 30-case 同输入对照实测](../assets/eval-comparison-zh.png)
 
@@ -108,6 +108,14 @@ npx skills add imbajin/goal-prompt
 ```bash
 npx skills add imbajin/goal-prompt -g -a codex -a claude-code
 ```
+
+已安装旧版本时，在原安装范围更新：
+
+```bash
+npx skills update goal-prompt
+```
+
+如果原来使用 `-g` 全局安装，运行 `npx skills update goal-prompt -g -y`
 
 （可选）把下面的 prompt 发给任意 Agent：
 
