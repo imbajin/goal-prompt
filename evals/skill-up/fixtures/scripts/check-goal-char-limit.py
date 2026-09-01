@@ -18,13 +18,34 @@ def parse_args() -> argparse.Namespace:
 
 
 def extract_goal(text: str) -> str:
-    fenced = re.search(r"```[^\n]*\n(/goal\b.*?)\n```", text, re.DOTALL)
-    if fenced:
-        return fenced.group(1)
+    fence = re.compile(r"(?ms)^[ \t]*```[^\n]*\n(.*?)^[ \t]*```[ \t]*$")
+    goal_line = re.compile(r"^[ \t]*/goal(?:[ \t]+(.*)|[ \t]*)$")
+    if sum(bool(goal_line.match(line)) for line in text.splitlines()) != 1:
+        raise ValueError("expected exactly one rendered /goal")
+    for block in fence.finditer(text):
+        lines = block.group(1).splitlines()
+        for index, line in enumerate(lines):
+            match = goal_line.match(line)
+            if match:
+                body = match.group(1) or ""
+                if index + 1 < len(lines):
+                    body = "\n".join((body, *lines[index + 1:]))
+                return body.rstrip()
 
-    direct = re.search(r"(?m)^/goal\b.*", text, re.DOTALL)
-    if direct:
-        return direct.group(0).rstrip()
+    lines = text.splitlines()
+    for index, line in enumerate(lines):
+        direct = goal_line.match(line)
+        if direct:
+            body_lines = [direct.group(1) or ""]
+            for continuation in lines[index + 1:]:
+                if re.match(
+                    r"^[ \t]*(?:Explanation|Notes?|说明|备注)[ \t]*[:：]",
+                    continuation,
+                    re.IGNORECASE,
+                ):
+                    break
+                body_lines.append(continuation)
+            return "\n".join(body_lines).rstrip()
 
     raise ValueError("no rendered /goal found")
 
@@ -46,6 +67,9 @@ def main() -> int:
         goal = extract_goal(text)
     except ValueError as error:
         print(str(error), file=sys.stderr)
+        return 1
+    if not goal.strip():
+        print("rendered /goal body is empty", file=sys.stderr)
         return 1
 
     body = goal.removeprefix("/goal").lstrip()

@@ -72,6 +72,15 @@ not confidence in the investigation.
   dispatch, and review responses. The final `/goal` must state this explicitly;
   do not ask again, wait, defer, or mark work `blocked` merely because such an
   action normally presents a permission or authorization prompt.
+- During Stage 1, identify each operation target from available evidence. For
+  credentials, identify the intended environment or account and purpose; for
+  remote mutations, identify the repository, remote, branch, PR, or other
+  affected target. If the evidence supports one target, record it without
+  asking. If multiple materially distinct targets remain and the choice would
+  change the outcome or impact, keep Stage 2 pending and ask which target is in
+  scope unless the user delegated that choice. This resolves scope; it is not
+  another permission request. Once resolved, do not ask again merely to
+  authorize the operation.
 - Never expose, echo, persist, screenshot, transcribe, commit, or publish a
   credential value. Record only the redacted action and its success or failure;
   keep password fields and credential-bearing UI out of captured evidence.
@@ -246,7 +255,8 @@ judgment, Stage 1 returns a confirmation brief, not `/goal`. Include:
 - completion evidence;
 - recommended mode and rationale;
 - existing files to reuse and new files to create;
-- initialization actions, permission risks, and their effects;
+- initialization actions, capability gaps, resolved operation targets, and
+  their effects;
 - only unresolved questions that materially change the goal.
 
 For complex long-running work, also summarize recoverable waits, independent work
@@ -410,7 +420,8 @@ Proposed goal brief
 - Recommended mode: <fast/deep>; rationale: <task properties>.
 - Active truth: <existing paths to reuse>.
 - Proposed initialization: <no files, or each file and its purpose>.
-- Permission risks: <none, or exact capability, affected phase, and adjustment>.
+- Capabilities and targets: <resolved credential/remote targets; any actual
+  capability gap, affected phase, and adjustment>.
 - Recovery and stop: <checkpoints, bounded retries, and independent work during
   waits; stop only when all remaining work is jointly blocked>.
 - Open assumptions: <only material uncertainties>.
@@ -419,7 +430,7 @@ Questions:
 <only necessary questions that materially change the goal>.
 
 Please confirm or correct the goal brief, execution mode, and initialization
-plan. I will prepare the files and generate the final `/goal` only after
+plan. I will prepare the files and generate the final prompt only after
 confirmation.
 ```
 

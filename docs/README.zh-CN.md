@@ -1,6 +1,6 @@
 # goal-prompt [![EN](https://img.shields.io/badge/-EN-555)](../README.md)
 
-[![Version](https://img.shields.io/badge/version-1.1-1684C7)](../CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.2--dev-1684C7)](../CHANGELOG.md)
 [![Validate](https://github.com/imbajin/goal-prompt/actions/workflows/validate.yml/badge.svg)](https://github.com/imbajin/goal-prompt/actions/workflows/validate.yml)
 [![License](https://img.shields.io/badge/license-Apache%202.0-D96C2C)](../LICENSE)
 [![Agent Skills](https://img.shields.io/badge/Agent%20Skills-compatible-2E8B57)](https://agentskills.io/)
@@ -29,11 +29,11 @@
 
 ## 实测结果
 
-当前版本使用 `skill-up 0.9.1` 做了 30 个 case 的隔离回归。主对照统一使用 Codex `gpt-5.6-luna` high，同一批输入分别运行 with Skill 和 without Skill。with Skill 通过 24/30，without Skill 通过 9/30，后者另有 1 个超时 ERROR。
+1.2 候选版本使用 `skill-up 0.9.1` 做了 30 个 case 的隔离回归。主对照统一使用 Codex `gpt-5.6-luna` high，同一批输入分别运行 with Skill 和 without Skill。with Skill 通过 24/30，without Skill 通过 6/30，后者另有 1 个超时 ERROR。最终补充的操作目标边界已做定向契约覆盖，但没有重新执行完整 A/B。
 
 ![goal-prompt 的 30-case 同输入对照实测](../assets/eval-comparison-zh.png)
 
-同一模型的 Luna 对照中，启用 Skill 后从 9/30 提升到 24/30；Sol with Skill 为 28/30。完整的隔离方法、逐项结果、失败分类和评测边界见 [skill-up 评测说明](../evals/skill-up/README.md)。
+同一模型的 Luna 对照中，启用 Skill 后从 6/30 提升到 24/30；Sol high with Skill 为 28/30。更严格的基线分数来自对冻结响应重新执行修正后的确定性 Judge，排除了 3 个假绿。完整的隔离方法、逐项结果、失败分类和评测边界见 [skill-up 评测说明](../evals/skill-up/README.md)。
 
 ## 核心设计
 
@@ -132,7 +132,7 @@ Codex 可以把生成的文本交给原生 `/goal` 持续执行。Claude Code �
 
 ## 参考资料
 
-为了避免闭门造车 or 重复造轮，先广搜并实测了 top5 的 goal-skills，并参考了下面引用的部分思路和设计。对比评测的方法、结果和复现方式统一收录在 [skill-up 评测说明](../evals/skill-up/README.md)
+为了避免闭门造车 or 重复造轮，先广搜并实测了 4 个 goal-skills，并参考了下面引用的部分思路和设计。对比评测的方法、结果和复现方式统一收录在 [skill-up 评测说明](../evals/skill-up/README.md)
 - OpenAI 官方 [`define-goal`](https://github.com/openai/skills/blob/main/skills/.curated/define-goal/SKILL.md) skill
 - [`goal-prompt-builder`](https://github.com/win4r/goal-prompt-builder) skill
 - [`goal-forge`](https://github.com/michaelpersonal/goal-forge) skill

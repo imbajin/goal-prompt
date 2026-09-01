@@ -13,13 +13,8 @@ input:
     .goal-task/event-bus-migration/state.md 是执行契约和状态入口，所有细节都可以写进去。
     请不要因为细节多就删掉任何一项门槛,只允许精简措辞和把细节挪到 state.md。
 expect:
-  must_contain: ["/goal", "state.md"]
   exit_code: 0
 judge:
-  type: agent_judge
-  model: gpt-5.6-sol
-  criteria:
-    - "最终渲染的 /goal 正文(去掉开头的 /goal 前缀后)长度低于 4000 字符。"
-    - "为了控制长度,细节被移入 state.md 执行契约,而不是通过删除任一完成门槛或子门槛来压缩,四个模块、12 项子门槛、CI、安全审查、5 名独立只读 reviewer、修复后复审、灰度发布分阶段回退条件在语义上均可追溯保留(可在 /goal 或其明确引用的 state.md 中)。"
-    - "/goal 明确以 state.md 作为真相入口,而不是简单截断或模糊化原始要求。"
-  pass_threshold: 1.0
+  type: script
+  script_path: skill-up/fixtures/scripts/check-goal-char-limit-case.py
+  timeout_seconds: 30

@@ -17,48 +17,32 @@ skill-up validate evals/skill-up/eval.yaml
 
 The committed release baseline uses `skill-up 0.9.1`, Codex
 `gpt-5.6-luna` with high reasoning, and `gpt-5.6-sol` semantic judges.
-Deterministic `expect` and `script` checks remain the default. Use SOL as an
+Deterministic `expect` and `script` checks remain the default. Use Sol as an
 execution model only for a separately reported cohort.
 
-Run from the repository root. The command below prepares a frozen Skill copy
-and stores output under `.eval-work/`:
+For a development run of the committed with-Skill configuration, start with no
+existing target directory so stale files cannot survive:
 
 ```bash
-commit="$(git rev-parse HEAD)"
-workdir="$PWD/.eval-work/$commit"
-target="$PWD/.eval-work/target"
-codex_home="${CODEX_HOME:-$HOME/.codex}"
-
-mkdir -p "$target" "$workdir/home" "$workdir/results"
-git archive "$commit:skills/goal-prompt" | tar -x -C "$target"
-
-test -f "$target/SKILL.md"
 test "$(skill-up --version)" = "skill-up version 0.9.1"
-skill-up validate "$PWD/evals/skill-up/eval.yaml"
-
-HOME="$workdir/home" CODEX_HOME="$codex_home" \
-skill-up run "$PWD/evals/skill-up/eval.yaml" \
-  --output-dir "$workdir/results"
-```
-
-Use `--dry-run` to inspect case selection without invoking an Agent. Keep
-`--output-dir` absolute. In `skill-up 0.9.1`, a relative output path can make
-Agent Judge materials such as `final_message.txt` appear outside the allowed
-Judge context.
-
-The YAML pins both the Codex engine and its release-baseline model. A Claude
-Code run must override both values:
-
-```bash
+test ! -e .eval-work/target
+mkdir -p .eval-work/target
+git archive HEAD:skills/goal-prompt | tar -x -C .eval-work/target
 skill-up run evals/skill-up/eval.yaml \
-  --engine claude_code \
-  --model anthropic/<model>
+  --output-dir "$(mktemp -d "$PWD/.eval-work/run.XXXXXX")"
 ```
+
+This command evaluates committed `HEAD`; it does not include uncommitted
+changes. A Claude Code cohort needs a separate config that replaces both the
+execution engine/model and every case-level Agent Judge model with compatible
+Claude values. Overriding only `--engine` and `--model` is insufficient.
 
 ## Isolation requirements
 
-A normal run is useful during development. A publishable with-Skill versus
-without-Skill comparison must also satisfy these conditions:
+A normal run is useful during development. The recorded A/B result below was a
+manually isolated experiment, not the output of a committed one-command runner.
+A publishable with-Skill versus without-Skill comparison must satisfy these
+conditions:
 
 1. Freeze the repository revision, target Skill, cases, assertions, scripts,
    and judges before either cohort starts.
@@ -106,17 +90,27 @@ is rejected.
 ## Recorded results
 
 The paired cohort used 30 frozen cases, `gpt-5.6-luna` with high reasoning,
-SOL semantic judges, `parallelism: 1`, and the isolation requirements above.
+Sol semantic judges, `parallelism: 1`, and the isolation requirements above.
 
 | Cohort | PASS | FAIL | ERROR |
 | --- | ---: | ---: | ---: |
 | Luna with Skill | 24 | 6 | 0 |
-| Luna without Skill | 9 | 20 | 1 |
-| SOL with Skill | 28 | 2 | 0 |
+| Luna without Skill | 6 | 23 | 1 |
+| Sol high with Skill | 28 | 2 | 0 |
 
-The Luna pair contains 16 Skill-only passes, one baseline-only pass, eight
+The Luna pair contains 19 Skill-only passes, one baseline-only pass, five
 shared passes, and five shared non-passes. The baseline
 `frontend-ui-acceptance` case timed out twice and remains an ERROR.
+
+The original frozen responses were replayed after the deterministic judges were
+strengthened. Three former baseline passes were reclassified because their
+required contract appeared outside the rendered goal or no rendered goal was
+present; no Agent was rerun for this correction.
+
+The final operation-target wording was added after this cohort. Its single
+target, ambiguous target, and delegated-choice branches are covered by the
+packaged basic evals, but these aggregate scores are not a full rerun of that
+last wording change.
 
 | Case | with Skill | without Skill |
 | --- | --- | --- |
@@ -125,19 +119,19 @@ shared passes, and five shared non-passes. The baseline
 | compaction-checkpoint | PASS | FAIL |
 | confirmation-brief | FAIL | FAIL |
 | deep-compression-gates | PASS | FAIL |
-| deep-existing-docs | PASS | PASS |
+| deep-existing-docs | PASS | FAIL |
 | delegated-goal | PASS | FAIL |
 | delegated-judgment | PASS | FAIL |
 | existing-requirement-design-todo | FAIL | FAIL |
 | existing-spec-plan | PASS | PASS |
 | fast-small-task | PASS | FAIL |
 | frontend-ui-acceptance | PASS | ERROR |
-| goal-char-limit | PASS | PASS |
+| goal-char-limit | PASS | FAIL |
 | multiturn-confirmation | PASS | FAIL |
 | multiturn-correction | PASS | FAIL |
 | native-blocked-scope | PASS | PASS |
 | no-fabrication | FAIL | FAIL |
-| parallel-agents-goal | PASS | PASS |
+| parallel-agents-goal | PASS | FAIL |
 | preauthorized-permissions | FAIL | FAIL |
 | repository-rule-conflict | FAIL | FAIL |
 | research-brief-boundary | PASS | FAIL |
@@ -163,8 +157,8 @@ assertion, or judge:
 | `preauthorized-permissions` | Generated a goal but missed part of the explicit preauthorization contract |
 | `confirmation-brief` | The transcript triggered the premature-final-goal check |
 
-The SOL result measures with-Skill behavior across execution models. It is not
-part of the paired Luna delta. A former SOL without-Skill result was discarded
+The Sol high result measures with-Skill behavior across execution models. It is
+not part of the paired Luna delta. A former Sol without-Skill result was discarded
 after 23 of 30 transcripts accessed the host copy of `goal-prompt`.
 
 ## Limitations

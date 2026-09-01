@@ -41,6 +41,39 @@ def read_source(args: argparse.Namespace) -> tuple[str, str]:
     return message, "EVAL_FINAL_MESSAGE"
 
 
+def extract_goal(text: str) -> str:
+    """Return only the final rendered /goal, excluding surrounding prose."""
+    fence = re.compile(r"(?ms)^[ \t]*```[^\n]*\n(.*?)^[ \t]*```[ \t]*$")
+    goal_line = re.compile(r"^[ \t]*/goal(?:[ \t]+(.*)|[ \t]*)$")
+    if sum(bool(goal_line.match(line)) for line in text.splitlines()) != 1:
+        raise ValueError("expected exactly one rendered /goal")
+    for block in fence.finditer(text):
+        lines = block.group(1).splitlines()
+        for index, line in enumerate(lines):
+            match = goal_line.match(line)
+            if match:
+                body = match.group(1) or ""
+                if index + 1 < len(lines):
+                    body = "\n".join((body, *lines[index + 1:]))
+                return body.rstrip()
+
+    lines = text.splitlines()
+    for index, line in enumerate(lines):
+        direct = goal_line.match(line)
+        if direct:
+            body_lines = [direct.group(1) or ""]
+            for continuation in lines[index + 1:]:
+                if re.match(
+                    r"^[ \t]*(?:Explanation|Notes?|说明|备注)[ \t]*[:：]",
+                    continuation,
+                    re.IGNORECASE,
+                ):
+                    break
+                body_lines.append(continuation)
+            return "\n".join(body_lines).rstrip()
+    raise ValueError("no rendered /goal found")
+
+
 def has(text: str, *patterns: str) -> bool:
     return any(re.search(pattern, text, re.IGNORECASE | re.DOTALL) for pattern in patterns)
 
@@ -148,8 +181,8 @@ def checks_for(profile: str) -> list[tuple[str, tuple[str, ...]]]:
             (
                 "single owner for shared schema or lockfile",
                 (
-                    r"(?:schema|lockfile|共享).{0,180}(?:single owner|唯一 owner|唯一归属|独占|唯一负责人)",
-                    r"(?:single owner|唯一 owner|唯一归属|独占|唯一负责人).{0,180}(?:schema|lockfile|共享)",
+                    r"(?:schema|lockfile|共享).{0,180}(?:single owner|one accountable owner|one owner|唯一 owner|唯一归属|独占|唯一负责人)",
+                    r"(?:single owner|one accountable owner|one owner|唯一 owner|唯一归属|独占|唯一负责人).{0,180}(?:schema|lockfile|共享)",
                 ),
             ),
             (
@@ -211,6 +244,13 @@ def main() -> int:
     args = parser.parse_args()
 
     text, source = read_source(args)
+    has_rendered_goal = re.search(r"(?m)^[ \t]*/goal(?:[ \t]|$)", text)
+    if source == "EVAL_FINAL_MESSAGE" or has_rendered_goal:
+        try:
+            text = extract_goal(text)
+        except ValueError as error:
+            print(str(error), file=sys.stderr)
+            return 1
     negated = negated_requirements(args.profile, text)
     if negated:
         print(f"FAIL goal contract ({args.profile}; source: {source})", file=sys.stderr)

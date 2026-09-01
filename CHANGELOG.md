@@ -2,6 +2,19 @@
 
 All notable changes to this project are documented in this file.
 
+## 1.2 · Unreleased
+
+- Tighten the confirmation protocol so Stage 1 cannot leak a final goal and
+  explicit delegation still proceeds without another approval round.
+- Pre-authorize all in-scope user-authorizable actions while resolving the
+  account, credential purpose, remote, branch, or PR target from evidence.
+- Strengthen deep-work recovery, shared-file ownership, re-review, UI browser
+  acceptance, and exceptional all-work-blocked semantics.
+- Separate read-only research and audit goals from behavior-change workflows so
+  they do not inherit implementation gates mechanically.
+- Expand the `skill-up 0.9.1` suite to 30 cases, document the strict A/B
+  isolation protocol, and harden deterministic Judges against false positives.
+
 ## 1.1 · 📅 2026-08-03
 
 - Add fast and deep modes so focused tasks stay lightweight while long-running

@@ -9,7 +9,7 @@ skills:
 
 engine:
   name: codex
-  # Release baseline only; override both --engine and --model for Claude Code.
+  # 发布基线；非 Codex 对照需在独立配置中同时替换执行与 Judge 模型。
   model:
     provider: openai
     name: gpt-5.6-luna

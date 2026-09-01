@@ -2,6 +2,19 @@
 set -euo pipefail
 
 scripts_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+skill_file="$scripts_dir/../../../../skills/goal-prompt/SKILL.md"
+
+stage1_template="$(
+  awk '
+    /^### Stage 1: confirmation brief$/ { capture = 1 }
+    /^### Stage 2: final `\/goal`$/ { capture = 0 }
+    capture { print }
+  ' "$skill_file"
+)"
+if printf '%s' "$stage1_template" | grep -Fq '/goal'; then
+  echo "Stage 1 模板不得包含字面量 /goal" >&2
+  exit 1
+fi
 
 expect_pass() {
   local script="$1"
@@ -64,6 +77,25 @@ if EVAL_FINAL_MESSAGE="没有目标正文" \
   echo "check-goal-char-limit.py 错误接受了缺少 /goal 的文本" >&2
   exit 1
 fi
+if EVAL_FINAL_MESSAGE=$'/goal\n\nExplanation: xxxxxxxxxx' \
+  "$scripts_dir/check-goal-char-limit.py" >/dev/null 2>&1; then
+  echo "check-goal-char-limit.py 错误接受了解释段中的目标正文" >&2
+  exit 1
+fi
+if EVAL_FINAL_MESSAGE=$'/goal short\n/goal second' \
+  "$scripts_dir/check-goal-char-limit.py" >/dev/null 2>&1; then
+  echo "check-goal-char-limit.py 错误接受了多个目标正文" >&2
+  exit 1
+fi
+
+expect_pass "check-goal-char-limit-case.py" \
+  "/goal payments、ledger、reconciliation、reporting 迁移到事件总线，保持公开 API 与 webhook 契约。state.md 是入口。四个模块的单元测试、契约测试和性能回归不超过 5%；完成数据一致性检查和回滚演练。12 项门槛、CI 与安全审查全部通过。5 名 reviewer 批准且修复后复审。迁移文档和运维手册齐全。4 个阶段灰度，每阶段有回退条件。"
+expect_fail "check-goal-char-limit-case.py" \
+  $'Requirements: payments ledger reconciliation reporting public API webhook state.md 12 单元测试 契约测试 性能 5% 数据一致 回滚演练 CI 安全 5 reviewer 复审 迁移文档 运维手册 4 阶段 回退。\n```markdown\n/goal Migrate the system.\n```'
+char_case_body="payments ledger reconciliation reporting migration preserves public API and webhook contracts. state.md is the entrypoint. Unit tests, contract tests, and performance regression within 5%. Data consistency and rollback rehearsed. 12 gates, CI and security pass. 5 reviewers approve and re-review fixes. Migration docs and operations manual complete. 4 stages with rollback conditions."
+char_case_padding="$(printf 'x%.0s' $(seq 1 $((3999 - ${#char_case_body}))))"
+expect_pass "check-goal-char-limit-case.py" \
+  $'/goal\n'"$char_case_body$char_case_padding"
 
 expect_pass "check-reviewer-stop.sh" \
   "/goal reviewer 不可用时继续其余独立工作；修复后必须复审。只有全部剩余工作共同依赖 reviewer 时才 blocked。"
@@ -81,6 +113,8 @@ expect_fail "check-stage2-migration.sh" \
   "/goal 使用 .goal-task/auth-migration/state.md，保持兼容；所有测试与 CI 必须通过。独立 review，修复后复审。一个 CI 等待就让整体 blocked，停止其余工作。"
 expect_pass "check-stage2-migration.sh" \
   "/goal 使用 .goal-task/auth-migration/state.md，保持兼容；所有测试与 CI 必须通过。独立评审，修复后复核。单项等待时继续其余不依赖的工作，只有全部剩余工作共同阻塞才停止。"
+expect_fail "check-stage2-migration.sh" \
+  $'/goal\n\nExplanation: 使用 .goal-task/auth-migration/state.md，保持兼容；所有测试与 CI 必须通过。独立 review，修复后复审。单项等待时继续独立工作，只有全部剩余工作共同 blocked 才停止。'
 
 expect_pass "check-reviewer-stop.sh" \
   "/goal 独立 reviewer 暂不可用时继续其余独立工作；修复后再次审查。只有所有剩余工作共同依赖 reviewer 才整体阻塞。"
@@ -113,6 +147,12 @@ expect_pass "check-parallel-agents.sh" \
   "/goal auth billing notifications have separate ownership; shared schema and lockfile have a single owner. Re-run integration tests and use an independent reviewer."
 expect_pass "check-parallel-agents.sh" \
   $'/goal auth billing notifications have separate ownership.\nShared schema and lockfile have a\nsingle owner.\nRe-run integration tests and use an independent reviewer.'
+expect_pass "check-parallel-agents.sh" \
+  $'/goal auth billing notifications have separate ownership.\n\nShared schema and lockfile have one accountable owner.\nRe-run integration tests and use an independent reviewer.'
+expect_fail "check-parallel-agents.sh" \
+  $'/goal\n\nExplanation: auth billing notifications have separate ownership; shared schema and lockfile have a single owner. Re-run integration tests and use an independent reviewer.'
+expect_fail "check-parallel-agents.sh" \
+  $'/goal auth billing notifications have separate ownership; shared schema and lockfile have a single owner. Re-run integration tests and use an independent reviewer.\n/goal Just do the task.'
 expect_fail "check-parallel-agents.sh" \
   "/goal auth、billing、notifications 并行；共享 schema 和 lockfile 未指定唯一 owner。集成后重新运行测试，并由独立 reviewer 复核。"
 expect_fail "check-parallel-agents.sh" \
@@ -160,6 +200,10 @@ expect_fail "check-parallel-agents.sh" \
 
 expect_pass "check-frontend-ui.sh" \
   "/goal 用 Chrome browser_use 走成功和失败流程并保留浏览器证据；分别检查 UI/UX 与可访问性。构建和 DOM 检查不能替代浏览器验收。"
+expect_pass "check-frontend-ui.sh" \
+  $'/goal Use Chrome browser_use for success and failure flows.\n\nSave browser evidence; review UI/UX and accessibility. Build and DOM checks cannot replace browser acceptance.'
+expect_fail "check-frontend-ui.sh" \
+  $'/goal\n\nExplanation: Use Chrome browser_use for success and failure flows; save browser evidence; review UI/UX and accessibility. Build and DOM checks cannot replace browser acceptance.'
 expect_fail "check-frontend-ui.sh" \
   "/goal 不要使用 Chrome browser_use；只提及成功和失败状态，保存浏览器截图，检查 UI/UX 与可访问性。构建和 DOM 检查不能替代浏览器验收。"
 expect_fail "check-frontend-ui.sh" \
@@ -237,6 +281,10 @@ expect_contract_pass "parallel" \
   "/goal 并行安排 auth agent 与 billing agent。明确文件 ownership；共享 schema 和 lockfile 由唯一 owner 维护。集成接缝完成后 rerun 测试，并安排 independent reviewer。"
 expect_contract_fail "parallel" \
   "/goal 并行让两个 agent 各自修改模块，最后合并。"
+expect_contract_fail "parallel" \
+  $'/goal\n\nExplanation: auth billing notifications run in parallel with explicit ownership; shared schema and lockfile have one accountable owner. Re-run integration tests and use an independent reviewer.'
+expect_contract_fail "parallel" \
+  $'/goal auth billing notifications run in parallel with explicit ownership; shared schema and lockfile have one accountable owner. Re-run integration tests and use an independent reviewer.\n/goal Just do the task.'
 expect_contract_pass "parallel" \
   "/goal auth、billing、notifications 并行由三个 agent 负责；明确文件归属。共享 schema 和 lockfile 由唯一负责人维护。集成接缝完成后再次运行测试，并安排独立评审。"
 expect_contract_fail "parallel" \
@@ -298,6 +346,8 @@ expect_contract_source_fail "long" "$scripts_dir/../contract-artifacts/long/inco
 
 expect_pass "check-native-blocked-scope.sh" \
   "/goal api、worker、web 分开推进；worker 标记 deferred。该项已重试三次并连续三个 goal turns 仍失败。只有所有有意义的剩余工作都依赖同一个条件时，才调用原生 update_goal blocked。"
+expect_fail "check-native-blocked-scope.sh" \
+  "/goal api、worker、web 分开推进；worker 标记 deferred。该项已重试三次并连续三个 goal turns 仍失败。所有剩余工作都 blocked，但 blockers differ；调用原生 update_goal blocked。"
 
 expect_pass "check-preauthorized-permissions.sh" \
   "/goal 任务内操作默认已授权，包括 Chrome 文件上传和输入已有测试密码；无需再次询问确认，权限不得导致等待或 blocked。真实能力缺失时继续所有独立工作。预授权不得虚构密码、会话或工具，也不能覆盖更高优先级安全边界。不得记录、截图或保存密码。"
@@ -395,6 +445,14 @@ expect_fail "check-preauthorized-permissions.sh" \
   "/goal In-scope actions are pre-authorized, including Chrome upload and entering available credentials. Do not ask again; permission cannot block work. Continue independent work. Never expose credential values. But credentials may be revealed. Do not override safety boundaries."
 expect_fail "check-preauthorized-permissions.sh" \
   "/goal In-scope actions are pre-authorized, including Chrome upload and entering available credentials. Do not ask again; permission cannot block work. Continue independent work. Never expose credential values. But password leakage is allowed. Do not override safety boundaries."
+expect_fail "check-preauthorized-permissions.sh" \
+  $'/goal In-scope actions are pre-authorized, including Chrome upload and entering available credentials. Do not ask again; permission cannot block work. Continue independent work. Never expose, log, persist, upload, or commit credential values. Do not override safety boundaries.\nAPI tokens may be logged. Access keys may be uploaded. Private keys may be committed.'
+expect_fail "check-preauthorized-permissions.sh" \
+  $'/goal In-scope actions are pre-authorized, including Chrome upload and entering available credentials. Do not ask again; permission cannot block work. Continue independent work. Never expose or persist credential values and do not override safety boundaries.\nAPI_KEY may be logged. AUTH_TOKEN may be uploaded. PRIVATE_KEY may be committed.'
+expect_fail "check-preauthorized-permissions.sh" \
+  "/goal In-scope actions are pre-authorized, including Chrome upload and entering available credentials. Do not ask again; permission cannot block work. Continue independent work. Never expose or persist credential values and do not override safety boundaries. Upload API tokens. Upload access key. Copy private keys."
+expect_fail "check-preauthorized-permissions.sh" \
+  $'/goal\n\nExplanation: In-scope actions are pre-authorized, including Chrome upload and entering available credentials. Do not ask again; permission cannot block work. Continue independent work. Never expose or persist credential values and do not override safety boundaries.'
 
 bad_root="$(mktemp -d /tmp/goal-contract-root.XXXXXX)"
 cp "$scripts_dir/../contract-artifacts/long/incomplete.md" "$bad_root/state.md"
@@ -402,6 +460,12 @@ if "$scripts_dir/check-goal-contract.py" --profile long --root "$bad_root" >/dev
   echo "check-goal-contract.py 错误接受了不完整 state.md 根目录" >&2
   exit 1
 fi
+printf '%s\n' \
+  'auth billing notifications run in parallel with explicit ownership; shared schema and lockfile have one accountable owner. Re-run integration tests and use an independent reviewer.' \
+  '```markdown' \
+  '/goal Just do the task.' \
+  '```' > "$bad_root/explanation-only.md"
+expect_contract_source_fail "parallel" "$bad_root/explanation-only.md"
 rm -rf "$bad_root"
 
 expect_pass "check-research-brief.sh" \

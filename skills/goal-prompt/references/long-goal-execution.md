@@ -74,8 +74,10 @@ or other evidence; record only the redacted action and outcome.
 Worktree or branch changes, dependency installation, configuration changes,
 destructive actions, and remote mutations must remain inside the confirmed
 scope. For destructive actions and remote mutations, record the exact target
-and impact in that confirmed scope before execution. Once those boundaries are
-confirmed, do not ask again merely for authorization.
+and impact in that confirmed scope before execution. Resolve credential and
+remote targets from evidence as defined by the core interaction contract; ask
+only when multiple materially distinct targets remain. Once those boundaries
+are confirmed, do not ask again merely for authorization.
 
 ## Batch and validation cadence
 

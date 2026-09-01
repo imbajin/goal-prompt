@@ -1,6 +1,6 @@
 # goal-prompt [![中文](https://img.shields.io/badge/-%E4%B8%AD%E6%96%87-555)](docs/README.zh-CN.md)
 
-[![Version](https://img.shields.io/badge/version-1.1-1684C7)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.2--dev-1684C7)](CHANGELOG.md)
 [![Validate](https://github.com/imbajin/goal-prompt/actions/workflows/validate.yml/badge.svg)](https://github.com/imbajin/goal-prompt/actions/workflows/validate.yml)
 [![License](https://img.shields.io/badge/license-Apache%202.0-D96C2C)](LICENSE)
 [![Agent Skills](https://img.shields.io/badge/Agent%20Skills-compatible-2E8B57)](https://agentskills.io/)
@@ -30,11 +30,11 @@ Writing `/goal` by hand makes prompt size hard to judge:
 
 ## Evaluation
 
-The current release was evaluated on 30 isolated cases with `skill-up 0.9.1`. The paired run held the inputs and Codex `gpt-5.6-luna` high constant; the baseline also had one timeout ERROR.
+The 1.2 candidate was evaluated on 30 isolated cases with `skill-up 0.9.1`. The paired run held the inputs and Codex `gpt-5.6-luna` high constant; the baseline also had one timeout ERROR. The final operation-target wording was added afterward and has focused contract coverage, not a new full A/B run.
 
 ![goal-prompt before and after evaluation](assets/eval-comparison-en.png)
 
-With the same Luna model, the pass count rose from 9/30 to 24/30 after enabling the Skill; Sol with Skill reached 28/30. See the [skill-up evaluation guide](evals/skill-up/README.md) for the isolation protocol, case results, failure analysis, and evaluation limits.
+With the same Luna model, the pass count rose from 6/30 to 24/30 after enabling the Skill; Sol high with Skill reached 28/30. The stricter baseline score comes from replaying the frozen responses after closing three deterministic Judge false positives. See the [skill-up evaluation guide](evals/skill-up/README.md) for the isolation protocol, case results, failure analysis, and evaluation limits.
 
 ## Core design
 
@@ -133,7 +133,7 @@ Codex can pass the generated text to its native `/goal` runtime for continuous e
 
 ## References
 
-To avoid designing in isolation or rebuilding existing work, we surveyed and tested five goal-related Skills, then incorporated selected ideas from the references below. The [skill-up evaluation guide](evals/skill-up/README.md) documents the comparison method and results.
+To avoid designing in isolation or rebuilding existing work, we surveyed and tested four goal-related Skills, then incorporated selected ideas from the references below. The [skill-up evaluation guide](evals/skill-up/README.md) documents the comparison method and results.
 
 - OpenAI's [`define-goal`](https://github.com/openai/skills/blob/main/skills/.curated/define-goal/SKILL.md) Skill
 - the [`goal-prompt-builder`](https://github.com/win4r/goal-prompt-builder) Skill
