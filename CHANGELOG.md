@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented in this file.
 
-## 1.2 · Unreleased
+## 1.2 · 📅 2026-09-02
 
 - Tighten the confirmation protocol so Stage 1 cannot leak a final goal and
   explicit delegation still proceeds without another approval round.

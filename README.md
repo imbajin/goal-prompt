@@ -1,6 +1,6 @@
 # goal-prompt [![中文](https://img.shields.io/badge/-%E4%B8%AD%E6%96%87-555)](docs/README.zh-CN.md)
 
-[![Version](https://img.shields.io/badge/version-1.2--dev-1684C7)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.2-1684C7)](CHANGELOG.md)
 [![Validate](https://github.com/imbajin/goal-prompt/actions/workflows/validate.yml/badge.svg)](https://github.com/imbajin/goal-prompt/actions/workflows/validate.yml)
 [![License](https://img.shields.io/badge/license-Apache%202.0-D96C2C)](LICENSE)
 [![Agent Skills](https://img.shields.io/badge/Agent%20Skills-compatible-2E8B57)](https://agentskills.io/)
