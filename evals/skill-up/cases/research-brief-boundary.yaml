@@ -1,0 +1,15 @@
+id: research-brief-boundary
+title: 研究 brief 区分证据和偏好
+description: 覆盖研究场景臆造仓库事实、提前生成目标和机械加入代码 reviewer 的问题。
+input:
+  prompt: |
+    请先帮我做一份只读研究 brief，比较两个缓存实现，供架构负责人选择。
+    现在没有提供仓库、实现、测试或接口资料，我也还没确认最终范围。
+    请把证据缺口和需要我决定的偏好分开写。这一轮不要生成最终 /goal，
+    也不要把行为变更 reviewer 当成默认门槛。
+expect:
+  exit_code: 0
+judge:
+  type: script
+  script_path: skill-up/fixtures/scripts/check-research-brief.sh
+  timeout_seconds: 30

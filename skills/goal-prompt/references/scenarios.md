@@ -48,10 +48,21 @@ skips confirmation or delegates the remaining judgment.
 - Name the decision the research must support and its evidence standard.
 - Inspect accessible primary sources before confirmation; distinguish missing
   evidence from a missing user preference.
+- In the confirmation brief, list objective evidence gaps and unresolved user
+  preferences separately, even when one list is empty. An inaccessible
+  repository, source, runtime, or test result is an evidence gap; an undecided
+  tradeoff, priority, or acceptance choice is a preference gap. Do not turn one
+  into the other. Use two explicit labeled fields, `Evidence gaps` and
+  `Preference gaps`, and write `none` when either field is empty.
+- Missing source material never replaces the Stage 1 brief with a request list
+  or progress update. Still state the proposed decision, read-only scope,
+  comparison dimensions, evidence standard, separate gap lists, and confirmation
+  needed; preserve unavailable repository facts as evidence gaps.
 - Restrict writes to named report files when appropriate.
 - Cite real files, lines, command output, or primary sources.
-- Use 1 independent reviewer by default for pure documentation, read-only
-  research, or analysis.
+- Keep a pure read-only research goal free of implementation-only gates. Use 1
+  independent reviewer by default for the report and evidence, not a code
+  reviewer or behavior-change re-review unless the user asks for remediation.
 - Exhaust accessible evidence and independent research lanes before requesting
   input because mandatory evidence is inaccessible or authorities conflict.
 
@@ -75,6 +86,9 @@ is distinct from independent review after implementation.
 - Review the actual final diff and relevant validation evidence.
 - In Stage 1 verify the target revision, available checks, and comments.
 - Report severity, exact location, evidence, and recommendation.
+- In the Stage 1 brief, make these four finding fields explicit as completion
+  evidence even when the repository or revision is unavailable; do not collapse
+  them into a generic “issues” line.
 - Use a small verdict set such as `ready`, `needs work`, or `blocked`.
 - Refresh when the revision changes. If one validation is unavailable, continue
   other review work first.

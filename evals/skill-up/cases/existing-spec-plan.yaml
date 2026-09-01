@@ -3,9 +3,9 @@ title: 单一 SPEC 作为简单到中等任务计划
 description: 验证已有完整 SPEC.md 时复用其决定，并结合当前实现补足执行和验证门槛。
 input:
   prompt: |
-    请根据仓库中的 SPEC.md 为导出功能创建 /goal。
-    SPEC 已完成评审，是本任务的权威计划；不要重复设计，也不要询问文档已经确定的事项。
-    请检查当前实现和测试，补足执行与验证门槛。
+    请根据仓库里的 SPEC.md 为导出功能写一个 /goal。
+    SPEC 已经评审完成，是这项任务的权威计划。不要重新设计，也不要再问文档已经确定的事情。
+    请检查当前实现和测试，补上执行和验证条件。
 context:
   repo_fixture: skill-up/fixtures/repos/spec-export-app
   git:
@@ -18,7 +18,7 @@ judge:
   type: agent_judge
   model: gpt-5.6-sol
   criteria:
-    - "完整复用 SPEC.md 中已确认的结果、范围、排除项、兼容要求和验收条件，不重复设计或询问已确定事项。"
-    - "检查当前实现、测试和 package.json，使用真实的 npm run test:export 与 npm run typecheck。"
+    - "完整复用 SPEC.md 中已确认的结果、范围、排除项、兼容要求和验收条件，不重新设计或重新询问这些产品决定；可以单独确认未由 SPEC 决定的执行模式。"
+    - "检查当前实现、测试和 package.json，识别并把真实的 npm run test:export 与 npm run typecheck 作为验证门槛；Stage 1 不要求为生成 brief 而实际执行它们。"
     - "把 SPEC.md 作为 active truth，不复制为新的 design.md、todo.md 或其他 sidecar，也不把文档存在误当成实现完成。"
   pass_threshold: 1.0

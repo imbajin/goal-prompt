@@ -5,10 +5,10 @@ input:
   turns:
     - role: user
       content: |
-        请为“把 src/cache 重构为统一缓存适配层，同时保持公开 API 不变”创建 /goal。
+        请为“把 src/cache 重构成统一缓存适配层，同时保持公开 API 不变”创建 /goal。
     - role: user
       content: |
-        我确认你刚才简报中的结果、范围、排除项和完成证据，不做修改。请生成最终提示。
+        我确认你刚才 brief 里的结果、范围、排除项和完成证据都不变，请直接生成最终 /goal。
 expect:
   must_contain: ["/goal"]
   exit_code: 0

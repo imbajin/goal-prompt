@@ -3,11 +3,11 @@ title: 大任务压缩不得丢失核心门槛
 description: 验证深度任务的简洁最终提示仍保留所有合取完成门槛和全局停止语义。
 input:
   prompt: |
-    你已经调查并给出简报。我明确确认深度模式及初始化：
-    把 auth、billing、notifications 三个模块迁移到统一事件接口，保持公开兼容；
-    每个模块测试、跨模块集成测试、CI、迁移文档、3 个独立只读 reviewer 及修复后复审都必须完成；
-    .goal-task/event-migration/state.md 是执行契约和实时状态入口。
-    请压缩成简洁的最终 /goal，但不得删除任何完成门槛。
+    你已经调查过并给了我 brief，我确认使用深度模式和现有初始化方案。
+    请把下面这项工作压缩成简洁的最终 /goal，但这些完成条件一个都不能漏掉。
+    把 auth、billing、notifications 迁移到统一事件接口，并保持公开兼容。
+    每个模块测试、跨模块集成测试、CI、迁移文档、3 名独立只读 reviewer 和修复后的复审都必须完成。
+    .goal-task/event-migration/state.md 是执行契约和状态入口。
 expect:
   must_contain: ["/goal", "auth", "billing", "notifications", "state.md", "CI", "3"]
   exit_code: 0

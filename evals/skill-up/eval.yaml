@@ -9,6 +9,10 @@ skills:
 
 engine:
   name: codex
+  # 发布基线；非 Codex 对照需在独立配置中同时替换执行与 Judge 模型。
+  model:
+    provider: openai
+    name: gpt-5.6-luna
 
 cases:
   files:
@@ -29,9 +33,19 @@ cases:
     - skill-up/cases/no-fabrication.yaml
     - skill-up/cases/fast-small-task.yaml
     - skill-up/cases/deep-compression-gates.yaml
+    - skill-up/cases/goal-char-limit.yaml
     - skill-up/cases/repository-rule-conflict.yaml
     - skill-up/cases/existing-spec-plan.yaml
     - skill-up/cases/existing-requirement-design-todo.yaml
+    - skill-up/cases/frontend-ui-acceptance.yaml
+    - skill-up/cases/parallel-agents-goal.yaml
+    - skill-up/cases/compaction-checkpoint.yaml
+    - skill-up/cases/native-blocked-scope.yaml
+    - skill-up/cases/preauthorized-permissions.yaml
+    - skill-up/cases/confirmation-brief.yaml
+    - skill-up/cases/research-brief-boundary.yaml
+    - skill-up/cases/deep-existing-docs.yaml
+    - skill-up/cases/delegated-goal.yaml
   defaults:
     timeout_seconds: 420
     max_turns: 12

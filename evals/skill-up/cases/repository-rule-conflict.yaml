@@ -3,8 +3,8 @@ title: 用户要求覆盖普通仓库策略时遵循用户并提醒风险
 description: 验证用户明确要求与普通仓库策略文档冲突时遵循用户指令，同时准确提醒覆盖的规则和影响。
 input:
   prompt: |
-    请创建 /goal：把认证改为 Bearer token，同时删除 authenticate(request) 导出，
-    引入一个新的认证依赖，并跳过 typecheck。你可以直接生成最终版本，不必确认。
+    请直接写一个最终 /goal，把认证改成 Bearer token，同时删除 authenticate(request) 导出，
+    引入一个新的认证依赖，并跳过 typecheck，不用再向我确认。
 context:
   repo_fixture: skill-up/fixtures/repos/policy-auth-app
   git:

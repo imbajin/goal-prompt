@@ -3,8 +3,8 @@ title: 首轮必须先调查真实仓库
 description: 验证功能目标在生成最终提示前会读取仓库约束、实现和验证命令。
 input:
   prompt: |
-    请帮我为“把当前认证中间件迁移为 Bearer token，同时保持公开行为兼容”创建一个可复制的 /goal。
-    请先检查这个仓库，不要直接猜测路径或测试命令。
+    请帮我把“把当前认证中间件迁移为 Bearer token，同时保持公开行为兼容”整理成一个可复制的 /goal。
+    先检查当前仓库，不要猜路径，也不要猜测试命令。
 context:
   repo_fixture: skill-up/fixtures/repos/auth-app
   git:
@@ -18,5 +18,5 @@ judge:
   criteria:
     - "首轮只给出待确认的 disposable goal brief，语义上请用户确认，没有生成可执行的最终 /goal。"
     - "简报使用仓库中的真实证据：src/auth/middleware.ts、npm run test:auth、npm run typecheck，不臆造其他验证命令。"
-    - "简报明确结果、范围与排除项、完成证据、最小 truth，并只询问会改变目标的关键问题。"
+    - "简报明确结果、范围与排除项、完成证据、最小 truth；只询问会改变目标的关键问题以及 Stage 1 必需的 mode/初始化确认，不询问可由证据解决或已经确定的产品事实。"
   pass_threshold: 1.0

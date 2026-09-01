@@ -3,11 +3,11 @@ title: 复杂迁移保留状态与独立复审
 description: 验证已确认的行为变更目标包含最小持久状态、阻塞重排和 reviewer 门槛。
 input:
   prompt: |
-    你已经调查并给出简报。我明确确认：
-    迁移 auth 模块的实现、测试和 CI，保持公开行为兼容；
-    使用 .goal-task/auth-migration/state.md 保存可恢复的实时状态；
-    所有范围内测试和 CI 必须通过，独立 reviewer 是强制门槛。
-    请返回最终可复制的 /goal。
+    你已经调查过并给了我 brief，我确认范围不变。
+    请迁移 auth 模块的实现、测试和 CI，同时保持公开行为兼容。
+    用 .goal-task/auth-migration/state.md 保存可以恢复的实时状态。
+    所有范围内的测试和 CI 都必须通过，独立 reviewer 是必须经过的门槛。
+    请直接输出最终可复制的 /goal。
 expect:
   must_contain: ["/goal", ".goal-task/auth-migration/state.md"]
   exit_code: 0

@@ -11,12 +11,53 @@ Turn a task into a concise, verifiable, persistent `/goal`. Use two stages:
 2. prepare the approved Markdown files, then render the final `/goal`.
 
 This skill does not start or execute the goal. In deep mode, after confirmation,
-it may create approved Markdown files under `.goal-task/<task-slug>/`; other
-environment changes still require explicit authorization.
+it may create approved Markdown files under `.goal-task/<task-slug>/`. Other
+user-authorizable environment changes inside the confirmed task scope are
+pre-authorized under the contract below; out-of-scope changes remain
+unauthorized.
 
 ## Core interaction contract
 
+### Non-negotiable routing gate
+
+At the end of every turn, classify the latest user message as one of three
+states: pending confirmation, authorized Stage 2, or explicit non-goal work. If
+it is pending confirmation, output only the Stage 1 brief and questions, then
+stop. Do not satisfy the user's request for a “final”, “copyable”, or “ready”
+goal until the authorization state changes. This gate is about authorization,
+not confidence in the investigation.
+
 - By default, do not render the final prompt from the user's first description.
+- Treat the conversation as a three-state protocol. Before explicit confirmation,
+  explicit skip, or explicit delegation of the remaining judgment, remain in
+  Stage 1. A Stage 1 response must be a confirmation brief and must not contain
+  a copyable `/goal`, a fenced final prompt, or language that presents one as
+  ready to run. “I finished investigating” or “please create a /goal” is not
+  confirmation by itself.
+- After a Stage 1 brief, stop and wait for the user's response. Do not infer
+  confirmation from silence, a first-turn request to continue, or the fact that
+  the available evidence is sufficient. A semantic confirmation is enough; it
+  need not use a fixed status word.
+- Make the routing visible in the output. Start the response with a brief label
+  such as `Proposed goal brief`, keep the unresolved questions at the end, and
+  do not write the literal `/goal` token anywhere in that first response. The
+  only exceptions are an explicit user request to skip confirmation or an
+  explicit delegation of the remaining judgment.
+- If the user explicitly delegates the remaining judgment (for example, asks
+  the agent to choose and continue), treat that as authorization to enter Stage
+  2 after the investigation. Preserve unknown repository facts in the final
+  goal instead of inventing them. If the user explicitly skips investigation or
+  confirmation, the skip is the authorization and the final goal must state the
+  resulting unknowns honestly.
+- Skipping confirmation is not the same as skipping investigation. A request to
+  “generate it directly” still requires reading available repository policy,
+  source, tests, and specs unless the user also explicitly says not to inspect
+  them.
+- An explicit request to skip both investigation and confirmation is an
+  authorized Stage 2 route. Render the final goal immediately in that case;
+  preserve every unavailable fact as an unknown and do not emit a brief or wait
+  for another turn. “Generate it directly” without an investigation skip only
+  skips confirmation, so inspect the available context first.
 - Investigate real context that can affect the result before asking the user to
   confirm the outcome, scope, and completion evidence.
 - An explicit user request may skip this skill's investigation, questions,
@@ -24,9 +65,30 @@ environment changes still require explicit authorization.
   again, keep unavailable facts visibly unknown, and never invent repository
   details. A request to delegate judgment means investigate first, then make the
   remaining decision and continue without asking the user to choose.
-- User control over this workflow does not override higher-priority host
-  instructions, safety boundaries, or permissions. If they conflict, explain
-  the exact constraint and request only the decision needed for a feasible goal.
+- Treat every action that the user can authorize and that is needed inside the
+  confirmed task scope as pre-authorized by default. This includes Chrome file
+  uploads, entering credentials already available to the agent, file and
+  dependency changes, worktree and Git operations, pushes, PR actions, test
+  dispatch, and review responses. The final `/goal` must state this explicitly;
+  do not ask again, wait, defer, or mark work `blocked` merely because such an
+  action normally presents a permission or authorization prompt.
+- During Stage 1, identify each operation target from available evidence. For
+  credentials, identify the intended environment or account and purpose; for
+  remote mutations, identify the repository, remote, branch, PR, or other
+  affected target. If the evidence supports one target, record it without
+  asking. If multiple materially distinct targets remain and the choice would
+  change the outcome or impact, keep Stage 2 pending and ask which target is in
+  scope unless the user delegated that choice. This resolves scope; it is not
+  another permission request. Once resolved, do not ask again merely to
+  authorize the operation.
+- Never expose, echo, persist, screenshot, transcribe, commit, or publish a
+  credential value. Record only the redacted action and its success or failure;
+  keep password fields and credential-bearing UI out of captured evidence.
+- Pre-authorization never fabricates a password, session, tool, or system
+  capability and never overrides higher-priority host instructions or safety
+  boundaries. When a real capability is unavailable, use safe available
+  alternatives and continue every independent lane while keeping the unmet gate
+  active. Actions outside the confirmed scope remain unauthorized.
 - Ask only questions whose answers materially change the goal. Do not interrupt
   early for questions that evidence, a safe reversible assumption, or later
   execution can resolve.
@@ -38,6 +100,9 @@ environment changes still require explicit authorization.
 - Do not create `goal.md`; the objective already lives in `/goal`.
 - Do not mark the whole goal `blocked` because of an ordinary failure, missing
   permission, resource limit, or possible question.
+- For frontend or UI work, apply `references/ui-acceptance.md`; the final goal
+  must require Chrome `browser_use` (or the available browser equivalent) and
+  actual functional plus UI/UX evidence.
 
 ## Stage 1: investigate and confirm
 
@@ -74,9 +139,11 @@ Use evidence where possible to determine:
 - whether the current agent's write, command, network, subagent, Git, and
   connector permissions could obstruct later execution.
 
-Preflight only capabilities this task may need. When a high-risk gap exists,
-state the exact missing capability, affected phase, and suggested adjustment.
-Do not expand permissions or mark the task `blocked` automatically.
+Preflight only actual capabilities this task may need, not user authorization
+that is already granted by the default above. When a high-risk capability gap
+exists, state the exact missing capability, affected phase, and safe available
+alternative. Do not ask for permission again or mark the task `blocked`
+automatically.
 
 Do not invent commands, paths, dependencies, metrics, or constraints, and do not
 read every file mechanically. Stop when more investigation is unlikely to change
@@ -114,12 +181,27 @@ implementation and validation, remote waits, or cross-session recovery.
 Complexity does not imply more files. Do not treat deep mode as a mandatory
 four-file bundle.
 
+Use a conservative mode decision. Recommend deep mode when the task spans more
+than one subsystem, has multiple implementation and validation phases, needs
+cross-session or quota recovery, or carries a public compatibility or migration
+boundary. Recommend fast mode only when the work is genuinely focused, low-risk,
+and can finish with one compact validation cycle. Reuse an already confirmed
+deep-mode decision; do not downgrade it because the final `/goal` should be
+short.
+
+Durability and recovery semantics are deep-mode signals even in a small
+repository: checkpoint/resume, idempotency, replay, rollback, or recovery after
+partial failure require deep mode when implementation and cross-layer evidence
+are in scope.
+
 ### 4. Select scenario guidance
 
 Choose the best match from refactor, feature, batch, research, audit, gatekeeper
-review, or custom. Read only that section in `references/scenarios.md`.
+review, or custom. Read only that section in `references/scenarios.md`. For
+parallel work, also read `references/parallel-agents.md`; for frontend or UI
+work, read `references/ui-acceptance.md`.
 
-For complex long-running work, also read
+For deep mode, long-running work, or durable-recovery work, also read
 `references/long-goal-execution.md`. Read
 `references/long-goal-learning.md` only when a learning record is selected.
 
@@ -173,18 +255,50 @@ judgment, Stage 1 returns a confirmation brief, not `/goal`. Include:
 - completion evidence;
 - recommended mode and rationale;
 - existing files to reuse and new files to create;
-- initialization actions, permission risks, and their effects;
+- initialization actions, capability gaps, resolved operation targets, and
+  their effects;
 - only unresolved questions that materially change the goal.
 
 For complex long-running work, also summarize recoverable waits, independent work
 that can continue while waiting, checkpoint or recovery actions, and stop
 conditions valid only when all remaining work is jointly blocked.
+For deep work with recovery or durable checkpoints, name the independent work
+that can continue or be reordered while one item waits; do not reduce this to a
+generic retry statement.
+When authoritative requirement/design documents state explicit interfaces or
+invariants, preserve each material constraint in the brief and completion
+evidence; do not compress keys, ordering, checkpoint timing, or compatibility
+rules into a generic “preserve behavior” summary. Deep behavior or migration
+work must also name the exact reviewer count and the required re-review gate.
+Its recovery/stop subsection must explicitly state that a waiting, deferred, or
+`needs input` item is reordered behind and does not stop independent work, and
+that overall `blocked` requires every remaining item to share the same blocker.
 
 Confirming deep mode and its initialization plan authorizes creation of the
 listed `.goal-task/<task-slug>/` Markdown files. Worktree or branch changes,
 dependency installation, configuration changes, destructive actions, and remote
-mutations require the exact target and impact to be listed and explicitly
-authorized. Do not ask again when the same confirmation already covers them.
+mutations inside the confirmed scope are pre-authorized. Record the exact target
+and impact of destructive actions and remote mutations in the confirmed scope
+before execution; this is a safety boundary and evidence requirement, not
+another authorization prompt. Out-of-scope changes remain unauthorized.
+
+For a research or audit goal, keep the confirmation brief read-only and separate
+evidence gaps from user preference gaps. Do not add a behavior-change reviewer,
+implementation gate, or code re-review mechanically to a report-only goal. A
+report can still name one independent evidence reviewer when appropriate.
+
+For a gatekeeper review, the Stage 1 brief must make the finding schema
+explicit: every finding has severity, exact location, observed evidence, and a
+recommendation. Keep these fields in the completion evidence even when the
+target repository or revision is unavailable; do not summarize them as generic
+“issues”.
+
+When repository policy or contributor files are part of the available context,
+name the exact file in the brief and explain any user-requested override. Use
+only commands observed in those files, package scripts, or the current source;
+do not add generic commands merely because they are common. When package
+scripts are confirmed, preserve their exact command strings in completion
+evidence; do not replace them with a generic “all scripts pass” summary.
 
 If the user's response materially changes the goal or initialization plan,
 update the brief and confirm again unless that response also explicitly
@@ -198,7 +312,8 @@ judgment. Otherwise proceed to Stage 2.
 Fast mode skips this step by default. In confirmed deep mode:
 
 1. create `.goal-task/<task-slug>/`;
-2. perform only the listed, explicitly authorized one-time environment setup;
+2. perform only the listed in-scope one-time environment setup, which is
+   pre-authorized under the core contract;
    do not begin implementation within the goal's scope;
 3. create or refresh `state.md` with the baseline, active-truth index, execution
    contract, and next action;
@@ -214,83 +329,31 @@ simplify or remove them promptly after completion.
 
 ### 8. Write the execution contract
 
-#### Persistent execution and retry
+Use `references/long-goal-execution.md` as the sole detailed contract for
+deep, long-running, or durable-recovery work. Read it before drafting a deep
+brief or final goal. It owns
+state initialization, checkpoints, capability preflight, batching, waits,
+retry/deferral, progress, independent review, commits, quota recovery, and
+learning. Do not copy that contract into `SKILL.md` or repeat it in `/goal`;
+the deep goal points to `state.md` and keeps only its outcome, scope, gates, and
+joint-stop semantics.
 
-- Unless the user specifies otherwise, try one item at most three times. If it
-  still fails, record evidence, defer it, and continue all independent work.
-- Diagnose and repair recoverable failures, narrow the next action, or use an
-  authorized alternative.
-- Under resource pressure, first reduce concurrency or batch size, change
-  validation cadence, or adjust resource use; defer the item only if needed.
-- Deferral is not a waiver. An unmet gate remains active, so progress cannot be
-  reported as `100%`.
-- Mark ordinary permission or authorization gaps `needs input` and continue
-  independent work; do not mark the entire goal `blocked`.
+For fast mode, put only applicable compact rules in `/goal`: retry each item at
+most three times and record/defer failures without waiving gates; continue
+independent work; report gate-based progress after productive loops; use one
+independent read-only reviewer for focused low-risk behavior changes; when the
+goal produces persistent repository changes, commit only after validation and
+review, and do not push by default. Read-only research, audit, and gatekeeper
+work create no empty commit. User-authorizable in-scope actions are already
+approved and must not cause another question, wait, deferral, or overall
+`blocked`; a genuinely unavailable capability keeps its gate active while
+independent work continues. Native `blocked` is valid only after
+the same condition recurs for three goal turns and all remaining work is
+jointly unable to proceed.
 
-Set the overall goal `blocked` only when the user explicitly defines that rule,
-or when bounded recovery, authorized alternatives, task splitting,
-reprioritization, and all independent work are exhausted and every meaningful
-remaining item still depends on the same logical conflict, safety boundary, or
-verified mandatory external dependency.
-
-#### Loop progress
-
-After every productive execution loop, and when a major milestone review or
-commit spans its own loop, report:
-
-```text
-Progress [██████░░░░] 60% (3/5 gates)
-This loop: <completed work and key evidence>; Remaining: <main open work>.
-Next: <one primary action>.
-```
-
-Calculate percentage from scoped milestones, deliverables, and completion gates,
-not elapsed time or effort. Use a coarse evidence-based value labeled `estimate`
-when the denominator is unstable. Never report `100%` before all applicable
-gates pass. Do not report tool calls, waits, or no-change loops separately.
-Combine review and commit when they occur in the same loop.
-
-#### Independent review
-
-- For a focused, low-risk behavior change in fast mode, use 1 independent
-  read-only reviewer by default.
-- For deep-mode or major behavior changes, use exactly 3 independent read-only
-  reviewers at the final major milestone; apply the same rule to intermediate
-  major milestones in deep work.
-- For a large change, all 3 first scan global risk, then focus respectively on
-  correctness/tests, design/boundaries, and security/maintainability.
-- Pure documentation, read-only research, or analysis uses 1 independent
-  reviewer by default; the user may increase the count.
-- A reviewer may be a subagent, isolated session, or equivalent independent
-  review tool. The implementation worker cannot substitute for one.
-- Run at most 3 fix/re-review rounds by default. If review still fails, record
-  and defer affected work, continue independent work, and do not claim the gate.
-- If required reviewers are unavailable, raise an early high-risk warning,
-  finish review-independent work, and remain `needs input`; do not self-review
-  or mark the whole goal `blocked` automatically.
-
-#### Milestone commits
-
-- When a major milestone produces persistent repository changes, create a local
-  commit promptly after applicable validation and review pass. Do not create
-  empty commits for read-only research, analysis, audits, or gatekeeper reviews.
-- Fix high-severity findings, test failures, and unmet gates before committing by
-  default.
-- If current changes are a required baseline for later work, an intermediate
-  checkpoint commit may record the risks and unmet gates. It does not mean review
-  passed or complete those gates.
-- Do not push by default. Pushes, PRs, releases, and deployments require explicit
-  authorization.
-
-#### Learning
-
-At the end of each productive deep-mode loop, briefly summarize disproven
-assumptions, effective recovery, and potentially reusable rules. Write to
-`lessons.md` only when the content is evidence-backed and reusable.
-
-Learning may propose candidates for repository rules, global rules, or Memory,
-but cannot promote them automatically. Changing AGENTS instructions or Memory
-requires separate explicit authorization.
+The core routing gate, scenario guidance, and the detailed long-work reference
+remain authoritative when the final prompt is rendered. Never weaken a required
+gate merely to keep the prompt short.
 
 ### 9. Render the final `/goal`
 
@@ -302,17 +365,25 @@ An executable goal must state:
 - conjunctive completion gates;
 - applicable persistence, progress, review, and commit rules;
 - stop conditions valid only when they affect all remaining work.
+- one explicit, inline pre-authorization constraint that says in-scope
+  user-authorizable actions are already approved and must not cause another
+  question, wait, deferral, or `blocked` state. Never move this required
+  sentence only into `state.md`.
 
 Fast mode compresses applicable rules into `/goal`. Deep mode references the full
 execution contract in `state.md` instead of repeating initialization detail,
 complete TODOs, long specs, or review checklists.
 
 Return the final `/goal` after Stage 1 is confirmed, the user explicitly skips
-confirmation, or the user delegates the remaining judgment. Complete only
-authorized initialization and verify every referenced path first. When
-investigation was explicitly skipped, omit unverifiable paths and commands,
-preserve material unknowns, and make their resolution part of execution rather
-than presenting guesses as facts.
+confirmation, or the user delegates the remaining judgment. A delegated
+decision is still a Stage 2 authorization, not a request to stop because one
+repository path or preference is unavailable. If the requested goal can be
+written without that fact, preserve the unknown and make its resolution an
+execution gate; ask for input only when the missing fact changes the objective
+or makes a safe goal impossible. Complete only authorized initialization and
+verify every referenced path first. When investigation was explicitly skipped,
+omit unverifiable paths and commands, preserve material unknowns, and make their
+resolution part of execution rather than presenting guesses as facts.
 
 ## Length contract
 
@@ -320,6 +391,10 @@ than presenting guesses as facts.
   gates, and required execution semantics even when that exceeds the target.
 - Keep deep-mode `/goal` concise. Near 700 tokens, reference the full contract in
   `state.md` instead of repeating it.
+- Token targets are a style guide; the consuming harness's hard character
+  limit still governs. Unless the harness is known to accept more, keep the
+  rendered `/goal` under 4000 characters. Trim by moving detail into the
+  `state.md` execution contract, never by weakening or dropping gates.
 - Do not create files merely to shorten the prompt; every truth file needs a
   distinct responsibility.
 
@@ -345,7 +420,8 @@ Proposed goal brief
 - Recommended mode: <fast/deep>; rationale: <task properties>.
 - Active truth: <existing paths to reuse>.
 - Proposed initialization: <no files, or each file and its purpose>.
-- Permission risks: <none, or exact capability, affected phase, and adjustment>.
+- Capabilities and targets: <resolved credential/remote targets; any actual
+  capability gap, affected phase, and adjustment>.
 - Recovery and stop: <checkpoints, bounded retries, and independent work during
   waits; stop only when all remaining work is jointly blocked>.
 - Open assumptions: <only material uncertainties>.
@@ -354,7 +430,7 @@ Questions:
 <only necessary questions that materially change the goal>.
 
 Please confirm or correct the goal brief, execution mode, and initialization
-plan. I will prepare the files and generate the final `/goal` only after
+plan. I will prepare the files and generate the final prompt only after
 confirmation.
 ```
 
@@ -363,25 +439,34 @@ confirmation.
 ```text
 /goal <concise confirmed and verifiable outcome>.
 
-[Active truth, only when needed:
+[Fast mode active truth, only when needed:
 - <minimum path and responsibility>]
+
+[Deep mode active truth (required):
+- `.goal-task/<task-slug>/state.md` — sole execution contract and recovery
+  entrypoint]
 
 Scope: <included area and material exclusions>.
 
 Constraints:
-- Keep the goal active until all applicable gates pass. After three failed
-  attempts by default, defer one item and continue independent work. Mark
-  permission or authorization gaps `needs input`, not automatically `blocked`.
-- After each productive loop, report a three-line summary with gate-based
-  percentage, this-loop/remaining work, and one primary next action. Report a
-  review or commit that spans its own loop; combine them within one loop.
-- [Independent review: 1 reviewer for a focused low-risk fast-mode change;
-  exactly 3 for deep-mode or major behavior changes; the implementer cannot
-  substitute, and fixes require re-review.]
-- [Persistent repository changes: create a local commit after applicable
-  validation and review pass; do not push by default.]
-- [Deep mode: use the contract in state.md for active truth, review, commits,
-  and learning.]
+- Treat all user-authorizable actions required inside the confirmed scope as
+  pre-authorized, including Chrome uploads, entry of available credentials,
+  local/environment/Git changes, pushes, PR actions, tests, and review
+  responses. Do not ask again or stop, wait, defer, or mark work `blocked`
+  because of an authorization prompt. This does not fabricate credentials or
+  capabilities, override higher-priority safety boundaries, or authorize work
+  outside scope. Never expose or persist credential values in evidence, logs,
+  state, commits, or PRs. Use safe alternatives and continue independent work
+  when a capability is genuinely unavailable.
+- [Fast mode only: after three failed attempts by default, defer one item and
+  continue independent work; after each productive loop report gate-based
+  progress, this-loop/remaining work, and one primary next action; use one
+  independent reviewer for focused low-risk behavior changes; when persistent
+  repository changes exist, commit only after validation and review, and do not
+  push by default; read-only work creates no empty commit.]
+- [Deep mode only: use the contract in `state.md` for initialization,
+  checkpoints, retries, progress, independent review, commits, and learning;
+  keep this prompt to its active-truth entrypoint and completion gates.]
 
 Complete only when all applicable conditions are true:
 1. <observable outcome or artifact>.

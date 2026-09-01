@@ -1,7 +1,9 @@
 # Long-Goal Execution Loop
 
-Use only for deep work with remote CI, slow validation, external environments,
-multiple phases, or cross-quota recovery. Put the full contract in
+Use for deep work with remote CI, slow validation, external environments,
+multiple phases, cross-quota recovery, or durable recovery semantics such as
+checkpoint/resume, idempotency, replay, rollback, or partial-failure recovery.
+Put the full contract in
 `.goal-task/<task-slug>/state.md`; keep only its entrypoint and completion gates
 in `/goal`.
 
@@ -16,6 +18,15 @@ Deep mode always creates a non-empty `state.md` containing:
 - waiting/deferred summary, recovery state, and dependencies;
 - next primary action and resume entrypoint;
 - applicable progress, retry, review, commit, and learning rules.
+
+## Compaction-safe checkpoints
+
+Before context compaction, quota wait, or session handoff, update `state.md` with
+the current gate percentage, completed and remaining items, latest commit,
+validation evidence, active waits or deferrals, and one next action. After every
+major milestone commit, the next progress report must include the commit and a
+short summary of what is complete now. A later session must be able to resume
+from `state.md` without reconstructing progress from conversation history.
 
 Split content only when responsibility is genuinely independent:
 
@@ -35,7 +46,7 @@ At initialization, audit the revision, existing materials, and execution
 permissions once. Refresh incrementally only when scope, baseline, key design, or
 environment materially changes.
 
-## Permission and environment preflight
+## Authorization, capability, and environment preflight
 
 In the first loop, verify only the write, command, network, subagent, Git,
 connector, and wakeup capabilities this task may use. Immediately flag a gap
@@ -45,13 +56,28 @@ that could affect a later phase:
 - affected work or gate;
 - the adjustment the user can make.
 
-Do not expand permissions. Mark a permission or authorization gap `needs input`,
-continue independent work, and do not set the overall goal `blocked`.
+All user-authorizable operations required inside the confirmed task scope are
+pre-authorized by default, including Chrome uploads, entering credentials
+already available to the agent, local and environment changes, Git and worktree
+operations, pushes, PR actions, tests, and review responses. Do not ask again,
+wait, defer, or set the overall goal `blocked` merely because an operation
+normally presents a permission or authorization prompt.
+
+Pre-authorization does not fabricate credentials, sessions, tools, or system
+capabilities and does not override higher-priority host instructions or safety
+boundaries. If a real capability is unavailable, use safe available
+alternatives, keep the unmet gate active, and continue every independent lane.
+Work outside the confirmed scope remains unauthorized. Never expose or persist
+credential values in logs, screenshots, transcripts, state files, commits, PRs,
+or other evidence; record only the redacted action and outcome.
 
 Worktree or branch changes, dependency installation, configuration changes,
-destructive actions, and remote mutations require the exact target and impact in
-the user's confirmation. Do not ask again when that confirmation already grants
-them.
+destructive actions, and remote mutations must remain inside the confirmed
+scope. For destructive actions and remote mutations, record the exact target
+and impact in that confirmed scope before execution. Resolve credential and
+remote targets from evidence as defined by the core interaction contract; ask
+only when multiple materially distinct targets remain. Once those boundaries
+are confirmed, do not ask again merely for authorization.
 
 ## Batch and validation cadence
 
@@ -98,11 +124,15 @@ Under resource pressure, reduce concurrency, shrink batches, change validation
 cadence, then use authorized alternative resources. If still impossible, defer
 the item without waiving its completion gate.
 
-Set the overall goal `blocked` only when the user explicitly defines that rule,
-or when all meaningful remaining work, after bounded recovery, authorized
-alternatives, splitting, reprioritization, and completion of all independent
-work, still jointly depends on the same logical conflict, safety boundary, or
-verified mandatory external dependency.
+Record an item as `needs input`, waiting, or deferred without changing the native
+overall goal status. Codex's native `update_goal` accepts only `complete` or
+`blocked`; its blocked audit concerns the same condition across at least three
+consecutive goal turns, not three retries of one item. Set the overall goal
+`blocked` only when the user explicitly defines that rule, or when that native
+audit is satisfied and all meaningful remaining work, after bounded recovery,
+authorized alternatives, splitting, reprioritization, and completion of all
+independent work, still jointly depends on the same logical conflict, safety
+boundary, or verified mandatory external dependency.
 
 ## Loop and milestone progress
 

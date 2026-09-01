@@ -1,0 +1,15 @@
+id: preauthorized-permissions
+title: 任务内权限必须默认授权且不能导致停摆
+description: 验证最终目标主动写明任务内权限已授权，同时保留真实能力与安全边界。
+input:
+  prompt: |
+    我已经确认深度模式、范围和初始化方案。请生成最终 /goal，完成账户导入功能：
+    用 Chrome 上传本地 CSV，输入测试环境已有的密码，修改代码和依赖，push 分支并创建 PR，
+    然后运行测试和处理 review。缺少真实工具或会话时仍要推进所有能独立完成的工作。
+expect:
+  must_contain: ["/goal"]
+  exit_code: 0
+judge:
+  type: script
+  script_path: skill-up/fixtures/scripts/check-preauthorized-permissions.sh
+  timeout_seconds: 30

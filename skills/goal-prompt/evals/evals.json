@@ -104,6 +104,39 @@
                 "The selected direction is framed as the agent's grounded judgment rather than a fabricated user decision.",
                 "The prompt preserves the confirmed outcome, scope, and completion evidence."
             ]
+        },
+        {
+            "id": 10,
+            "prompt": "/goal-prompt Prepare a goal for uploading a release artifact and opening a PR. The browser has signed-in staging and production accounts, and the repository has origin and upstream remotes, but I have not chosen the account or remote.",
+            "expected_output": "Returns a Stage 1 brief that treats authorization as granted but asks which materially distinct account and remote are in scope.",
+            "files": [],
+            "expectations": [
+                "The response does not ask whether uploads, credentials, pushes, or PR actions are permitted.",
+                "The brief records the known candidate targets and asks only which account and remote define the intended impact.",
+                "No final /goal is produced before the target ambiguity is resolved."
+            ]
+        },
+        {
+            "id": 11,
+            "prompt": "/goal-prompt Prepare a goal for uploading the release artifact with the only signed-in staging account, then push the release-v1.2 branch to origin and open its PR. Inspect the repository first.",
+            "expected_output": "Returns a Stage 1 brief that records the single evidence-backed account, remote, and branch without asking for target or permission again.",
+            "files": [],
+            "expectations": [
+                "The brief records staging, origin, and release-v1.2 as resolved operation targets.",
+                "The response does not ask which account, remote, or branch to use and does not ask whether the operations are permitted.",
+                "No final /goal is produced before the remaining goal brief is confirmed."
+            ]
+        },
+        {
+            "id": 12,
+            "prompt": "/goal-prompt The browser has staging and production accounts and the repository has origin and upstream. I delegate the target choice to you; investigate, choose the lower-impact grounded option, and return the final /goal without another question.",
+            "expected_output": "Uses delegated judgment to choose and record one grounded target, then returns the final goal without asking the user to choose or authorize it.",
+            "files": [],
+            "expectations": [
+                "The response contains one copy-pasteable /goal prompt and does not ask for confirmation or permission.",
+                "The selected account and remote are explicit and framed as the agent's grounded delegated judgment.",
+                "The target choice stays inside the requested scope and preserves credential-value safety."
+            ]
         }
-  ]
+    ]
 }

@@ -1,9 +1,12 @@
 # Design Lineage and Decisions
 
-This project combines ideas from two references without copying either verbatim:
+This project combines selected ideas from four references without copying any
+one workflow verbatim:
 
 - OpenAI `define-goal`: <https://github.com/openai/skills/blob/main/skills/.curated/define-goal/SKILL.md>
 - `win4r/goal-prompt-builder`: <https://github.com/win4r/goal-prompt-builder>
+- `michaelpersonal/goal-forge`: <https://github.com/michaelpersonal/goal-forge>
+- `KKKKhazix/leader`: <https://github.com/KKKKhazix/khazix-skills/blob/main/leader/SKILL.md>
 
 ## Retained
 
@@ -21,6 +24,25 @@ From `goal-prompt-builder`:
 - outcome, scope, constraints, conjunctive gates, and exceptional stop conditions;
 - repository investigation and scenario-specific rules;
 - a brief explanation of grounded decisions after generation.
+
+From `goal-forge`:
+
+- measurable completion gates and a fast feedback loop for long-running work;
+- durable working state that survives compaction;
+- explicit runtime readiness and capability checks before execution.
+
+From `leader`:
+
+- verify repository commands and baselines instead of trusting plausible prose;
+- guard against fake-green acceptance and preserve measurable evidence;
+- define non-overlapping parallel ownership and one writer for shared files;
+- keep resumable state concise enough for the next session to continue.
+
+The fixed SPEC/GOAL document stacks, hidden acceptance tests, rigid section
+templates, and project-specific voice from those references were not adopted.
+The research and audit boundary in 1.2 came from this project's own regression
+failures, where read-only requests were incorrectly given implementation and
+code-review gates.
 
 ## Major modifications
 

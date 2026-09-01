@@ -1,14 +1,14 @@
 id: delegated-judgment
 title: 用户委托判断时由 Agent 继续
-description: 验证用户不想亲自判断并要求继续时，Agent 基于调查结果自行决策并生成最终提示。
+description: 验证用户把剩余判断交给 agent 后，agent 能根据调查结果继续生成最终提示。
 input:
   turns:
     - role: user
       content: |
-        请为“重构 src/cache 并保持公开 API 不变”创建 /goal。
+        请为“重构 src/cache，同时保持公开 API 不变”创建 /goal。
     - role: user
       content: |
-        看起来差不多吧，你先往下弄。
+        看起来差不多，你根据调查结果继续处理，不用再等我确认。
 expect:
   must_contain: ["/goal"]
   exit_code: 0
