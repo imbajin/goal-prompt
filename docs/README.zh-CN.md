@@ -27,6 +27,43 @@
 | 只依赖历史 context  | 踩坑/经验没有沉淀，下一轮重复试错 | 每轮简要反思，只记录高价值 + 可复用的内容 |
 | 写法绑定单一 Agent | 换到其他 Agent 后，调用方式/目录或指令对不上 | 指令/保持通用，只对平台入口做少量适配 |
 
+## 快速开始
+
+最简安装，运行后选择目标 Agent：
+
+```bash
+npx skills add imbajin/goal-prompt
+```
+
+（可选）全局安装到 Codex + Claude Code：
+
+```bash
+npx skills add imbajin/goal-prompt -g -a codex -a claude-code
+```
+
+已安装旧版本时，在原安装范围更新：
+
+```bash
+npx skills update goal-prompt
+```
+
+如果原来使用 `-g` 全局安装，运行 `npx skills update goal-prompt -g -y`
+
+（可选）把下面的 prompt 发给任意 Agent：
+
+```text
+请按照 https://github.com/imbajin/goal-prompt#install 安装 goal-prompt
+```
+
+直接使用：
+
+```text
+# Codex / Claude Code
+/goal-prompt 帮我给当前目录的认证模块定一个任务计划, 参考 XX 设计实现
+```
+
+需求沟通时，Agent 可自动调用这个 skill，你也可以用 `/goal-prompt` 手动调用。无论哪种方式，它只生成 prompt，不会直接执行
+
 ## 实测结果
 
 最新版本使用 `skill-up 0.9.1` 做了 30 个 case 的隔离回归。主对照统一使用 Codex `gpt-5.6-luna` high，同一批输入分别运行 with Skill 和 without Skill。with Skill 通过 24/30，without Skill 通过 6/30，后者另有 1 个超时 ERROR。最终补充的操作目标边界已做定向契约覆盖，但没有重新执行完整 A/B。
@@ -48,14 +85,14 @@
 ```mermaid
 flowchart LR
     A["用户意图"] --> B{"明确跳过调查或确认？"}
-    B -->|"是"| F["保留未知项，形成最小执行契约"]
-    B -->|"否"| C["调查仓库与已有文档"]
+    B -->|是| F["保留未知项，形成最小执行契约"]
+    B -->|否| C["调查仓库与已有文档"]
     C --> D["一次性目标摘要"]
     D --> E{"确认、修改或委托判断"}
-    E -->|"修改"| C
-    E -->|"确认或委托"| F
+    E -->|修改| C
+    E -->|确认或委托| F
     F --> G["输出可验证的 goal prompt"]
-    G -. "交给执行 Agent" .-> H["执行、验证、恢复与复审"]
+    G -.->|交给执行 Agent| H["执行、验证、恢复与复审"]
 ```
 
 ## 工作方式
@@ -94,43 +131,6 @@ flowchart LR
 - `lessons.md`：保存有证据且值得复用的经验
 
 如果新增文件会重复 `state.md` 或已有文档，就不要创建
-
-## 安装
-
-最简安装，运行后选择目标 Agent：
-
-```bash
-npx skills add imbajin/goal-prompt
-```
-
-（可选）全局安装到 Codex + Claude Code：
-
-```bash
-npx skills add imbajin/goal-prompt -g -a codex -a claude-code
-```
-
-已安装旧版本时，在原安装范围更新：
-
-```bash
-npx skills update goal-prompt
-```
-
-如果原来使用 `-g` 全局安装，运行 `npx skills update goal-prompt -g -y`
-
-（可选）把下面的 prompt 发给任意 Agent：
-
-```text
-请按照 https://github.com/imbajin/goal-prompt#install 安装 goal-prompt
-```
-
-## 使用
-
-```text
-# Codex / Claude Code
-/goal-prompt 帮我给当前目录的认证模块定一个任务计划, 参考 XX 设计实现
-```
-
-需求沟通时，Agent 可自动调用这个 skill，你也可以用 `/goal-prompt` 手动调用。无论哪种方式，它只生成 prompt，不会直接执行
 
 ## 兼容说明
 

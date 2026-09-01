@@ -28,6 +28,43 @@ Writing `/goal` by hand makes prompt size hard to judge:
 | Depend on chat history | Lessons disappear with the conversation, so the next run repeats the same mistakes | Reflect briefly after each loop and keep only high-value, reusable lessons |
 | Tie the workflow to one agent | Commands, paths, or instructions break when moving to another agent | Keep the instructions portable and adapt only the platform entrypoint |
 
+## Quick Start
+
+Install and choose a target:
+
+```bash
+npx skills add imbajin/goal-prompt
+```
+
+(Optional) Install globally for Codex and Claude Code:
+
+```bash
+npx skills add imbajin/goal-prompt -g -a codex -a claude-code
+```
+
+To update an existing installation in its original scope:
+
+```bash
+npx skills update goal-prompt
+```
+
+For an installation created with `-g`, run `npx skills update goal-prompt -g -y`.
+
+(Optional) Send this prompt to any Agent:
+
+```text
+Install goal-prompt by following https://github.com/imbajin/goal-prompt#install
+```
+
+Use it directly:
+
+```text
+# Codex / Claude Code
+/goal-prompt help me define a goal for implementing the authentication design in this repository
+```
+
+The agent can select the skill automatically when your request matches, or you can invoke it manually with `/goal-prompt`. Either way, it generates the prompt without executing it.
+
 ## Evaluation
 
 The latest version was evaluated on 30 isolated cases with `skill-up 0.9.1`. The paired run held the inputs and Codex `gpt-5.6-luna` high constant; the baseline also had one timeout ERROR. The final operation-target wording was added afterward and has focused contract coverage, not a new full A/B run.
@@ -49,14 +86,14 @@ goal-prompt aims for both efficiency and quality by keeping only the information
 ```mermaid
 flowchart LR
     A["User intent"] --> B{"Skip investigation or confirmation?"}
-    B -->|"Yes"| F["Keep unknowns visible and form the minimum execution contract"]
-    B -->|"No"| C["Read the repository and existing documents"]
+    B -->|Yes| F["Keep unknowns visible and form the minimum execution contract"]
+    B -->|No| C["Read the repository and existing documents"]
     C --> D["Disposable goal brief"]
     D --> E{"Confirm, revise, or delegate judgment"}
-    E -->|"Revise"| C
-    E -->|"Confirm or delegate"| F
+    E -->|Revise| C
+    E -->|Confirm or delegate| F
     F --> G["Output a verifiable goal prompt"]
-    G -. "Hand off to the execution agent" .-> H["Execute, validate, recover, and review"]
+    G -.->|Hand off to the execution agent| H["Execute, validate, recover, and review"]
 ```
 
 ## How it works
@@ -95,43 +132,6 @@ Create another file only when it has a distinct responsibility:
 - `lessons.md`: evidence-backed lessons worth reusing.
 
 Do not create a file that duplicates `state.md` or an existing document.
-
-## Install
-
-Install and choose a target:
-
-```bash
-npx skills add imbajin/goal-prompt
-```
-
-(Optional) Install globally for Codex and Claude Code:
-
-```bash
-npx skills add imbajin/goal-prompt -g -a codex -a claude-code
-```
-
-To update an existing installation in its original scope:
-
-```bash
-npx skills update goal-prompt
-```
-
-For an installation created with `-g`, run `npx skills update goal-prompt -g -y`.
-
-(Optional) Send this prompt to any Agent:
-
-```text
-Install goal-prompt by following https://github.com/imbajin/goal-prompt#install
-```
-
-## Use
-
-```text
-# Codex / Claude Code
-/goal-prompt help me define a goal for implementing the authentication design in this repository
-```
-
-The agent can select the skill automatically when your request matches, or you can invoke it manually with `/goal-prompt`. Either way, it generates the prompt without executing it.
 
 ## Compatibility
 
