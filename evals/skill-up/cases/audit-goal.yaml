@@ -10,7 +10,6 @@ expect:
   exit_code: 0
 judge:
   type: agent_judge
-  model: gpt-5.6-sol
   criteria:
     - "简报保留 RELEASE.md、最终 diff、CI 证据和三值 verdict 作为审查核心。"
     - "明确保持只读，排除实现、推送、合并和 rebase。"

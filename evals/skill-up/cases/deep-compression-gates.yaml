@@ -13,7 +13,6 @@ expect:
   exit_code: 0
 judge:
   type: agent_judge
-  model: gpt-5.6-sol
   criteria:
     - "最终 /goal 保留三个模块、公开兼容、逐模块测试、集成测试、CI 和迁移文档的合取门槛。"
     - "保留恰好 3 个独立只读 reviewer、修复后复审，以及所有门槛通过前不得完成。"

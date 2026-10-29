@@ -16,7 +16,6 @@ expect:
   exit_code: 0
 judge:
   type: agent_judge
-  model: gpt-5.6-sol
   criteria:
     - "分别复用 requirement 的结果、design 的接口与不变量、todo 的实施范围，不合并复制成新的设计或 TODO sidecar。"
     - "检查当前实现和 package.json，使用真实的 npm run test:import、npm run test:integration 和 npm run typecheck 作为合取门槛。"

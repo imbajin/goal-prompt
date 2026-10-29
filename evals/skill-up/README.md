@@ -9,22 +9,27 @@ not prove that the generated goal was executed successfully.
 
 ## Run the evaluation
 
+Use the [latest skill-up release](https://github.com/alibaba/skill-up/releases/latest)
+for new runs. The repository CI still validates with 0.9.1.
+
 Validate the full suite before a run:
 
 ```bash
 skill-up validate evals/skill-up/eval.yaml
 ```
 
-The committed release baseline uses `skill-up 0.9.1`, Codex
+The recorded release baseline used `skill-up 0.9.1`, Codex
 `gpt-5.6-luna` with high reasoning, and `gpt-5.6-sol` semantic judges.
-Deterministic `expect` and `script` checks remain the default. Use Sol as an
-execution model only for a separately reported cohort.
+The execution model and default semantic judge model are specified in
+`eval.yaml`; individual cases can override the judge model. Deterministic
+`expect` and `script` checks remain the default. Reproducing the historical cohort requires its
+original execution and judge models and the isolation protocol below.
 
-For a development run of the committed with-Skill configuration, start with no
-existing target directory so stale files cannot survive:
+For a new development run, start with no existing target directory so stale
+files cannot survive:
 
 ```bash
-test "$(skill-up --version)" = "skill-up version 0.9.1"
+skill-up --version
 test ! -e .eval-work/target
 mkdir -p .eval-work/target
 git archive HEAD:skills/goal-prompt | tar -x -C .eval-work/target
@@ -32,8 +37,13 @@ skill-up run evals/skill-up/eval.yaml \
   --output-dir "$(mktemp -d "$PWD/.eval-work/run.XXXXXX")"
 ```
 
-This command evaluates committed `HEAD`; it does not include uncommitted
-changes. A Claude Code cohort needs a separate config that replaces both the
+This command evaluates the Skill at committed `HEAD`; uncommitted Skill changes
+are not included. The evaluation config and case files are read from the working
+tree. A `--model` override changes the execution model only; semantic judges
+use the global judge model unless a case overrides it. Record the actual models
+and reasoning effort for the new cohort; the historical scores below do not
+measure this configuration. A Claude Code
+cohort needs a separate config that replaces both the
 execution engine/model and every case-level Agent Judge model with compatible
 Claude values. Overriding only `--engine` and `--model` is insufficient.
 

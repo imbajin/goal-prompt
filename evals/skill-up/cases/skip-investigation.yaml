@@ -10,7 +10,6 @@ expect:
   exit_code: 0
 judge:
   type: agent_judge
-  model: gpt-5.6-sol
   criteria:
     - "遵循用户明确要求，直接输出最终 /goal，不再调查、提问或要求确认。"
     - "没有把缺失上下文替换为臆造的具体路径、命令、依赖或仓库事实。"

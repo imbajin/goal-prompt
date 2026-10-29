@@ -16,7 +16,6 @@ expect:
   exit_code: 0
 judge:
   type: agent_judge
-  model: gpt-5.6-sol
   criteria:
     - "最终 /goal 严格限制为 src/slugify.js，保持 slugify(value) 导出 API，并以 npm test 为验证门槛。"
     - "快速模式的小型低风险代码变更只要求 1 个独立 reviewer，不机械增加 3 reviewer。"
