@@ -251,6 +251,19 @@ expect_pass "check-confirmation-brief.sh" \
 # Skill 路径与命令不同；保留实际 pilot 触发的路径误判回归。
 expect_pass "check-confirmation-brief.sh" \
   "当前只有 .codex/skills/goal-prompt/；范围与完成证据待确认，请确认。"
+# Frozen Luna output refused to render /goal; mentioning that refusal is valid.
+expect_pass "check-confirmation-brief.sh" \
+  '调查结论与范围、完成证据仍需你决定；这一轮先不写最终 `/goal`。'
+expect_pass "check-confirmation-brief.sh" \
+  'Please confirm scope and validation evidence. I will not generate a final `/goal`.'
+expect_fail "check-confirmation-brief.sh" \
+  '范围与完成证据待确认。这一轮先不写最终 `/goal`。但可复制命令是 `/goal`。'
+expect_fail "check-confirmation-brief.sh" \
+  '范围与证据待确认，不输出最终 /goal do migration now。'
+expect_fail "check-confirmation-brief.sh" \
+  '范围与完成证据待确认。这一轮先不写最终 `/goal`，把认证中间件迁移为Bearer。请你确认。'
+expect_fail "check-confirmation-brief.sh" \
+  'Please confirm scope and evidence. I will not generate a final `/goal`, do migration now.'
 expect_fail "check-confirmation-brief.sh" \
   '范围与证据待确认，请确认；可复制命令是 `/goal`。'
 expect_fail "check-confirmation-brief.sh" \
@@ -526,3 +539,286 @@ expect_pass "check-research-brief.sh" \
 ## 需要你决定的偏好
 - 速度还是成本。
 不把“行为变更 reviewer”设为默认门槛。"
+
+# 否定提及后的确认条件仍然是说明；后接任务正文不能伪装成说明。
+expect_pass "check-confirmation-brief.sh" \
+  '范围与完成证据待你确认；不会直接给最终可复制的 `/goal`。'
+expect_pass "check-confirmation-brief.sh" \
+  '范围与完成证据待确认，先不生成最终 `/goal`，等你确认。'
+expect_pass "check-confirmation-brief.sh" \
+  'Please confirm scope and evidence. I will not generate a final /goal until you confirm.'
+expect_pass "check-confirmation-brief.sh" \
+  'Please confirm scope and evidence. I will not provide the final `/goal` before the user decides this plan.'
+expect_fail "check-confirmation-brief.sh" \
+  '范围与证据待确认，不会直接给最终可复制的 `/goal`，把旧实现迁移到新实现。'
+expect_fail "check-confirmation-brief.sh" \
+  'Please confirm scope and evidence. I will not generate a final /goal until you confirm, migrate the service now.'
+expect_fail "check-confirmation-brief.sh" \
+  '范围与证据待确认，先不生成最终 `/goal`，等你确认后执行数据库迁移。'
+expect_fail "check-confirmation-brief.sh" \
+  $'范围与证据待确认，不会直接给最终可复制的 `/goal`。\n```text\n/goal migrate the service now\n```'
+
+# 独立推进的工作是独立工作的同义，不放松真实阻塞和空正文反例。
+expect_pass "check-stage2-migration.sh" \
+  '/goal 使用 .goal-task/auth-migration/state.md，保持兼容；所有测试与 CI 必须通过。3名独立 review，修复后复审。遇到等待时继续可独立推进的工作；只有所有剩余工作共同依赖同一真实阻塞时才 blocked。'
+expect_fail "check-stage2-migration.sh" \
+  '/goal 使用 .goal-task/auth-migration/state.md，保持兼容；所有测试与 CI 必须通过。3名独立 review，修复后复审。遇到等待就停止推进，只有所有剩余门槛存在阻塞时才 blocked。'
+
+# 已有凭据与创建PR等并列动作不构成造凭据；真实造假和泄露仍拒绝。
+expect_pass "check-preauthorized-permissions.sh" \
+  '/goal 任务范围内 Chrome 上传、输入已有密码、代码/依赖修改、Git 操作、推送、创建 PR 均已获授权；不要重复询问或因等待授权而暂停，能力缺失时继续独立工作。不得编造凭据、会话或工具，不得记录、展示、截图、提交或发布密码；授权不能覆盖更高优先级安全边界。'
+expect_pass "check-preauthorized-permissions.sh" \
+  '/goal In-scope Chrome upload, entering existing credentials, code changes, and creating PRs are pre-authorized. Do not ask again; permission cannot block work. Continue independent work. This cannot fabricate credentials and cannot override safety boundaries. Never expose, log, or persist credential values.'
+expect_fail "check-preauthorized-permissions.sh" \
+  '/goal 任务范围内 Chrome 上传、输入已有密码、代码修改、创建 PR 均已获授权；不要重复询问或因等待授权而暂停，继续独立工作。不得编造凭据、会话或工具，也不能覆盖安全边界；不得记录密码。但是缺少凭据时允许编造测试密码。'
+expect_fail "check-preauthorized-permissions.sh" \
+  '/goal 任务范围内 Chrome 上传、输入已有密码、创建 PR 均已获授权；不要重复询问或因等待授权而暂停，继续独立工作。不得编造凭据，也不能覆盖安全边界，不得记录密码。但密码可在日志中输出。'
+expect_fail "check-preauthorized-permissions.sh" \
+  '/goal 任务范围内 Chrome 上传、输入已有密码、创建 PR 均已获授权；不要重复询问或因等待授权而暂停，继续独立工作。不得记录密码，也不能覆盖安全边界。允许创建临时密码来替代缺失的测试凭据。'
+expect_pass "check-preauthorized-permissions.sh" \
+  '/goal 任务范围内 Chrome 上传、创建 PR、输入已有密码均已获授权；无需询问，权限不会阻塞，继续独立工作。不能编造凭据，也不能覆盖安全边界。不得记录密码。'
+expect_fail "check-preauthorized-permissions.sh" \
+  '/goal 任务范围内 Chrome 上传、输入已有密码、创建 PR 均已获授权；无需询问，权限不会阻塞，继续独立工作。不能编造凭据，也不能覆盖安全边界。不得记录密码。但调试时记录用户名、密码。'
+expect_fail "check-preauthorized-permissions.sh" \
+  '/goal 任务范围内 Chrome 上传、输入已有密码、创建 PR 均已获授权；无需询问，权限不会阻塞，继续独立工作。不能编造凭据，也不能覆盖安全边界。不得记录密码。但允许提交用户名、密码。'
+
+# Chinese progress is equivalent; removing the progress requirement must fail.
+compaction_chinese='/goal 每轮报告进度条、This loop、Remaining 和 Next，本轮完成内容要写清。里程碑验证后 commit。compaction 前把完成项与下一步写入 state.md。'
+expect_pass check-compaction-checkpoint.sh "$compaction_chinese"
+expect_fail check-compaction-checkpoint.sh "${compaction_chinese/进度条/状态}"
+
+# 继续独立工作必须是正向要求；不要停止推进表达相反含义，应保留。
+migration_contract='/goal 使用 .goal-task/auth-migration/state.md，保持兼容；所有测试与 CI 必须通过。3名独立 review，修复后复审。'
+migration_stop_gate='只有所有剩余工作共同依赖同一真实阻塞时才 blocked。'
+expect_fail "check-stage2-migration.sh" \
+  "$migration_contract 遇到等待时不应继续独立推进的工作；$migration_stop_gate"
+expect_fail "check-stage2-migration.sh" \
+  "$migration_contract 遇到等待时不要推进其余独立工作；$migration_stop_gate"
+expect_fail "check-stage2-migration.sh" \
+  "$migration_contract 遇到等待时暂停其余独立工作；$migration_stop_gate"
+expect_fail "check-stage2-migration.sh" \
+  "$migration_contract 遇到等待时，独立工作不要继续；$migration_stop_gate"
+expect_pass "check-stage2-migration.sh" \
+  "$migration_contract 遇到等待时不要停止推进其余独立工作；$migration_stop_gate"
+expect_pass "check-stage2-migration.sh" \
+  "$migration_contract 遇到等待时不应暂停独立推进的工作；$migration_stop_gate"
+expect_pass "check-stage2-migration.sh" \
+  "$migration_contract 遇到等待时继续独立工作，不要推进受阻部分；$migration_stop_gate"
+expect_fail "check-stage2-migration.sh" \
+  "$migration_contract While waiting, do not continue independent work; $migration_stop_gate"
+expect_pass "check-stage2-migration.sh" \
+  "$migration_contract While waiting, do not stop independent work; $migration_stop_gate"
+expect_pass "check-stage2-migration.sh" \
+  "$migration_contract Continue independent work while waiting. Only when all remaining work depends on the same verified blocker may the whole task stop and be marked blocked."
+
+# 已授权流程的“停下/停摆”与停止同义；事实核实不是向用户索取批准。
+preauth_base='/goal 范围内所有操作均已预授权，包括Chrome上传、输入已有密码、代码修改及创建PR。继续独立工作。不得编造凭据，不得记录密码，授权不能覆盖更高优先级安全边界。'
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_base 不得因授权再次询问或停下。"
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_base 不得因权限问题停摆；无需再次确认。"
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_base 不得因授权停下或再次询问。先从实际仓库证据确认导入契约、测试环境、remote和PR目标。"
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞；无需再次询问。先依据配置确认上传目的地；从已有文档中确认PR目标。"
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞；无需先询问用户确认上传。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞；无需再次询问。先从仓库证据确认目标，然后必须请求批准才能上传。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞；无需先询问用户确认上传。但是必须等待用户批准才能上传。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞；无需再次询问。不得不先请求用户批准后上传。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞；无需再次询问。不要跳过询问用户批准后上传的步骤。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞；无需再次询问。权限不足就应该blocked，等批准再上传。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞；无需再次询问。上传前必须得到用户批准。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞；无需再次询问。权限不足就停摆，等批准再继续。"
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不足不得停摆；无需再次询问。"
+# 确认存在多个目标时的范围选择，并非再次索取操作许可。
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞；无需再次询问。多个实质不同目标无法从证据判断时，不要跳过询问用户确认目标仓库。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞；无需再次询问。不要跳过询问用户确认是否允许上传的步骤。"
+
+# 否定请求只作用于相邻宾语，不得跨无标点的转折/必须/第二个请求动作。
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞。无需再次询问但必须请求用户批准才能上传。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞。无需先询问用户确认但必须申请批准后上传。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞。无需再次询问不过上传前必须得到用户批准。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞。无需先询问但必须先请求用户批准才上传。"
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞。无需先询问用户确认上传但仍需核实仓库目标。"
+preauth_english='/goal In-scope actions are pre-authorized including Chrome upload and entering available credentials. Do not ask again; permission cannot block work. Continue independent work. This cannot fabricate credentials or override safety boundaries. Never expose, log, or persist credential values.'
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_english Do not wait for approval before upload."
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_english Do not wait for approval but must obtain user approval before upload."
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_english No need to ask again but must obtain approval before upload."
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_english Do not skip requesting approval before upload."
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_english Never avoid seeking user permission before upload."
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞；无需再次询问。无需先征求用户的额外许可上传。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞；无需再次询问。不要省略申请额外授权上传的步骤。"
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_english Do not wait for the user's prior approval before upload."
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_english Do not wait for the user's prior approval but must obtain an additional approval before upload."
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_english Do not not ask for approval before upload."
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_english Don't avoid requesting the user's prior permission before upload."
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞。无需再次询问但请求用户批准才能上传。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞。无需先询问用户确认然后请求用户批准才能上传。"
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞；无需再次询问。不会再直接请求用户批准上传。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_english No need to ask again but request user approval before upload."
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_english Do not ask the user for prior approval before upload."
+
+# Shared finite grammar matrix: direct prohibition vs prohibition of omission.
+# Permission phrase, operator and modal vary independently; no model is called.
+for modal in 'do not' 'must not' 'should not' 'cannot' "don't" "shouldn't" "can't" 'shouldn’t'; do
+  for permission_action in 'ask for approval' 'asking for approval' 'request user permission'; do
+    expect_pass "check-preauthorized-permissions.sh" \
+      "$preauth_english You $modal $permission_action before upload."
+    for omission_action in skip avoid omit; do
+      expect_fail "check-preauthorized-permissions.sh" \
+        "$preauth_english You $modal $omission_action $permission_action before upload."
+    done
+  done
+  for omission_action in skip avoid omit; do
+    expect_pass "check-preauthorized-permissions.sh" \
+      "$preauth_english You $modal $omission_action not requesting user approval before upload."
+  done
+done
+for modal in 不要 不得 不应 不能; do
+  for permission_action in 询问用户批准 请求许可; do
+    expect_pass "check-preauthorized-permissions.sh" \
+      "$preauth_base 权限不会阻塞；无需再次询问。${modal}${permission_action}后上传。"
+    for omission_action in 跳过 避免; do
+      expect_fail "check-preauthorized-permissions.sh" \
+        "$preauth_base 权限不会阻塞；无需再次询问。${modal}${omission_action}${permission_action}后上传。"
+    done
+  done
+  for omission_action in 跳过 避免; do
+    expect_pass "check-preauthorized-permissions.sh" \
+      "$preauth_base 权限不会阻塞；无需再次询问。${modal}${omission_action}不请求许可后上传。"
+  done
+done
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞；无需再次询问。不要询问或请求用户批准上传。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞；无需再次询问。不要询问用户批准但请求用户批准才能上传。"
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_english Do not ask for or request user approval before upload."
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_english Do not ask for user approval but request user approval before upload."
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_english You should not skip asking for approval before upload."
+
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_english Do not wait for the user’s prior approval before upload."
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_english You shouldn’t skip asking for the user’s approval before upload."
+
+# Scope qualification belongs to one request, never to the whole goal.
+for outside_work in 'For out-of-scope changes' 'For changes outside the confirmed scope' 'Out-of-scope work'; do
+  expect_pass "check-preauthorized-permissions.sh" \
+    "$preauth_english $outside_work, ask for approval before proceeding."
+  expect_fail "check-preauthorized-permissions.sh" \
+    "$preauth_english $outside_work ask for approval but for in-scope work request approval before upload."
+  expect_fail "check-preauthorized-permissions.sh" \
+    "$preauth_english $outside_work ask for approval in-scope work request approval before upload."
+  expect_fail "check-preauthorized-permissions.sh" \
+    "$preauth_english $outside_work ask for approval request approval before upload."
+done
+for outside_work in 范围外变更 对于范围外工作 针对超出已确认范围的新任务; do
+  expect_pass "check-preauthorized-permissions.sh" \
+    "$preauth_base 权限不会阻塞；无需再次询问。${outside_work}请求用户批准后再处理。"
+  expect_fail "check-preauthorized-permissions.sh" \
+    "$preauth_base 权限不会阻塞；无需再次询问。${outside_work}请求用户批准但任务内操作请求批准才上传。"
+  expect_fail "check-preauthorized-permissions.sh" \
+    "$preauth_base 权限不会阻塞；无需再次询问。${outside_work}请求用户批准范围内工作请求批准才上传。"
+done
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_english Ask for approval for out-of-scope changes."
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_english Ask for approval for out-of-scope changes but request approval before upload."
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_english For in-scope work ask for approval before upload."
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞；无需再次询问。任务内操作请求批准才上传。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_english For out-of-scope changes such as Chrome upload, ask for approval."
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_english For out-of-scope changes such as push, ask for approval."
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞；无需再次询问。对于范围外工作如Chrome上传，请求批准。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞；无需再次询问。对于范围外工作如推送，请求批准。"
+# Same operation type in a clearly different target is still outside the task;
+# it cannot change authorization of the original target or a later request.
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_english For out-of-scope changes such as a PR in another repository, ask for approval."
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_english For out-of-scope changes such as Chrome upload to production, ask for approval."
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞；无需再次询问。对于范围外工作如推送到其他仓库，请求批准。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_english For out-of-scope changes such as a PR in another repository ask for approval but for in-scope changes request approval."
+# Actions must be whole words: 'task for approval' is not 'ask for approval'.
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_english Do not create an extra task for approval."
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_english Create a task then ask for approval before upload."
+
+# Approval applications share the same local polarity/scope contract as asks.
+for permission_action in 'apply for approval' 'applies for permission' 'applying for authorization'; do
+  expect_fail "check-preauthorized-permissions.sh" \
+    "$preauth_english For in-scope work, you must $permission_action before upload."
+  expect_pass "check-preauthorized-permissions.sh" \
+    "$preauth_english You must not $permission_action before upload."
+  expect_fail "check-preauthorized-permissions.sh" \
+    "$preauth_english You must not skip $permission_action before upload."
+done
+for outside_work in 'To handle changes outside the confirmed scope' 'To process out-of-scope work' 'To address actions outside the task scope'; do
+  expect_pass "check-preauthorized-permissions.sh" \
+    "$preauth_english $outside_work, request approval before proceeding."
+  expect_pass "check-preauthorized-permissions.sh" \
+    "$preauth_english $outside_work, apply for approval before proceeding."
+  expect_fail "check-preauthorized-permissions.sh" \
+    "$preauth_english $outside_work, request approval but for in-scope work apply for approval before upload."
+done
+# A fronted outside-scope qualifier cannot override an explicit in-scope target
+# in the same approval condition; a separate following sentence stays separate.
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_english For out-of-scope changes, ask for approval before the in-scope Chrome upload."
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_english To handle changes outside the confirmed scope, apply for approval before the in-scope Chrome upload."
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞；无需再次询问。对于范围外工作，请求批准后再做任务内Chrome上传。"
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_english For out-of-scope changes, do not ask for approval before the in-scope Chrome upload."
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_english For out-of-scope changes, ask for approval before proceeding. Continue in-scope work."
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_english For out-of-scope changes, ask for approval before proceeding; continue in-scope work."
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_english Ask for approval for out-of-scope changes and in-scope work before upload."
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_english Ask for approval for out-of-scope changes. Continue in-scope work."

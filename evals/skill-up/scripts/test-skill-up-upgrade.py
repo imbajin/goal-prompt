@@ -9,6 +9,65 @@ import subprocess
 import tempfile
 
 
+def real_judge_schema_smoke(binary, root):
+    """Validate the real Judge adapter, which a custom mock can accidentally hide."""
+    folder = root / 'real-judge-schema'
+    folder.mkdir()
+    (folder / 'SKILL.md').write_text('---\nname: real-judge-schema\ndescription: Configuration-only probe\n---\n')
+    (folder / 'case.yaml').write_text('''id: real-judge-schema
+title: Real Judge configuration only
+input:
+  prompt: Validate configuration without executing any model.
+judge:
+  type: agent_judge
+  engine:
+    name: codex
+    version: 0.164.0
+    model:
+      provider: openai
+      name: gpt-6-luna
+  context:
+    profile: minimal
+    final_message: include
+    transcript: omit
+    workspace_diff: omit
+    generated_files: omit
+  criteria: ["The final response matches the requested outcome."]
+''')
+    (folder / 'eval.yaml').write_text('''schema_version: v1alpha1
+environment:
+  type: none
+engine:
+  name: codex
+  version: 0.164.0
+  model:
+    provider: openai
+    name: gpt-6-luna
+cases:
+  files: [case.yaml]
+benchmark:
+  enabled: false
+''')
+    empty = root / 'empty-user.yaml'
+    config = folder / 'eval.yaml'
+    commands = [('validate', str(config)), ('run', str(config), '--dry-run')]
+    for args in commands:
+        result = subprocess.run([binary, '--config', str(empty), *args], text=True, capture_output=True, timeout=30)
+        (folder / (args[0] + '.log')).write_text(result.stdout + result.stderr)
+        assert result.returncode == 0, result.stdout + result.stderr
+        if args[0] == 'run':
+            assert 'real-judge-schema' in result.stdout and 'shared-runtime' not in result.stdout, result.stdout
+    # This was the actual failure: setting both fields passed mock-only testing.
+    path = folder / 'case.yaml'
+    path.write_text(path.read_text().replace('  type: agent_judge\n', '  type: agent_judge\n  model: gpt-6-luna\n'))
+    # Exercise the complete dry-run path as well as the valid config validation;
+    # neither command may start a model or mask the real Judge with a mock.
+    result = subprocess.run([binary, '--config', str(empty), 'run', str(config), '--dry-run'], text=True, capture_output=True, timeout=30)
+    (folder / 'mutually-exclusive-rejected.log').write_text(result.stdout + result.stderr)
+    assert result.returncode != 0 and 'mutually exclusive' in result.stdout + result.stderr, result.stdout + result.stderr
+    print('PASS: real Judge engine configuration validates; duplicate model setting rejected; zero model execution')
+
+
 def run_smoke(binary, root):
     root.mkdir(parents=True, exist_ok=True)
     (root / "SKILL.md").write_text("---\nname: upgrade-probe\ndescription: 确定性 CLI 协议夹具\n---\n")
@@ -102,6 +161,7 @@ report:
         assert summary["pass_rate"] == (0 if gate else 0.5), summary
         print(f"{out.name}: aggregation=FAIL judges={statuses} pass_rate={summary['pass_rate']}")
     print("PASS: 单次执行、顺序共享 runtime、失败归因和 expect gate 评分；无模型调用")
+    real_judge_schema_smoke(binary, root)
 
 
 if __name__ == "__main__":

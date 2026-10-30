@@ -9,7 +9,8 @@ input:
     每个重要里程碑验证通过后创建本地 commit，并在下一次报告里写清 commit 和本轮完成内容。
     在 compaction、配额等待或交接前，把完成项、剩余项、最新 commit、验证证据和下一步写进 state.md。
 expect:
-  must_contain: ["/goal", "state.md", "Progress", "commit"]
+  # Progress language is validated semantically as English or Chinese by script.
+  must_contain: ["/goal", "state.md", "commit"]
   exit_code: 0
 judge:
   type: script
