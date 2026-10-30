@@ -72,7 +72,7 @@ npx skills update goal-prompt
 
 后续[GPT-6 Luna xhigh对照](luna-xhigh-trial.md)原始with为22/8、without为6/24；确定性脚本校准为25/5对7/23，另补Batch必要真实业务产物的局部口径为26/4对7/23。原始成绩保留，without生成组没有重跑。这与此前6.1批次的模型、深度及隔离协议不同，不能直接作模型排名。
 
-历史分数对应报告中注明的冻结快照。R1 契约恢复尚未做新模型评测；判分器修复用已有输出重判核对。
+历史分数对应报告中注明的冻结快照。补回契约已另做 Luna 小样本实测，剩余失败单列；判分器修复保留原始输出和成绩。
 
 已记录的评测使用 `skill-up 0.9.1` 做了 30 个 case 的隔离回归。主对照统一使用 Codex `gpt-5.6-luna` high，同一批输入分别运行 with Skill 和 without Skill。with Skill 通过 24/30，without Skill 通过 6/30，后者另有 1 个超时 ERROR。最终补充的操作目标边界已做定向契约覆盖，但没有重新执行完整 A/B。新评测的运行方法见[评测说明](../evals/skill-up/README.md#run-the-evaluation)；历史分数仅对应当时的评测配置。
 

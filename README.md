@@ -73,7 +73,7 @@ The current development suite uses skill-up 0.14.0 and 31 cases. Results from di
 
 The later [GPT-6 Luna xhigh trial](docs/luna-xhigh-trial.md) used 30 cases per group: original with-Skill 22 PASS / 8 FAIL and without 6 / 24; deterministic replay yielded 25 / 5 versus 7 / 23. Supplying Batch's required business artifact for a local rejudge yielded 26 / 4 versus 7 / 23. Original grades are retained; the without generation group was not rerun. This separate Docker-isolated cohort is not a full blind rerating or a direct model ranking against the earlier 6.1 targeted run.
 
-Recorded scores refer to the frozen snapshots named in the reports. R1 contract restorations have no new live-model cohort; Judge changes are checked by replaying existing outputs.
+Recorded scores refer to the frozen snapshots named in the reports. A separate targeted Luna run checks the restored contracts and records remaining failures; Judge fixes retain the original outputs and grades.
 
 The recorded evaluation used 30 isolated cases with `skill-up 0.9.1`. The paired run held the inputs and Codex `gpt-5.6-luna` high constant; the baseline also had one timeout ERROR. The final operation-target wording was added afterward and has focused contract coverage, not a new full A/B run. For new runs, see the [evaluation guide](evals/skill-up/README.md#run-the-evaluation); the historical scores describe the recorded configuration.
 
