@@ -76,15 +76,15 @@ scope = re.compile(
 )
 negative = (
     r"(?:不(?:应(?:该)?|要|得|能|会|可(?:以)?|必|再)?|不需要|不用|无需|禁止|严禁"
-    r"|never|(?:do(?:es)?|did|must|should|will|would|could|can)\s+not"
-    r"|(?:do(?:es)?|did|must|should|would|could|ca|wo)n['’]t|cannot|avoid)"
+    r"|never|(?:do(?:es)?|did|must|should|will|would|could|can|is|are|was|were|need)\s+not"
+    r"|(?:do(?:es)?|did|must|should|would|could|ca|wo|is|are|was|were)n['’]t|cannot|avoid|rather\s+than|instead\s+of)"
 )
 continuation = r"(?:继续|推进|执行|处理|continue|progress|proceed(?:\s+with)?|execute|work\s+on)"
 negative_continuation = re.compile(negative + r"\s*(?:再\s*)?" + continuation, re.IGNORECASE)
 stop = re.compile(r"停止|暂停|搁置|放弃|\bstop(?:s|ped|ping)?\b|\bpause(?:s|d|ing)?\b|\bdefer(?:s|red|ring)?\b|\babandon(?:s|ed|ing)?\b", re.IGNORECASE)
-negative_prefix = re.compile(negative + r"\s*(?:再\s*)?$", re.IGNORECASE)
+negative_prefix = re.compile(negative + r"\s*(?:(?:再|被)|(?:be|been|being)\b)?\s*$", re.IGNORECASE)
 coordination = re.compile(
-    r"\b(?:and|then)\s+(?=" + negative + r"|" + continuation + r"|" + stop.pattern + r")"
+    r"\b(?:and|then|or|nor)\s+(?=" + negative + r"|" + continuation + r"|" + stop.pattern + r")"
     r"|(?:并且?|而|然后)(?=" + negative + r"|" + continuation + r"|" + stop.pattern + r")"
     r"|\bwhile\s+(?=" + scope.pattern + r")"
     r"|(?:而|同时)(?=" + scope.pattern + r")",
@@ -94,10 +94,29 @@ coordination = re.compile(
 for clause in re.split(r"[，,。.;；！？!?\n]|\b(?:but|however)\b|但是|不过|但", text, flags=re.IGNORECASE):
     # Coordinated actions can have different objects: defer the blocked item
     # AND continue independent work. Do not attach the first verb to both.
-    for action_clause in coordination.split(clause):
-        if not scope.search(action_clause):
+    actions = coordination.split(clause)
+    for index, action_clause in enumerate(actions):
+        subjects = list(scope.finditer(action_clause))
+        if not subjects:
+            # Coordinated verbs can share the following object's scope:
+            # "do not continue AND proceed with independent work". Inherit
+            # only for an objectless verb, never "do not continue blocked X".
+            if (negative_continuation.search(action_clause)
+                and re.search(negative + r"\s*" + continuation + r"\s*$", action_clause, re.IGNORECASE)
+                and any(scope.search(later) for later in actions[index + 1:])):
+                print("不得停止或禁止继续可独立推进的工作", file=sys.stderr)
+                sys.exit(1)
             continue
-        forbidden = negative_continuation.search(action_clause)
+        # A pre-nominal prohibition can qualify a different object:
+        # "不处理生产数据的独立工作照常推进". Bind a preceding verb only
+        # when the scope itself is its direct object; do not borrow modifiers.
+        forbidden = any(
+            subject.end() <= match.start()
+            or (match.end() <= subject.start() and re.fullmatch(
+                r"\s*(?:(?:the|any|all)\s+|(?:所有|任何|全部|这些))*", action_clause[match.end():subject.start()], re.IGNORECASE))
+            for match in negative_continuation.finditer(action_clause)
+            for subject in subjects
+        )
         if forbidden or any(not negative_prefix.search(action_clause[:m.start()]) for m in stop.finditer(action_clause)):
             print("不得停止或禁止继续可独立推进的工作", file=sys.stderr)
             sys.exit(1)

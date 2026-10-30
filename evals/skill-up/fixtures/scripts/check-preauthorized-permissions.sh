@@ -287,7 +287,7 @@ def without_is_gate(action, prefix, operators):
     if work_without_approval.search(left):
         return True
     return bool(zh_without_gate.search(left)
-                and re.match(r"(?:的)?(?:情况下|情形下|之前|前)[^，,。.;；\n]{0,32}(?:推送|上传|执行|继续|推进|开始|实施|操作)",
+                and re.match(r"(?:的)?(?:情况下|情形下|之前|前)\s*[^，,。.;；\n\s]",
                              text[action.end():]))
 
 remove = []
@@ -305,7 +305,7 @@ for action in permission_action.finditer(text):
     # An odd number means no approval request; an even number means a real
     # request, including "should not skip asking" and double negation.
     if len(operators) % 2 and not without_is_gate(action, prefix, operators):
-        remove.append((prefix.start(), action.end()))
+        remove.append((prefix.start() if prefix else action.start(), action.end()))
         continue
     if action.group('zh') and action.group().endswith('确认'):
         # Bare confirmation may resolve scope/facts, rather than authorization.

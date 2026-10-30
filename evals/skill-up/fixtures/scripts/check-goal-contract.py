@@ -258,10 +258,20 @@ def invalid_progress_percentages(text: str) -> bool:
     coordination = re.compile(r"\b(?:and|but|while|whereas)\b|并且?|同时|而", re.IGNORECASE)
     for clause in clauses:
         for displayed in re.finditer(
-            r"(?:\bprogress(?![a-z_])|进度)(?:条|百分比)?\s*(?:\[[^\]\n]*\]\s*)?"
-            r"(?:(?:当前|约|为|估计|粗粒度|is|estimated|about|approximately)\s*)*"
-            r"[:：]?\s*(?P<percentage>\d+(?:\.\d+)?)\s*%", clause, re.IGNORECASE,
+            r"(?:(?:overall|current)\s+)?(?:\b(?:progress|completion)(?![a-z_])|进度|完成度|完成率)"
+            r"(?:条|百分比)?\s*(?:\[[^\]\n]*\]\s*)?[:：]?\s*"
+            r"(?P<qualifier>(?:(?:当前|大约|约|为|估计|粗粒度|[~≈]|is|estimated|about|approximately)\s*)*)"
+            r"[:：]?\s*(?P<percentage>\d+(?:\.\d+)?)\s*[%％]", clause, re.IGNORECASE,
         ):
+            # Rules forbidding a claim are not claims of measured progress.
+            # Restrict this to the adjacent reporting predicate, so a separate
+            # "never estimate" cannot exempt a later actual percentage.
+            if re.search(
+                r"(?:\b(?:never|do\s+not|must\s+not|don['’]t)\s+(?:report|show|display|claim)\s*(?:(?:estimated|coarse)\s+)?"
+                r"|(?:不得|不要|禁止|不应|不可)(?:报告|显示|声称|宣称)\s*)$",
+                clause[:displayed.start()], re.IGNORECASE,
+            ):
+                continue
             # A coordinated performance estimate is a separate claim. Keep
             # conjunctions inside the progress denominator's brackets intact.
             end = len(clause)
@@ -276,12 +286,23 @@ def invalid_progress_percentages(text: str) -> bool:
                     end = index
                     break
             progress = clause[displayed.start():end]
-            ratio = re.search(r"(\d+)\s*/\s*(\d+)", progress)
-            if not ratio or not 0 <= int(ratio[1]) <= int(ratio[2]) or int(ratio[2]) == 0:
+            # Equivalent explicit counts are accepted; notation is not a
+            # contract. Prefer one local completed/total pair, never combine
+            # separate performance or work claims to invent a denominator.
+            ratio = re.search(r"(\d+)\s*(?:/|(?:out\s+of|of)\b)\s*(\d+)", progress, re.IGNORECASE)
+            if ratio:
+                numerator, denominator = int(ratio[1]), int(ratio[2])
+            else:
+                counts = re.search(r"共\s*(\d+)\s*项[，,、\s]*(?:已)?完成\s*(\d+)\s*项", progress)
+                if not counts:
+                    counts = re.search(r"(\d+)\s*项中(?:已)?完成\s*(\d+)\s*项", progress)
+                if not counts:
+                    return True
+                denominator, numerator = int(counts[1]), int(counts[2])
+            if not 0 <= numerator <= denominator or denominator == 0:
                 return True
             percentage_text = displayed['percentage']
             percentage = Fraction(percentage_text)
-            numerator, denominator = int(ratio[1]), int(ratio[2])
             rounding_tolerance = Fraction(1, 2 * 10 ** len(percentage_text.partition('.')[2]))
             if not 0 <= percentage <= 100 or abs(percentage - Fraction(100 * numerator, denominator)) > rounding_tolerance:
                 return True
@@ -303,7 +324,8 @@ def invalid_progress_percentages(text: str) -> bool:
                 r"|(?:分母|总数)(?:为|是)(?:估计|未知))",
                 clause[end:], re.IGNORECASE,
             )
-            if prefix_estimate or qualifier.search(progress) or denominator_estimate:
+            approximate = re.search(r"[~≈]|大?约|\b(?:about|approximately)\b", displayed['qualifier'], re.IGNORECASE)
+            if approximate or prefix_estimate or qualifier.search(progress) or denominator_estimate:
                 return True
     return False
 

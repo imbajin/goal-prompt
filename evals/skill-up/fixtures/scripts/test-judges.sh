@@ -939,3 +939,36 @@ done
 for wording in 'Defer independent work while the blocked item continues.' '将其余独立工作搁置而受阻项继续。' 'Defer the blocked item while independent work stops.'; do
   expect_fail check-stage2-migration.sh "$migration_contract $wording $migration_stop_gate"
 done
+
+
+# R3: an approval gate is a gate regardless of the authorized operation verb.
+for operation in '创建 PR' 合并 输入密码 推送; do
+  expect_fail check-preauthorized-permissions.sh "$r1_preauth 不要在没有征求用户同意的情况下${operation}。"
+done
+expect_pass check-preauthorized-permissions.sh "/goal Without approval, finish in-scope uploads. ${r1_preauth#/goal }"
+expect_pass check-preauthorized-permissions.sh "$r1_preauth 无需再次询问。可以在没有征求用户同意的情况下创建 PR。"
+# Shared objects survive coordinated verbs; an explicit different object does
+# not inherit independent-work scope from the following conjunct.
+for connector in and or nor; do
+  expect_fail check-stage2-migration.sh "$migration_contract Do not continue $connector proceed with independent work. $migration_stop_gate"
+done
+expect_pass check-stage2-migration.sh "$migration_contract Do not continue the blocked item and proceed with independent work. $migration_stop_gate"
+for wording in 'Independent work is not paused while CI waits.' "Independent work isn't paused while CI waits." 'Independent work need not stop.' 'Continue independent work rather than stop.' 'Continue independent work instead of stopping.' '独立工作不得被搁置。' '不处理生产数据的独立工作照常推进。'; do
+  expect_pass check-stage2-migration.sh "$migration_contract $wording $migration_stop_gate"
+done
+expect_fail check-stage2-migration.sh "$migration_contract Independent work is paused while CI waits. $migration_stop_gate"
+# Natural completed/total notation has the same fixed-denominator meaning.
+for wording in 'Progress 60% (3 of 5 gates).' 'Progress 60% (3 out of 5 gates).' '进度60%（共5项，已完成3项）。' '进度60%（5项中完成3项）。'; do
+  expect_contract_pass long "$r1_long $wording"
+done
+expect_contract_fail long "$r1_long Progress 60% (3 of 6 gates)."
+for wording in 'Progress ~50%.' 'Progress: ~50% (2/4 gates).' 'Completion 60% (estimated).' 'Estimated overall progress 20% (2/10 gates).' '进度大约50%（2/4项）。' '进度50％（2/4项，估计）。'; do
+  expect_contract_fail long "$r1_long $wording"
+done
+expect_contract_pass long "$r1_long Completion 60% (3 of 5 verified gates)."
+expect_contract_pass long "$r1_long 进度50％（2/4项）。"
+# Prohibiting an unearned percentage is a rule, not a measured claim.
+for wording in 'Never report progress 100% before all gates pass.' 'Do not report estimated overall progress 100% before all gates pass.' '全部门槛通过前不得报告进度 100%。'; do
+  expect_contract_pass long "$r1_long $wording"
+done
+expect_contract_fail long "$r1_long Never report progress 100% before all gates pass. Progress 100% (2/4 gates)."
