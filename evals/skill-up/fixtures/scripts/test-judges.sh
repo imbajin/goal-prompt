@@ -982,3 +982,10 @@ done
 expect_contract_pass long "$r1_long Progress50%(2/4 verified gates) and approximately50% performance gain."
 expect_contract_pass long "$r1_long Progress50%(2/4 verified gates), about50% performance gain."
 expect_contract_pass long "$r1_long 进度50％（2/4验证项）并且性能增益大约50%。"
+
+
+# A short coordinator modifier does not change which verbs share an object.
+for modifier in also then; do
+  expect_fail check-stage2-migration.sh "$migration_contract Do not continue and $modifier proceed with independent work. $migration_stop_gate"
+  expect_pass check-stage2-migration.sh "$migration_contract Do not continue the blocked item and $modifier proceed with independent work. $migration_stop_gate"
+done
