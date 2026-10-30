@@ -167,6 +167,9 @@ normally needs no files. When investigation was explicitly skipped, omit
 unverified paths instead of pretending initialization occurred.
 
 Use `references/long-goal-execution.md` for the full deep execution contract.
+Preserve the user's explicit progress/reporting format in the final goal and any
+execution contract. If a requested percentage lacks a verified fixed denominator,
+retain the other fields and state why it cannot yet be quantified.
 Fast goals carry their applicable compact rules inline: at most three attempts
 per item before deferring/reordering behind independent work; visible completed
 and remaining work plus one next action after productive loops; one independent
