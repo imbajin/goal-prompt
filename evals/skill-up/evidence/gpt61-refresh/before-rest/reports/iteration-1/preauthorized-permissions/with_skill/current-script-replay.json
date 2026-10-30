@@ -1,0 +1,15 @@
+{
+  "kind": "deterministic_script_replay_not_model_rerun",
+  "script_path": "/Users/zhu/.codex/worktrees/3443/goal-prompt/evals/skill-up/fixtures/scripts/check-preauthorized-permissions.sh",
+  "script_sha256": "639c808bb029b8f62a298dab0d77556cf340646f9857b1e07277ebb967ef9b0b",
+  "command": [
+    "bash",
+    "/Users/zhu/.codex/worktrees/3443/goal-prompt/evals/skill-up/fixtures/scripts/check-preauthorized-permissions.sh"
+  ],
+  "exit_code": 0,
+  "stdout": "",
+  "stderr": "",
+  "verdict": "PASS",
+  "response_sha256": "b175ece9f97e9e1040f0a730083793395660676617030c911ecf9608faf57700",
+  "original_verdict_unchanged": true
+}

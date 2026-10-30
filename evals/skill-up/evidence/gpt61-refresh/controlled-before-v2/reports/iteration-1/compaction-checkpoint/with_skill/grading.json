@@ -1,0 +1,26 @@
+{
+  "expectations": [
+    {
+      "text": "expect.must_contain",
+      "passed": false,
+      "evidence": "output does not contain \"Progress\""
+    },
+    {
+      "text": "expect.exit_code",
+      "passed": true,
+      "evidence": "all checks passed"
+    },
+    {
+      "text": "script: skill-up/fixtures/scripts/check-compaction-checkpoint.sh",
+      "passed": false,
+      "skipped": true,
+      "evidence": "not evaluated: expect gate failed"
+    }
+  ],
+  "summary": {
+    "passed": 1,
+    "failed": 2,
+    "total": 3,
+    "pass_rate": 0.3333333333333333
+  }
+}

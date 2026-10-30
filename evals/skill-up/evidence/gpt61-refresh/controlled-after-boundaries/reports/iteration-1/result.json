@@ -1,0 +1,911 @@
+{
+  "skill_name": "goal-prompt",
+  "schema_version": "v1alpha1",
+  "engine_name": "codex",
+  "model_name": "openai/gpt-6.1-sol",
+  "requested_configuration": {
+    "role": "runner",
+    "engine": "codex",
+    "protocol": "openai",
+    "provider": "openai",
+    "model": "gpt-6.1-sol",
+    "version": "0.164.0"
+  },
+  "applied_configuration": {
+    "role": "runner",
+    "engine": "codex",
+    "protocol": "openai",
+    "model": "gpt-6.1-sol",
+    "version": "0.164.0"
+  },
+  "observed_configuration": {
+    "version": "0.164.0"
+  },
+  "start_time": "2026-10-30T05:16:26.633093+08:00",
+  "end_time": "2026-10-30T05:38:10.483068+08:00",
+  "case_results": [
+    {
+      "case_id": "multiturn-confirmation",
+      "title": "同一会话中确认后才进入最终阶段",
+      "status": "PASS",
+      "duration_ms": 137947,
+      "turns": 2,
+      "input_tokens": 425215,
+      "output_tokens": 5881,
+      "judge_duration_ms": 19134,
+      "judge_input_tokens": 86256,
+      "judge_output_tokens": 430,
+      "grading": {
+        "status": "PASS",
+        "turns_executed": 2,
+        "turns_total": 2,
+        "assertion_results": [
+          {
+            "text": "expect.must_contain",
+            "passed": true,
+            "evidence": "all checks passed"
+          },
+          {
+            "text": "expect.exit_code",
+            "passed": true,
+            "evidence": "all checks passed"
+          },
+          {
+            "text": "第一轮语义上请用户确认结果、范围和完成证据，没有生成最终 /goal；不要求出现固定状态字符串。",
+            "passed": true,
+            "evidence": "transcript 第一轮以 Proposed goal brief 列出统一缓存适配层的目标、兼容性要求、范围和排除项。; transcript 第一轮列出测试、检查、文档和独立审查等完成证据，并请求用户确认上述范围与 Deep 模式；该回复没有生成最终 /goal。"
+          },
+          {
+            "text": "第二轮把用户的明确确认视为授权，生成最终可执行 /goal，不重复要求确认。",
+            "passed": true,
+            "evidence": "transcript 第二轮用户明确确认 brief 中的结果、范围、排除项和完成证据，并要求直接生成最终 /goal。; final_message 给出了以 /goal 开头的可执行目标，包含范围、完成门槛和执行与恢复入口，没有再次要求确认。"
+          }
+        ],
+        "summary": {
+          "passed": 4,
+          "failed": 0,
+          "total": 4,
+          "pass_rate": 1
+        },
+        "judge_context": {
+          "profile": "standard",
+          "materialized_dir": "judge/context",
+          "manifest": {
+            "profile": "standard",
+            "materialized_dir": "judge/context",
+            "materials": [
+              {
+                "key": "final_message",
+                "mode": "include",
+                "path": "judge/context/final_message.txt",
+                "bytes": 3584,
+                "original_bytes": 3584
+              },
+              {
+                "key": "transcript",
+                "mode": "file_ref",
+                "path": "judge/context/transcript.json",
+                "bytes": 80124,
+                "original_bytes": 80124
+              },
+              {
+                "key": "workspace_diff",
+                "mode": "omit",
+                "bytes": 0
+              },
+              {
+                "key": "generated_files",
+                "mode": "file_ref",
+                "path": "judge/context/generated_files.txt",
+                "bytes": 682,
+                "original_bytes": 682
+              }
+            ]
+          },
+          "prompt_delivery": "inline",
+          "prompt_bytes": 6442
+        }
+      },
+      "gates": {
+        "passed": true,
+        "failures": null,
+        "configured_rules": [
+          "must_contain",
+          "exit_code"
+        ]
+      },
+      "configuration": "with_skill",
+      "prompt": "$goal-prompt\n请先读取当前工作区的 .codex/skills/goal-prompt/SKILL.md，再按其适用边界处理下方原始请求。如果原始请求明确是普通非目标工作，直接处理原任务，不生成目标文本。\n\n原始请求：\n请为“把 src/cache 重构成统一缓存适配层，同时保持公开 API 不变”创建 /goal。\n",
+      "response": "```text\n/goal 将目标仓库的 src/cache 重构为统一缓存适配层，保持公开 API 和既有缓存行为兼容，使现有调用方无需修改即可继续使用。\n\n执行与恢复入口：.goal-task/cache-adapter/state.md。采用已确认的 Deep 模式，遵循其中的阶段、检查点、重试、审查和提交规则。任务材料以最新用户确认 \u003e 权威规格/设计 \u003e issue/todo \u003e state 为准，宿主指令优先级始终适用。\n\n当前材料工作区没有目标源码或 Git 仓库；实际仓库路径、接口清单、缓存后端及验证命令仍未知。执行时先从已有上下文定位仓库，仍无法确定时仅询问仓库位置；随后读取适用的 AGENTS.md、贡献规则、实现、调用方、测试及 CI，记录真实基线和验证命令，不编造事实。\n\n范围：缓存内部实现、必要的内部调用调整、兼容性测试及相关文档。排除新增缓存后端、新增外部依赖、改变持久化格式和无关模块重构。优先复用现有实现、原生能力和已安装依赖，保留他人修改。\n\n所有已确认范围内所需且用户有权授权的操作均已预授权，包括文件、依赖、环境和 Git 操作、测试、审查响应，以及必要的 Chrome 上传、使用已有凭据、push 和 PR。不得仅因通常需要授权而重复询问、等待、延期或标记阻塞。授权不取消范围排除项，不虚构凭据、会话、工具或能力，不覆盖更高优先级安全边界，不授权范围外工作。不得暴露或持久化凭据值。远程或破坏性操作前核实目标并记录影响；能力缺失时采用安全替代、保留未满足门槛并继续独立工作。默认不 push。\n\n仅当以下条件全部满足才完成：\n1. 内部缓存访问经统一适配层处理；公开导出、导入路径、签名、类型、返回值、错误及异步行为保持兼容。过期、未命中等语义以核实后的现有实现和权威契约为准。\n2. 有效测试证明适配行为和公开兼容性；仓库实际提供的相关测试、最小必要的广域检查及强制检查通过，记录准确命令与证据，区分既有故障和新增回归，不降低断言或跳过必需门槛。\n3. 必要文档同步；主要行为变更里程碑及最终集成分别经过 3 名独立只读审查者审查集成 diff 和证据，实现者不计入。修复发现后复审受影响修改，未解决问题不得被宣称通过。\n\n按模块或验证面推进，每次有效循环更新完成证据、剩余门槛及一个下一步。单项默认最多尝试 3 次，修复/复审默认最多 3 轮；随后记录恢复条件并重排，不豁免完成门槛。等待、延期和需输入事项及其依赖排在独立工作之后，期间继续核查其他调用链、分析失败、整理兼容性证据或验收材料。\n\n阶段边界、上下文压缩、配额等待和交接前保存检查点；恢复时核对状态与真实工作树。适用验证和审查通过后进行里程碑本地提交，无空提交。仅使用已核实的恢复能力，不承诺自动唤醒。\n\n只有恢复和替代路径已尝试、独立工作已耗尽，所有有意义的剩余工作共同依赖同一已核实阻碍，且符合当前宿主状态规则，才可整体标记 blocked。\n```\n\n已创建并核验非空的 [state.md](/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-3104706368/.goal-task/cache-adapter/state.md)。采用 Deep 模式处理公开兼容性边界；仓库与验证命令保留为待核实项，未启动重构。",
+      "observed_version": "0.164.0",
+      "turn_results": [
+        {
+          "turn_number": 1,
+          "content": "$goal-prompt\n请先读取当前工作区的 .codex/skills/goal-prompt/SKILL.md，再按其适用边界处理下方原始请求。如果原始请求明确是普通非目标工作，直接处理原任务，不生成目标文本。\n\n原始请求：\n请为“把 src/cache 重构成统一缓存适配层，同时保持公开 API 不变”创建 /goal。\n",
+          "source": "fixed",
+          "response": "Proposed goal brief\n\n目标：将 `src/cache` 重构为统一缓存适配层，让现有调用方无需修改即可继续使用。保持现有公开导出、签名、类型、返回值、错误及异步行为；缓存过期、未命中等语义以实际实现和契约为准。\n\n范围：缓存内部实现、必要的内部调用调整、兼容性测试和相关文档。默认不新增缓存后端、外部依赖或改变持久化格式，不扩展到无关模块。\n\n当前证据缺口：工作区仅有技能文件，没有 `src/cache`、Git 仓库、测试或构建配置。因此尚无法确认公开接口清单、现有后端、验证命令及分支目标；不会编造这些内容。遵循你提供的 `AGENTS.md` 指令。\n\n建议采用 **Deep 模式**，因为重构涉及公开兼容性边界。确认后：\n- 先核查实际仓库的实现、调用方、测试、贡献规则与 CI，建立兼容性基线。\n- 创建 `.goal-task/cache-adapter/state.md`，记录范围、基线、验证证据、阶段、恢复条件和下一步；暂不创建其他文件。\n- 本次初始化仅准备目标材料，不启动重构；不涉及远程写入。\n\n完成须同时满足：\n- 缓存访问经统一适配层处理，现有公开 API 和已确认行为保持兼容。\n- 兼容性及适配行为有有效测试证据，仓库实际提供的相关检查通过，并完成必要文档更新。\n- 主要行为变更里程碑及最终集成均经过 **3 名独立只读审查者**审查；修复后复审。\n\n执行约束：阶段边界及交接前保存检查点；单项最多尝试 3 次后记录恢复条件并重排。等待、延期或需输入事项排在独立工作之后，期间可继续核查调用方、整理兼容性证据和验收材料。只有全部有意义的剩余工作共享已核实阻碍、恢复方案耗尽且符合宿主状态规则，才可整体标记阻塞。\n\n请提供实际仓库路径，并确认是否按上述范围与 Deep 模式准备目标文本。\n\n这里需要确认，是因为已读取的 [SKILL.md](.codex/skills/goal-prompt/SKILL.md) 明确要求：“Outcome, scope, or initialization not confirmed → Stage 1 brief, material questions, then stop and wait”，且首次请求创建目标不视为确认。",
+          "status": "completed"
+        },
+        {
+          "turn_number": 2,
+          "content": "我确认你刚才 brief 里的结果、范围、排除项和完成证据都不变，请直接生成最终 /goal。\n",
+          "source": "fixed",
+          "response": "```text\n/goal 将目标仓库的 src/cache 重构为统一缓存适配层，保持公开 API 和既有缓存行为兼容，使现有调用方无需修改即可继续使用。\n\n执行与恢复入口：.goal-task/cache-adapter/state.md。采用已确认的 Deep 模式，遵循其中的阶段、检查点、重试、审查和提交规则。任务材料以最新用户确认 \u003e 权威规格/设计 \u003e issue/todo \u003e state 为准，宿主指令优先级始终适用。\n\n当前材料工作区没有目标源码或 Git 仓库；实际仓库路径、接口清单、缓存后端及验证命令仍未知。执行时先从已有上下文定位仓库，仍无法确定时仅询问仓库位置；随后读取适用的 AGENTS.md、贡献规则、实现、调用方、测试及 CI，记录真实基线和验证命令，不编造事实。\n\n范围：缓存内部实现、必要的内部调用调整、兼容性测试及相关文档。排除新增缓存后端、新增外部依赖、改变持久化格式和无关模块重构。优先复用现有实现、原生能力和已安装依赖，保留他人修改。\n\n所有已确认范围内所需且用户有权授权的操作均已预授权，包括文件、依赖、环境和 Git 操作、测试、审查响应，以及必要的 Chrome 上传、使用已有凭据、push 和 PR。不得仅因通常需要授权而重复询问、等待、延期或标记阻塞。授权不取消范围排除项，不虚构凭据、会话、工具或能力，不覆盖更高优先级安全边界，不授权范围外工作。不得暴露或持久化凭据值。远程或破坏性操作前核实目标并记录影响；能力缺失时采用安全替代、保留未满足门槛并继续独立工作。默认不 push。\n\n仅当以下条件全部满足才完成：\n1. 内部缓存访问经统一适配层处理；公开导出、导入路径、签名、类型、返回值、错误及异步行为保持兼容。过期、未命中等语义以核实后的现有实现和权威契约为准。\n2. 有效测试证明适配行为和公开兼容性；仓库实际提供的相关测试、最小必要的广域检查及强制检查通过，记录准确命令与证据，区分既有故障和新增回归，不降低断言或跳过必需门槛。\n3. 必要文档同步；主要行为变更里程碑及最终集成分别经过 3 名独立只读审查者审查集成 diff 和证据，实现者不计入。修复发现后复审受影响修改，未解决问题不得被宣称通过。\n\n按模块或验证面推进，每次有效循环更新完成证据、剩余门槛及一个下一步。单项默认最多尝试 3 次，修复/复审默认最多 3 轮；随后记录恢复条件并重排，不豁免完成门槛。等待、延期和需输入事项及其依赖排在独立工作之后，期间继续核查其他调用链、分析失败、整理兼容性证据或验收材料。\n\n阶段边界、上下文压缩、配额等待和交接前保存检查点；恢复时核对状态与真实工作树。适用验证和审查通过后进行里程碑本地提交，无空提交。仅使用已核实的恢复能力，不承诺自动唤醒。\n\n只有恢复和替代路径已尝试、独立工作已耗尽，所有有意义的剩余工作共同依赖同一已核实阻碍，且符合当前宿主状态规则，才可整体标记 blocked。\n```\n\n已创建并核验非空的 [state.md](/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-3104706368/.goal-task/cache-adapter/state.md)。采用 Deep 模式处理公开兼容性边界；仓库与验证命令保留为待核实项，未启动重构。",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "case_id": "multiturn-correction",
+      "title": "用户明确新范围并要求继续时视为授权",
+      "status": "PASS",
+      "duration_ms": 144080,
+      "turns": 2,
+      "input_tokens": 308038,
+      "output_tokens": 6590,
+      "judge_duration_ms": 18054,
+      "judge_input_tokens": 43529,
+      "judge_output_tokens": 448,
+      "grading": {
+        "status": "PASS",
+        "turns_executed": 2,
+        "turns_total": 2,
+        "assertion_results": [
+          {
+            "text": "expect.must_contain",
+            "passed": true,
+            "evidence": "all checks passed"
+          },
+          {
+            "text": "expect.exit_code",
+            "passed": true,
+            "evidence": "all checks passed"
+          },
+          {
+            "text": "第一轮调查并给出待确认 brief，没有提前生成最终 /goal；只要求语义确认，不要求固定状态字符串。",
+            "passed": true,
+            "evidence": "transcript 第 1 轮记录了技能文件、工作区和 Git 状态的核查；结果显示当前工作区没有业务仓库或 src/cache。; transcript 第 1 轮给出 Proposed goal brief，列出范围、完成证据、模式和未知项，并请求确认范围、Deep 模式及状态文件例外；没有提前输出最终 /goal，也没有要求使用固定状态字符串。"
+          },
+          {
+            "text": "第二轮把用户给出的新范围和“请按新范围继续”视为明确授权，完成必要判断并生成最终 /goal，不重复索取确认。",
+            "passed": true,
+            "evidence": "transcript 中用户明确提出修改公开 API、迁移所有调用方，并要求按新范围直接生成最终 /goal。; final_message 生成了最终 /goal，明确将缓存公开 API 和全部受影响调用方纳入范围，指出旧的 API 不变和目录限制已被最新授权取代。; final_message 将未知仓库、API 方案和验证命令保留为执行时核查项，并报告已创建 Deep 模式状态文件；没有再次索取确认。"
+          }
+        ],
+        "summary": {
+          "passed": 4,
+          "failed": 0,
+          "total": 4,
+          "pass_rate": 1
+        },
+        "judge_context": {
+          "profile": "standard",
+          "materialized_dir": "judge/context",
+          "manifest": {
+            "profile": "standard",
+            "materialized_dir": "judge/context",
+            "materials": [
+              {
+                "key": "final_message",
+                "mode": "include",
+                "path": "judge/context/final_message.txt",
+                "bytes": 3354,
+                "original_bytes": 3354
+              },
+              {
+                "key": "transcript",
+                "mode": "file_ref",
+                "path": "judge/context/transcript.json",
+                "bytes": 82395,
+                "original_bytes": 82395
+              },
+              {
+                "key": "workspace_diff",
+                "mode": "omit",
+                "bytes": 0
+              },
+              {
+                "key": "generated_files",
+                "mode": "file_ref",
+                "path": "judge/context/generated_files.txt",
+                "bytes": 674,
+                "original_bytes": 674
+              }
+            ]
+          },
+          "prompt_delivery": "inline",
+          "prompt_bytes": 6263
+        }
+      },
+      "gates": {
+        "passed": true,
+        "failures": null,
+        "configured_rules": [
+          "must_contain",
+          "exit_code"
+        ]
+      },
+      "configuration": "with_skill",
+      "prompt": "$goal-prompt\n请先读取当前工作区的 .codex/skills/goal-prompt/SKILL.md，再按其适用边界处理下方原始请求。如果原始请求明确是普通非目标工作，直接处理原任务，不生成目标文本。\n\n原始请求：\n请为“只重构 src/cache，同时保持公开 API 不变”创建 /goal。\n",
+      "response": "```text\n/goal 完成缓存内部重构、公开 API 修改及所有受影响调用方迁移，使新接口与迁移后的调用链通过行为验证和集成检查。\n\n执行与恢复入口：.goal-task/cache-api-migration/state.md。\n范围：目标仓库中的 src/cache、缓存公开 API、全部受影响调用方，以及迁移必需的测试、类型声明、文档和示例。此前“公开 API 不变”和“仅修改 src/cache”的限制已由最新授权取代；避免无关模块重构。\n\n当前工作区没有业务仓库。目标仓库、具体 API 方案、调用方集合和验证命令仍未知，不得编造。执行时先定位仓库，读取适用 AGENTS.md、贡献规则、实现、调用方、测试与 CI，记录基线及旧 API → 新 API 映射。优先依据已有规范和实际调用需求确定最小必要方案，明确有意变化及必须保留的行为。\n\n范围内所需、可由用户授权的操作均已预授权，包括文件、依赖、环境和 Git 修改、推送、PR、测试、审查响应，以及必要的 Chrome 上传和使用已有凭据；不要因重复索要授权而停止、等待、延期或标记 blocked。默认不推送，远程写入前核实具体目标与影响。授权不创造凭据、会话、工具或能力，不覆盖宿主安全边界，不授权范围外工作。不得暴露或持久化凭据值；能力不足时使用安全替代、保留未满足门槛并继续独立工作。\n\n按 state.md 的 Deep 执行契约推进：建立接口和调用方基线，分阶段修改 API、迁移调用方并集成验证。阶段结束、交接或上下文压缩前保存检查点。每项最多尝试 3 次；等待、延期或需要输入的项目及其依赖排到独立工作之后，期间继续调用方核查、文档或证据整理。每次有效循环报告完成证据、剩余门槛和一个下一步。\n\n仅在以下条件全部满足时完成：\n1. 缓存重构和新 API 实现符合已记录契约；有意行为变化与迁移映射一致，其余约定行为保持稳定。\n2. 全部受影响调用方完成迁移，并有覆盖依据；核查类型引用、再导出和适用的动态调用。仓库外消费者如存在，须取得迁移证据，不能以仓库内搜索代替全部覆盖。\n3. 实际项目提供的缓存定向测试、调用方相关测试及最小必要的更广检查通过；记录真实命令、退出码和结果，验证正常、失败和相关边界场景，不降低断言或验证门槛。\n4. 必要接口文档、示例和迁移说明同步完成，最终 diff 均对应本任务。\n5. 重大 API/行为改动里程碑、迁移集成及最终集成均经过 3 名独立只读审查者检查；实现者不计入，修复后复审。审查缺失或发现未解决时保留门槛，不宣称完成。\n\n适用验证与审查通过后才提交本地里程碑，禁止空提交。只有恢复、安全替代和重排序均已尝试、独立工作已耗尽，且所有有意义的剩余工作共享同一已验证阻碍并满足当前宿主状态规则时，才可标记整体 blocked。\n```\n\n采用 Deep 模式，已创建并核查 [state.md](/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-2005028654/.goal-task/cache-api-migration/state.md)。仓库相关未知项已保留，尚未开始重构或运行业务验证。",
+      "observed_version": "0.164.0",
+      "turn_results": [
+        {
+          "turn_number": 1,
+          "content": "$goal-prompt\n请先读取当前工作区的 .codex/skills/goal-prompt/SKILL.md，再按其适用边界处理下方原始请求。如果原始请求明确是普通非目标工作，直接处理原任务，不生成目标文本。\n\n原始请求：\n请为“只重构 src/cache，同时保持公开 API 不变”创建 /goal。\n",
+          "source": "fixed",
+          "response": "Proposed goal brief\n\n- **目标与范围**：仅重构 `src/cache` 内部实现；保持公开导出、签名、类型、调用方式及可观察行为兼容。排除其他模块修改、依赖变更和新功能；具体结构改进依据源码确定。\n- **完成证据**：公开 API 前后对照一致；现有调用方无需修改；缓存相关测试及仓库要求的相关检查通过；最终 diff 符合目录边界，必要的内部说明同步更新。\n- **推荐模式**：Deep，因为包含公开 API 兼容边界。确认后创建 `.goal-task/cache-refactor/state.md`，记录基线、验证门槛、恢复条件及下一步；这是业务目录之外唯一拟新增的目标管理文件。\n- **执行与审查**：基线确认、阶段完成及交接时保存检查点；重大改动里程碑和最终集成由 3 名独立审查者检查，修复后复审。每项最多尝试 3 次，等待或延期项排到独立工作之后；等待期间可核查调用方、API 对照和验证证据。仅当全部剩余工作共享真实阻碍且符合宿主状态规则时，才标记整体阻塞。\n- **核查结果与缺口**：当前工作区只有技能资料，没有 `src/cache`、Git 仓库、测试或 CI，无法确认实际 API 和验证命令。现有依据是你的请求及消息中的 `AGENTS.md` 指令；不虚构仓库路径或命令。尚未创建文件或执行重构；本地状态文件可写，缺失仓库只影响后续源码核查与验证。\n\n请确认上述范围、Deep 模式及状态文件例外；若希望目标绑定实际 API 和验证命令，请同时提供目标仓库路径。\n\n此处需要确认，依据 [goal-prompt/SKILL.md](.codex/skills/goal-prompt/SKILL.md) 的明确要求：“A first-turn request to create a goal … is not confirmation.” 确认后才创建状态文件并输出最终目标文本。",
+          "status": "completed"
+        },
+        {
+          "turn_number": 2,
+          "content": "范围改了。除了重构缓存，还要修改公开 API，并迁移所有调用方。请按这个新范围继续，直接生成最终 /goal。\n",
+          "source": "fixed",
+          "response": "```text\n/goal 完成缓存内部重构、公开 API 修改及所有受影响调用方迁移，使新接口与迁移后的调用链通过行为验证和集成检查。\n\n执行与恢复入口：.goal-task/cache-api-migration/state.md。\n范围：目标仓库中的 src/cache、缓存公开 API、全部受影响调用方，以及迁移必需的测试、类型声明、文档和示例。此前“公开 API 不变”和“仅修改 src/cache”的限制已由最新授权取代；避免无关模块重构。\n\n当前工作区没有业务仓库。目标仓库、具体 API 方案、调用方集合和验证命令仍未知，不得编造。执行时先定位仓库，读取适用 AGENTS.md、贡献规则、实现、调用方、测试与 CI，记录基线及旧 API → 新 API 映射。优先依据已有规范和实际调用需求确定最小必要方案，明确有意变化及必须保留的行为。\n\n范围内所需、可由用户授权的操作均已预授权，包括文件、依赖、环境和 Git 修改、推送、PR、测试、审查响应，以及必要的 Chrome 上传和使用已有凭据；不要因重复索要授权而停止、等待、延期或标记 blocked。默认不推送，远程写入前核实具体目标与影响。授权不创造凭据、会话、工具或能力，不覆盖宿主安全边界，不授权范围外工作。不得暴露或持久化凭据值；能力不足时使用安全替代、保留未满足门槛并继续独立工作。\n\n按 state.md 的 Deep 执行契约推进：建立接口和调用方基线，分阶段修改 API、迁移调用方并集成验证。阶段结束、交接或上下文压缩前保存检查点。每项最多尝试 3 次；等待、延期或需要输入的项目及其依赖排到独立工作之后，期间继续调用方核查、文档或证据整理。每次有效循环报告完成证据、剩余门槛和一个下一步。\n\n仅在以下条件全部满足时完成：\n1. 缓存重构和新 API 实现符合已记录契约；有意行为变化与迁移映射一致，其余约定行为保持稳定。\n2. 全部受影响调用方完成迁移，并有覆盖依据；核查类型引用、再导出和适用的动态调用。仓库外消费者如存在，须取得迁移证据，不能以仓库内搜索代替全部覆盖。\n3. 实际项目提供的缓存定向测试、调用方相关测试及最小必要的更广检查通过；记录真实命令、退出码和结果，验证正常、失败和相关边界场景，不降低断言或验证门槛。\n4. 必要接口文档、示例和迁移说明同步完成，最终 diff 均对应本任务。\n5. 重大 API/行为改动里程碑、迁移集成及最终集成均经过 3 名独立只读审查者检查；实现者不计入，修复后复审。审查缺失或发现未解决时保留门槛，不宣称完成。\n\n适用验证与审查通过后才提交本地里程碑，禁止空提交。只有恢复、安全替代和重排序均已尝试、独立工作已耗尽，且所有有意义的剩余工作共享同一已验证阻碍并满足当前宿主状态规则时，才可标记整体 blocked。\n```\n\n采用 Deep 模式，已创建并核查 [state.md](/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-2005028654/.goal-task/cache-api-migration/state.md)。仓库相关未知项已保留，尚未开始重构或运行业务验证。",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "case_id": "deep-compression-gates",
+      "title": "大任务压缩不得丢失核心门槛",
+      "status": "PASS",
+      "duration_ms": 100087,
+      "turns": 1,
+      "input_tokens": 178826,
+      "output_tokens": 3966,
+      "judge_duration_ms": 15419,
+      "judge_input_tokens": 21318,
+      "judge_output_tokens": 417,
+      "grading": {
+        "status": "PASS",
+        "turns_executed": 1,
+        "turns_total": 1,
+        "assertion_results": [
+          {
+            "text": "expect.must_contain",
+            "passed": true,
+            "evidence": "all checks passed"
+          },
+          {
+            "text": "expect.exit_code",
+            "passed": true,
+            "evidence": "all checks passed"
+          },
+          {
+            "text": "最终 /goal 保留三个模块、公开兼容、逐模块测试、集成测试、CI 和迁移文档的合取门槛。",
+            "passed": true,
+            "evidence": "final_message 的 /goal 要求 auth、billing、notifications 全部迁移到统一事件接口，并保持公开接口及对外行为兼容。; final_message 明确要求三个模块各自的测试、跨模块集成测试、目标 revision 的全部必需 CI 检查通过，以及迁移文档完成并与最终实现一致；这些均列在“仅当以下条件全部满足才完成”之下。"
+          },
+          {
+            "text": "保留恰好 3 个独立只读 reviewer、修复后复审，以及所有门槛通过前不得完成。",
+            "passed": true,
+            "evidence": "final_message 要求每个重大行为变更里程碑及最终集成都由 3 名独立只读 reviewer 审查集成 diff 和证据。; final_message 要求修复发现的问题后复审受影响范围并进行必要验证，且只有全部条件满足、无未解决的阻断问题时才完成。"
+          },
+          {
+            "text": "保留 state.md 真相入口和仅当全部剩余工作共同受阻时才允许整体 blocked 的语义，同时保持简洁。",
+            "passed": true,
+            "evidence": "final_message 将 .goal-task/event-migration/state.md 指定为执行契约、状态与恢复入口，并要求遵循其中的真源优先级。; final_message 规定只有恢复、替代和独立工作均已穷尽，所有有意义的剩余工作共同受同一已验证阻塞约束且满足宿主状态规则时，才可整体 blocked。; 相关状态入口和 blocked 条件均以简短段落表达。"
+          }
+        ],
+        "summary": {
+          "passed": 5,
+          "failed": 0,
+          "total": 5,
+          "pass_rate": 1
+        },
+        "judge_context": {
+          "profile": "standard",
+          "materialized_dir": "judge/context",
+          "manifest": {
+            "profile": "standard",
+            "materialized_dir": "judge/context",
+            "materials": [
+              {
+                "key": "final_message",
+                "mode": "include",
+                "path": "judge/context/final_message.txt",
+                "bytes": 2224,
+                "original_bytes": 2224
+              },
+              {
+                "key": "transcript",
+                "mode": "file_ref",
+                "path": "judge/context/transcript.json",
+                "bytes": 34071,
+                "original_bytes": 34071
+              },
+              {
+                "key": "workspace_diff",
+                "mode": "omit",
+                "bytes": 0
+              },
+              {
+                "key": "generated_files",
+                "mode": "file_ref",
+                "path": "judge/context/generated_files.txt",
+                "bytes": 341,
+                "original_bytes": 341
+              }
+            ]
+          },
+          "prompt_delivery": "inline",
+          "prompt_bytes": 5314
+        }
+      },
+      "gates": {
+        "passed": true,
+        "failures": null,
+        "configured_rules": [
+          "must_contain",
+          "exit_code"
+        ]
+      },
+      "configuration": "with_skill",
+      "prompt": "$goal-prompt\n请先读取当前工作区的 .codex/skills/goal-prompt/SKILL.md，再按其适用边界处理下方原始请求。如果原始请求明确是普通非目标工作，直接处理原任务，不生成目标文本。\n\n原始请求：\n你已经调查过并给了我 brief，我确认使用深度模式和现有初始化方案。\n请把下面这项工作压缩成简洁的最终 /goal，但这些完成条件一个都不能漏掉。\n把 auth、billing、notifications 迁移到统一事件接口，并保持公开兼容。\n每个模块测试、跨模块集成测试、CI、迁移文档、3 名独立只读 reviewer 和修复后的复审都必须完成。\n.goal-task/event-migration/state.md 是执行契约和状态入口。\n",
+      "response": "```text\n/goal 以深度模式将 auth、billing、notifications 全部迁移到统一事件接口，保持公开接口及对外行为兼容，仅修改迁移及必要配套范围。\n\n以 .goal-task/event-migration/state.md 为执行契约、状态与恢复入口；按其中的真源优先级、阶段、checkpoint、重试、审查和提交规则持续执行。先核实实际代码库、已批准方案及真实验证命令，不虚构缺失信息。\n\n范围内所有可由用户授权的必要操作均已预授权，包括文件、依赖、环境、worktree/Git、push、PR、测试、审查响应，以及必要的 Chrome 上传和使用已有凭据；不因授权重复询问或停等。操作前核实远端或破坏性操作的目标与影响。不虚构凭据、会话、工具或能力，不突破宿主安全边界，不扩展范围，不暴露或持久化凭据值。实际能力缺失时保留未满足门槛，采用安全替代并继续独立工作。\n\n仅当以下条件全部满足才完成：\n1. 三个模块的实际执行路径均接入统一事件接口，相关调用方正常工作，公开兼容有验证证据。\n2. auth、billing、notifications 各自模块测试、跨模块集成测试及目标 revision 的全部必需 CI 检查通过。\n3. 迁移文档完成并与最终实现一致。\n4. 每个重大行为变更里程碑及最终集成均完成 3 名独立只读 reviewer 对集成 diff 和证据的审查；修复发现的问题后完成受影响范围的复审和必要验证，无未解决的阻断问题。\n\n每次有效循环更新证据、剩余门槛和一个下一步；压缩上下文、配额等待或交接前保存 checkpoint。单项最多尝试 3 次，再记录恢复条件并将等待、延期及需输入项排到独立工作之后，条件变化时重试，不豁免验收。仅当恢复、替代和独立工作均已穷尽，所有有意义的剩余工作共同受同一已验证阻塞约束，且满足宿主状态规则时，才可整体 blocked；遵守用户明确暂停。\n```\n\n已创建深度模式的 [state.md](.goal-task/event-migration/state.md)，承载详细执行规则。当前工作区缺少业务代码和既有状态，已如实记录；未启动迁移。",
+      "observed_version": "0.164.0"
+    },
+    {
+      "case_id": "goal-char-limit",
+      "title": "深度模式最终 /goal 不得超出 Claude Code 字符硬限制",
+      "status": "FAIL",
+      "duration_ms": 153341,
+      "turns": 1,
+      "input_tokens": 223607,
+      "output_tokens": 6482,
+      "grading": {
+        "status": "FAIL",
+        "turns_executed": 1,
+        "turns_total": 1,
+        "assertion_results": [
+          {
+            "text": "expect.exit_code",
+            "passed": true,
+            "evidence": "all checks passed"
+          },
+          {
+            "text": "script: /Users/zhu/.codex/worktrees/3443/goal-prompt/.eval-work/controlled-after-boundaries/snapshot/skill-up/fixtures/scripts/check-goal-char-limit-case.py",
+            "passed": false,
+            "evidence": "script exited with code 1 [stderr: goal body is missing: twelve sub-gates]"
+          }
+        ],
+        "summary": {
+          "passed": 1,
+          "failed": 1,
+          "total": 2,
+          "pass_rate": 0.5
+        }
+      },
+      "gates": {
+        "passed": true,
+        "failures": null,
+        "configured_rules": [
+          "exit_code"
+        ]
+      },
+      "configuration": "with_skill",
+      "prompt": "$goal-prompt\n请先读取当前工作区的 .codex/skills/goal-prompt/SKILL.md，再按其适用边界处理下方原始请求。如果原始请求明确是普通非目标工作，直接处理原任务，不生成目标文本。\n\n原始请求：\n你已经调查过并给了我 brief，我确认使用深度模式和现有初始化方案，目标 harness 是 Claude Code。\n请把下面这项工作写成最终 /goal：把 payments、ledger、reconciliation、reporting\n四个模块迁移到新的幂等事件总线，同时保持所有现有公开 API 和 webhook 契约不变。\n每个模块要求：单元测试全绿、契约测试全绿、性能回归在 5% 以内、迁移前后数据一致性校验、\n回滚脚本可用并已演练。全局要求：4 个模块共 12 项子门槛全部通过、CI 全绿、\n安全审查通过、5 名独立只读 reviewer 批准、每条 reviewer 意见修复后必须复审、\n迁移文档和运维手册齐全、灰度发布计划分 4 个阶段且每阶段有明确回退条件。\n.goal-task/event-bus-migration/state.md 是执行契约和状态入口，所有细节都可以写进去。\n请不要因为细节多就删掉任何一项门槛,只允许精简措辞和把细节挪到 state.md。\n",
+      "response": "```text\n/goal 在 Claude Code 中以深度模式，将 payments、ledger、reconciliation、reporting 四个模块迁移到新的幂等事件总线，保持所有现有公开 API 和 webhook 契约不变，并满足全部迁移验收门槛。\n\n执行契约、状态与恢复入口：.goal-task/event-bus-migration/state.md。开始和恢复时先读取该文件，并核对真实 checkout、revision、diff 和证据。任务材料以最新用户确认、权威规格/设计、issue/todo、state 的顺序为准；宿主指令始终优先。当前尚无业务仓库、测试命令或通过证据，先完成 state 中的 Initialization TODO，不虚构既有 brief、环境或验证结果。范围包含迁移必需的调用方、适配、测试、数据核对、回滚、文档和发布计划，避免无关重构。\n\n用户可授权且为已确认范围必需的操作均已预授权，包括 Chrome 上传、输入已有凭证、文件/依赖/环境变更、worktree/Git 操作、push、PR、测试与 review 修复；不得重复询问或仅因授权而暂停、等待、延期、标记 blocked。操作前从证据定位账号、环境、仓库、远端、分支及 PR，并记录破坏性或远端操作的目标与影响。授权不创造凭证、会话、工具或能力，不覆盖宿主安全边界，不授权范围外工作。不得暴露或持久化凭证值。遇真实能力缺口时保留未满足门槛，采用安全替代并继续独立工作。\n\n按 state 执行基线核验、分批迁移、集成、验证、审查及文档收口；落实 checkpoint、最多三次事项尝试、失败恢复、等待重排、复审和提交规则。重大行为变更里程碑及最终集成都必须经过独立审查，不能只做最终审查。等待 CI、reviewer 或外部资源时推进其他模块、失败分析、回滚准备、文档和证据维护等不冲突的独立工作。每次有效循环更新完成证据、剩余门槛和一个下一动作；压缩上下文、配额等待或交接前保存可恢复状态，不假定 Claude Code 存在自动唤醒或特定状态 API。\n\n仅当以下条件全部满足才完成：\n1. 四模块实际使用新幂等事件总线，公开 API 和 webhook 契约不变；重复投递、重试、并发、重放和恢复符合已核验设计，不丢数据、不产生重复业务副作用。\n2. 每个模块均满足：单元测试全绿、契约测试全绿、性能回归不超过 5%、迁移前后数据一致性校验通过、回滚脚本可用且已成功演练。全部要求按 state 组织为每模块三项组合门槛，共 12/12 项：测试、性能与一致性、回滚；组合内全部取 AND，完整保留四模块共 20 项原子要求。\n3. 最终集成 revision 的 CI 全绿，安全审查通过；所有结果具备可追溯的版本、环境、命令、退出码和运行证据。不得降低断言或阈值、跳过必需检查、以历史绿灯替代当前验证。\n4. 重大行为变更里程碑及最终集成都获得 5 名独立只读 reviewer 批准，实现者不得计入。每条意见均记录位置、严重性、证据和处理；修复后必须由原 reviewer 复审，误报也需依据及 reviewer 确认。最终批准须覆盖最终集成 diff；变更影响既有批准时重新审查。延期、reviewer 不可用或超过默认修复轮次均不豁免门槛。\n5. 迁移文档和运维手册齐全、与最终实现一致。灰度发布计划分为四个阶段，每阶段明确范围、进入/退出条件、观察窗口、监控、回退触发条件、执行动作及恢复验证；按 state 补齐真实参数和脚本引用。计划齐全不等于已执行生产发布。\n\n所有门槛均须有证据，未知、失败、等待或延期不算通过。只有在恢复、替代、重排及独立工作耗尽后，所有有意义的剩余工作共同受同一已核实阻塞因素限制，且满足当前宿主状态规则时，才可整体 blocked；用户主动暂停按宿主规则处理。\n```\n\n已初始化深度模式的 [state.md](.goal-task/event-bus-migration/state.md)，完整保留所有门槛；12 项采用组合计数。当前工作区无业务仓库，未启动迁移或执行验收。",
+      "observed_version": "0.164.0"
+    },
+    {
+      "case_id": "compaction-checkpoint",
+      "title": "长任务必须显式保存 compaction 进度",
+      "status": "PASS",
+      "duration_ms": 140732,
+      "turns": 1,
+      "input_tokens": 226923,
+      "output_tokens": 5671,
+      "grading": {
+        "status": "PASS",
+        "turns_executed": 1,
+        "turns_total": 1,
+        "assertion_results": [
+          {
+            "text": "expect.must_contain",
+            "passed": true,
+            "evidence": "all checks passed"
+          },
+          {
+            "text": "expect.exit_code",
+            "passed": true,
+            "evidence": "all checks passed"
+          },
+          {
+            "text": "script: /Users/zhu/.codex/worktrees/3443/goal-prompt/.eval-work/controlled-after-boundaries/snapshot/skill-up/fixtures/scripts/check-compaction-checkpoint.sh",
+            "passed": true,
+            "evidence": "script passed (exit code 0)"
+          }
+        ],
+        "summary": {
+          "passed": 3,
+          "failed": 0,
+          "total": 3,
+          "pass_rate": 1
+        }
+      },
+      "gates": {
+        "passed": true,
+        "failures": null,
+        "configured_rules": [
+          "must_contain",
+          "exit_code"
+        ]
+      },
+      "configuration": "with_skill",
+      "prompt": "$goal-prompt\n请先读取当前工作区的 .codex/skills/goal-prompt/SKILL.md，再按其适用边界处理下方原始请求。如果原始请求明确是普通非目标工作，直接处理原任务，不生成目标文本。\n\n原始请求：\n你已经调查过并给了我 brief，我确认使用深度模式。\n请分阶段迁移 payments、orders、reports，并用 .goal-task/reporting/state.md 保存执行状态。\n请生成最终 /goal。执行时每轮工作都要报告进度条、This loop、Remaining 和 Next。\n每个重要里程碑验证通过后创建本地 commit，并在下一次报告里写清 commit 和本轮完成内容。\n在 compaction、配额等待或交接前，把完成项、剩余项、最新 commit、验证证据和下一步写进 state.md。\n",
+      "response": "```text\n/goal 按此前已批准的 brief，以深度模式依次迁移 payments、orders、reports，完成各模块及跨模块集成验收，并留下可核验、可恢复的执行记录。\n\nActive truth：.goal-task/reporting/state.md 是执行、状态与恢复入口。执行前先读取并核对当前 checkout。当前工作区未发现业务代码或此前 brief，且不是 Git 仓库；真实迁移目标、仓库路径、验证命令和基线 commit 尚待核实，不得编造。首先从已有材料定位获批 brief 和真实仓库；确实无法取得时，仅请求缺失材料，不重复确认深度模式或已有授权。\n\n范围：按 payments → orders → reports 分阶段实施，包括必要的调用方适配、兼容性与适用的数据迁移/恢复验证、测试和文档。具体目标及不变量服从已批准材料；不自行扩展业务范围或变更已批准目标。\n\n范围内所有用户可授权的必要操作均已预授权，包括文件、依赖、环境、worktree、Git、测试、审查响应，以及确有需要的 Chrome 上传、输入已有凭据、push 和 PR 操作。不得因重复索取授权而停工、等待、延期或标记 blocked。默认仅创建本地 commit，不 push；远程及破坏性操作须先依据证据明确目标与影响。授权不提供不存在的凭据、会话或工具，不突破更高优先级安全边界，也不授权范围外工作。不得暴露、记录或提交凭据值。实际能力不可用时保留未通过 gate，采用安全替代并继续独立工作。\n\nExecution：遵守 state.md 中的阶段、验证、审查、重试、commit 和恢复契约。固定阶段为 P0 基线、P1 payments、P2 orders、P3 reports、P4 最终集成。等待项及其依赖排到独立工作之后；可推进后续模块只读调查、失败分析、验收准备和证据维护，不提前执行依赖未满足的迁移。每项默认最多尝试 3 次，记录证据和恢复条件后延期；延期不豁免完成 gate。\n\n每轮工作必须报告：\nProgress: [□□□□□] 0/5 阶段完成\nThis loop: 本轮完成内容、验证结果与证据；里程碑 commit 后的下一次报告必须列出真实 commit hash 及完成内容。\nRemaining: 未完成阶段、未通过 gates、等待项与恢复条件。\nNext: 一项明确的主要下一步。\n进度条按实际通过的阶段更新；百分比仅按明确的 5 阶段分母计算，全部 gates 通过前不得报告 100%。\n\n每个重要行为变更里程碑及最终集成都须由 3 名独立只读 reviewer 审查实际 integrated diff 和验证证据；实现者自审不计数。修复后复审，默认最多 3 轮，未解决项保持未完成。适用验证及独立审查通过后创建非空本地里程碑 commit，并及时更新 state.md 与下一次报告；不得削弱验证或忽略重要发现来提交。\n\n在 compaction、配额等待或交接前，必须先将完成项、剩余项、最新 commit、未提交变更、验证及审查证据、活跃等待、恢复条件和明确下一步写入 state.md。恢复时核对真实 checkout 与证据，不凭聊天记忆续跑；不得虚构配额重置时间、自动唤醒或恢复能力。\n\n仅当以下条件全部满足才完成：\n1. 三个模块均达到获批迁移目标，真实调用路径及适用的正常、失败、边界场景符合验收标准。\n2. 从真实仓库核实的必需验证与跨模块集成验证通过；接口兼容、数据一致性和适用的恢复/回滚约束有当前证据。\n3. 迁移及维护文档同步；各重要里程碑和最终集成的独立审查、修复复审均通过。\n4. 本地里程碑 commits、逐轮报告和 state.md 证据一致，无未通过的必需 gate。\n\n只有恢复、替代和重排后，所有有意义的剩余工作共同依赖同一经核实的阻碍，且满足当前宿主状态审计规则时，才能报告整体 blocked。\n```\n\n已初始化并核对深度模式状态文件：[state.md](.goal-task/reporting/state.md)。未执行迁移或创建 commit；业务仓库和此前 brief 的缺口已记录。",
+      "observed_version": "0.164.0"
+    },
+    {
+      "case_id": "native-blocked-scope",
+      "title": "原生 Blocked 不能吞掉独立工作",
+      "status": "PASS",
+      "duration_ms": 132283,
+      "turns": 1,
+      "input_tokens": 162942,
+      "output_tokens": 4923,
+      "grading": {
+        "status": "PASS",
+        "turns_executed": 1,
+        "turns_total": 1,
+        "assertion_results": [
+          {
+            "text": "expect.must_contain",
+            "passed": true,
+            "evidence": "all checks passed"
+          },
+          {
+            "text": "expect.exit_code",
+            "passed": true,
+            "evidence": "all checks passed"
+          },
+          {
+            "text": "script: /Users/zhu/.codex/worktrees/3443/goal-prompt/.eval-work/controlled-after-boundaries/snapshot/skill-up/fixtures/scripts/check-native-blocked-scope.sh",
+            "passed": true,
+            "evidence": "script passed (exit code 0)"
+          }
+        ],
+        "summary": {
+          "passed": 3,
+          "failed": 0,
+          "total": 3,
+          "pass_rate": 1
+        }
+      },
+      "gates": {
+        "passed": true,
+        "failures": null,
+        "configured_rules": [
+          "must_contain",
+          "exit_code"
+        ]
+      },
+      "configuration": "with_skill",
+      "prompt": "$goal-prompt\n请先读取当前工作区的 .codex/skills/goal-prompt/SKILL.md，再按其适用边界处理下方原始请求。如果原始请求明确是普通非目标工作，直接处理原任务，不生成目标文本。\n\n原始请求：\n你已经调查过并给了我 brief，我确认使用深度模式。\n请迁移 api、worker、web 三个模块。worker 的外部依赖已经连续三次失败，\n但 api 和 web 仍然可以独立完成。\n请生成最终 /goal，说明如何记录 worker 的 needs input 或 deferred，如何继续 api 和 web，\n也要把单项三次重试和 Codex 原生 update_goal 的 blocked 状态分开。\n只有同一个整体阻塞条件连续三个 goal turns，且所有剩余工作都无法推进时，才允许整体 blocked。\n",
+      "response": "```text\n/goal 按已批准 brief，以深度模式完成 api、worker、web 三个模块迁移，保持约定的行为、接口和数据兼容性，并提供可核验的运行、验证与审查证据。\n\n执行与恢复入口：.goal-task/api-worker-web-migration/state.md。\n事实优先级：最新用户确认 \u003e 权威 brief/规格/设计 \u003e 任务清单 \u003e state；宿主指令始终优先。当前工作区未包含先前 brief 和业务源码；执行时先恢复已有材料、真实仓库基线及验证命令，不编造迁移目标、路径或通过记录，不重复确认已批准范围。\n\n授权：确认范围内所需且用户可授权的操作均已预授权，包括 Chrome 上传、输入已有凭据、文件/依赖/环境/worktree/Git 变更、push/PR、测试及审查响应。不得仅因通常需要授权而再次询问、等待、延期或标 blocked。执行前核实实际目标，记录远程或破坏性影响。授权不产生凭据、会话、工具或能力，不覆盖更高优先级安全边界，不授权范围外工作。不得暴露、截图、转录、保存或发布凭据值。能力缺口应记录、采用安全替代并继续独立工作，相关验收门保持开放。\n\n执行与排程：\n1. worker 外部依赖已连续失败三次，这是用户提供的项级事实，不是整体阻塞审计。补录依赖、失败摘要、脱敏证据、尝试次数、影响范围、已试恢复方案和恢复条件；未知字段如实标未知。\n2. 默认将该依赖项记为 deferred；确实需要外部提供信息、资源或决定时，记为 needs input，并写清所需输入、来源、恢复触发条件和下一检查点。这些是项级记录，不假定是原生 update_goal 接受的状态值。\n3. 该项及其实际依赖项排到独立工作之后。立即推进 api、web 的迁移、验证、文档和审查；同时推进 worker 中不依赖该外部条件的有意义工作。输入和写入范围独立时可并行，共享文件由单一负责人维护。\n4. 单项最多尝试三次；已有三次失败不得清零或在条件不变时继续循环。条件变化或阶段边界检查恢复可能，再依据新证据决定恢复。deferred/needs input 不豁免 worker 的完成门，也不缩减三模块范围。\n5. 按 state 执行批次、checkpoint、恢复、审查及提交规则。每个有效循环记录完成证据、剩余门和一个主要下一步；压缩、额度等待或交接前保存提交、未提交改动、验证、审查和恢复条件。\n\n单项重试与整体 blocked 严格分开：\n- 同一 goal turn 内三次重试，不等于三个连续 goal turns。当前仅生成目标，整体阻塞连续计数为零。\n- 每个实际 goal turn 记录可验证的 turn 标识、整体阻塞条件及证据、剩余工作依赖、恢复/替代/重排结果和连续计数；不得推定历史 turn 或人为制造空 turn。\n- api、web 或任何其他有意义的剩余工作仍可推进时，继续执行，不允许整体 blocked。\n- 只有恢复、安全替代和重排均已穷尽，所有有意义的剩余工作都无法推进并共同依赖同一个已证实的整体阻塞条件，且该条件连续三个实际 goal turns 被验证，同时满足宿主原生状态规则，才允许整体 blocked。条件改变、消失或恢复有效推进时重置计数。\n- 使用 Codex 原生 update_goal 前核实其实际 schema 和审计要求；工具不可用时不伪造调用、状态回执或自动恢复能力。项级延期、工具缺失和配额等待本身均不构成整体 blocked。\n\n仅在以下条件全部满足时完成：\n1. api、worker、web 均达到批准迁移目标，实际调用链和跨模块行为正确，约定的接口、数据及兼容边界满足；涉及持久化时验证适用的恢复、幂等、重放和回滚要求。\n2. 从真实仓库核实并执行各模块针对性验证及适用的集成、构建、类型和 CI 检查，保留当前证据；worker 真实外部依赖验收通过，不能以 mock 或延期代替。\n3. web 使用真实 Chrome browser_use 或可用等效浏览器，验证实际路由的主要操作、成功与失败交互，并记录功能、UI/UX、无障碍及适用视口证据；构建不能替代浏览器验收。\n4. 每个重大行为变更里程碑及最终集成都由 3 名独立只读 reviewer 审查整合后的 diff 与证据，修复后复审；实现者不计入。未解决发现或不可用审查能力保持为未过门。\n5. 更新受影响的迁移、运行与恢复文档；适用验证和审查通过后本地提交里程碑，不做空提交，默认不 push。api、web 完成仅算部分交付，worker 仍延期时不得宣称整体完成。\n```\n\n已按深度模式创建并核验非空 [state.md](/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-1852964708/.goal-task/api-worker-web-migration/state.md)，集中记录三模块状态，无需另建清单。尚未启动迁移；缺失的 brief、源码及执行能力已明确记录。",
+      "observed_version": "0.164.0"
+    },
+    {
+      "case_id": "skip-investigation",
+      "title": "用户明确跳过调查和确认时直接生成",
+      "status": "PASS",
+      "duration_ms": 62517,
+      "turns": 4,
+      "input_tokens": 90010,
+      "output_tokens": 1735,
+      "judge_duration_ms": 18176,
+      "judge_input_tokens": 56415,
+      "judge_output_tokens": 503,
+      "grading": {
+        "status": "PASS",
+        "turns_executed": 4,
+        "turns_total": 1,
+        "assertion_results": [
+          {
+            "text": "expect.must_contain",
+            "passed": true,
+            "evidence": "all checks passed"
+          },
+          {
+            "text": "expect.exit_code",
+            "passed": true,
+            "evidence": "all checks passed"
+          },
+          {
+            "text": "遵循用户明确要求，直接输出最终 /goal，不再调查、提问或要求确认。",
+            "passed": true,
+            "evidence": "transcript 中用户明确要求跳过仓库调查、不要提问、不等待确认，直接生成最终 /goal。; transcript 显示助手随后直接输出了可复制的 /goal，没有进一步调查、提问或要求确认。"
+          },
+          {
+            "text": "没有把缺失上下文替换为臆造的具体路径、命令、依赖或仓库事实。",
+            "passed": true,
+            "evidence": "final_message 明确将认证实现位置、调用方、技术栈、验证命令和运行环境列为未知，要求执行时核实。; final_message 将 .goal-task 和 state.md 描述为未来创建的任务材料，并明确说明本次尚未初始化，没有将其冒充为已存在的仓库事实。"
+          },
+          {
+            "text": "最终 /goal 仍包含清晰范围、可验证完成门槛和诚实的未知项处理。",
+            "passed": true,
+            "evidence": "final_message 将范围限定为认证模块及必要的调用方适配、测试和文档，并排除无关业务重构、界面改版和生产部署。; final_message 要求通过兼容性和安全边界证据、真实命令执行的测试与检查、调用方适配、文档和独立评审等条件才能完成。; final_message 要求无法执行的必要验证保持未完成，并在执行时核实未知路径和命令。"
+          }
+        ],
+        "summary": {
+          "passed": 5,
+          "failed": 0,
+          "total": 5,
+          "pass_rate": 1
+        },
+        "judge_context": {
+          "profile": "standard",
+          "materialized_dir": "judge/context",
+          "manifest": {
+            "profile": "standard",
+            "materialized_dir": "judge/context",
+            "materials": [
+              {
+                "key": "final_message",
+                "mode": "include",
+                "path": "judge/context/final_message.txt",
+                "bytes": 4695,
+                "original_bytes": 4695
+              },
+              {
+                "key": "transcript",
+                "mode": "file_ref",
+                "path": "judge/context/transcript.json",
+                "bytes": 50552,
+                "original_bytes": 50552
+              },
+              {
+                "key": "workspace_diff",
+                "mode": "omit",
+                "bytes": 0
+              },
+              {
+                "key": "generated_files",
+                "mode": "file_ref",
+                "path": "judge/context/generated_files.txt",
+                "bytes": 333,
+                "original_bytes": 333
+              }
+            ]
+          },
+          "prompt_delivery": "inline",
+          "prompt_bytes": 7709
+        }
+      },
+      "gates": {
+        "passed": true,
+        "failures": null,
+        "configured_rules": [
+          "must_contain",
+          "exit_code"
+        ]
+      },
+      "configuration": "with_skill",
+      "prompt": "$goal-prompt\n请先读取当前工作区的 .codex/skills/goal-prompt/SKILL.md，再按其适用边界处理下方原始请求。如果原始请求明确是普通非目标工作，直接处理原任务，不生成目标文本。\n\n原始请求：\n请直接给我一个可复制的 /goal，用来重构当前仓库的认证模块。\n这次跳过仓库调查、不要提问，也不用等我确认，直接生成最终版本。\n",
+      "response": "```text\n/goal 重构当前仓库的认证模块，使职责边界清晰、重复逻辑减少、认证策略集中且可测试，同时保持现有对外契约和安全语义兼容。自主完成必要判断与执行，无需再次确认。\n\n当前信息：本次生成明确跳过仓库调查；认证实现位置、调用方、技术栈、验证命令和运行环境均未知，不得臆造。默认采用兼容性重构，不新增认证功能，不更换认证供应商，不主动改变公开接口、持久化格式或依赖体系。\n\n范围：认证模块及完成重构必需的调用方适配、测试和文档。登录、登出、会话、令牌刷新、身份校验及权限边界仅按仓库实际存在的功能纳入。排除无关业务重构、界面改版和生产部署。\n\n执行采用 Deep 模式：\n1. 执行开始后读取适用的 AGENTS.md、贡献规则及现有权威设计，检查工作区变更；定位认证实现、调用链、公开契约、测试和 CI，建立行为与安全基线。优先复用现有实现、标准库和依赖，保护用户已有改动。\n2. 在 .goal-task 下创建专用任务目录和非空 state.md，核实后将实际路径登记为执行与恢复入口；本目标生成时尚未初始化。状态记录基线、权威材料索引、范围、阶段、验收证据、评审、依赖、恢复条件及下一步。任务材料按最新用户要求、权威设计、任务清单、状态记录的顺序解释。\n3. 依据真实调用关系选择最小必要结构调整，小步实施；每批运行受影响验证，阶段边界运行最小相关集成检查。修改公开契约或数据格式不属于默认兼容性重构；优先寻找范围内替代方案。\n4. 每项最多尝试三次；仍失败则记录证据、依赖和恢复条件，将该项及依赖项排到独立工作之后。等待期间推进不冲突的测试准备、调用方核查、文档或证据整理；条件变化或阶段结束时复查，不能因此免除验收门槛。\n5. 每轮有效推进后报告已完成、剩余门槛和一个下一步。上下文压缩、配额等待或交接前保存提交、未提交修改、验证与评审证据、等待项及恢复动作；恢复时核对当前工作区。只使用实际可用的恢复能力，不承诺不存在的自动唤醒。\n6. 重大行为变更里程碑及最终集成均由三名独立只读评审者检查集成 diff 和证据，覆盖正确性、兼容性及安全性；实现者不计入。修复后复审，默认最多三轮；未解决项保留开放。评审能力不足时继续独立工作，记录缺口，不以自查替代。验证和适用评审通过后才创建非空本地里程碑提交；默认不推送。\n\n授权：完成上述范围所必需、用户可授权的文件、依赖、环境和 Git 操作、测试、评审响应，以及确有必要的浏览器上传、使用已有凭据、推送和 PR 操作均已预授权，不因重复索取授权而停工。执行远程或破坏性操作前，必须从证据确定目标与影响并记录；范围外操作不获授权。此授权不创造凭据、会话、工具或能力，不覆盖宿主安全限制。不得展示、记录、截图、提交或发布凭据值。能力缺失时采用安全替代，继续独立工作并保留未满足门槛。\n\n仅当以下条件全部满足才完成：\n1. 重构后的职责和依赖边界有代码与调用方证据；现有公开接口、错误语义、会话和令牌生命周期及授权决策保持兼容，适用的撤销、过期、隔离和拒绝访问规则不被削弱。\n2. 使用仓库真实存在的命令完成相关测试、静态检查和最小必要集成验证；针对实际改动补充有意义的回归测试，覆盖成功、失败和相关安全边界。记录命令、结果与基线差异，不以历史通过或生成测试代替本次验证。\n3. 相关调用方均已适配，必要文档已更新；所有适用评审和复审通过，无未解决的阻断性问题。无法执行的必要验证必须保持未完成，不得宣称全部通过。\n4. 持久状态与最终代码一致，交付说明包含改动结果、验证证据及实际剩余事项。\n\n仅当恢复、替代方案和独立工作均已耗尽，所有有意义的剩余工作共同受制于同一已证实阻碍，且满足当前宿主的状态规则时，才报告整体 blocked。用户明确暂停或宿主强制停止时，保存检查点并如实报告未完成门槛。\n```\n\n采用 Deep 模式以覆盖认证兼容性、安全边界和分阶段评审。按要求未调查仓库、未创建初始化文件，也未启动重构；实际路径与验证命令留待执行时核实。",
+      "observed_version": "0.164.0"
+    },
+    {
+      "case_id": "delegated-judgment",
+      "title": "用户委托判断时由 Agent 继续",
+      "status": "PASS",
+      "duration_ms": 149398,
+      "turns": 2,
+      "input_tokens": 363445,
+      "output_tokens": 5838,
+      "judge_duration_ms": 23903,
+      "judge_input_tokens": 129354,
+      "judge_output_tokens": 657,
+      "grading": {
+        "status": "PASS",
+        "turns_executed": 2,
+        "turns_total": 2,
+        "assertion_results": [
+          {
+            "text": "expect.must_contain",
+            "passed": true,
+            "evidence": "all checks passed"
+          },
+          {
+            "text": "expect.exit_code",
+            "passed": true,
+            "evidence": "all checks passed"
+          },
+          {
+            "text": "第一轮完成适当调查并给出待确认 brief，没有提前生成最终 /goal。",
+            "passed": true,
+            "evidence": "transcript 第 1 轮记录了技能文件和相关参考资料的读取，以及对工作区文件和 Git 状态的检查；检查发现工作区没有目标源码，且不是 Git 仓库。; transcript 第 1 轮以“Proposed goal brief”列出范围、兼容性要求、Deep 模式建议、初始化安排和证据缺口，并请求确认；没有输出最终 /goal。"
+          },
+          {
+            "text": "第二轮把“看起来差不多吧，你先往下弄”理解为用户委托 Agent 判断，自行选择合理方案并生成最终 /goal。",
+            "passed": true,
+            "evidence": "transcript 中用户随后表示“看起来差不多，你根据调查结果继续处理，不用再等我确认”。; final_message 选择 Deep 模式并生成了最终 /goal，保留仓库位置、API 基线和验证命令待核实，同时说明已创建并核对 state.md。"
+          },
+          {
+            "text": "第二轮不因用户没有给出固定确认措辞而再次索取确认。",
+            "passed": true,
+            "evidence": "transcript 显示用户的继续指示之后，Agent 直接说明将生成目标文本并创建状态文件，随后输出最终 /goal，没有再次要求固定确认措辞或其他确认。"
+          }
+        ],
+        "summary": {
+          "passed": 5,
+          "failed": 0,
+          "total": 5,
+          "pass_rate": 1
+        },
+        "judge_context": {
+          "profile": "standard",
+          "materialized_dir": "judge/context",
+          "manifest": {
+            "profile": "standard",
+            "materialized_dir": "judge/context",
+            "materials": [
+              {
+                "key": "final_message",
+                "mode": "include",
+                "path": "judge/context/final_message.txt",
+                "bytes": 3267,
+                "original_bytes": 3267
+              },
+              {
+                "key": "transcript",
+                "mode": "file_ref",
+                "path": "judge/context/transcript.json",
+                "bytes": 82797,
+                "original_bytes": 82797
+              },
+              {
+                "key": "workspace_diff",
+                "mode": "omit",
+                "bytes": 0
+              },
+              {
+                "key": "generated_files",
+                "mode": "file_ref",
+                "path": "judge/context/generated_files.txt",
+                "bytes": 666,
+                "original_bytes": 666
+              }
+            ]
+          },
+          "prompt_delivery": "inline",
+          "prompt_bytes": 6317
+        }
+      },
+      "gates": {
+        "passed": true,
+        "failures": null,
+        "configured_rules": [
+          "must_contain",
+          "exit_code"
+        ]
+      },
+      "configuration": "with_skill",
+      "prompt": "$goal-prompt\n请先读取当前工作区的 .codex/skills/goal-prompt/SKILL.md，再按其适用边界处理下方原始请求。如果原始请求明确是普通非目标工作，直接处理原任务，不生成目标文本。\n\n原始请求：\n请为“重构 src/cache，同时保持公开 API 不变”创建 /goal。\n",
+      "response": "```text\n/goal 重构 src/cache，改善内部职责划分与可维护性，同时保持公开 API 和可观察行为兼容。\n\n模式：Deep。\n执行与恢复入口：.goal-task/cache-refactor/state.md。遵循其中的基线核查、阶段门槛、检查点、重试、独立审查及提交规则。\n\n范围：缓存内部实现、必要的调用方核查、回归测试及相关文档；不扩展功能，不修改无关模块，不擅自改变公开 API、数据契约或依赖。\n\n当前工作区没有目标项目源码，仓库位置、API 基线和验证命令尚未核实。首先依据任务相关证据定位真实仓库，读取适用的 AGENTS.md、贡献规则、实现、调用方、测试及 CI；记录基线版本、已有改动、准确的公开契约和实际验证命令，再制定并执行有证据支持的重构。不得编造路径、命令或验证结果。\n\n确认范围内所有必要且用户可授权的操作均已预先授权，包括文件、依赖、环境及 Git 变更、工作树、推送、PR、测试、审查响应，以及确有必要的 Chrome 上传和输入已有凭据；不要因授权问题再次询问、等待、推迟或标记阻塞。此授权不扩大任务范围，不产生不存在的凭据、会话、工具或能力，也不覆盖更高优先级的安全边界。不得暴露或持久化凭据值。远程或破坏性操作前核实目标与影响；默认不推送。实际能力缺失时采用安全替代方案，保留未满足门槛并继续独立工作。\n\n仅在以下条件全部满足后完成：\n1. 有明确证据表明内部结构得到改善；公开入口、导出、调用签名、类型及既有可观察行为保持兼容，现有调用方无需迁移。\n2. 为受影响且缺少覆盖的行为补充有效回归验证；通过仓库实际提供的缓存专项检查、最小必要集成检查及适用的类型、构建和其他强制检查。保留实际命令、结果及当前版本证据，区分既有失败与新回归，不削弱断言或检查标准。\n3. 更新直接受影响的文档；无需更新时记录依据。最终 diff 仅包含本任务相关变更。\n4. 关键行为兼容里程碑和最终集成都经过 3 位独立只读审查者审查。修复发现后复审，实施者不得替代独立审查者；所有实质问题及强制验证门槛均已解决。\n\n每个有效工作循环报告已完成证据、剩余门槛和一个下一步；阶段结束、上下文压缩、配额等待或交接前保存检查点。单项最多尝试三次，再记录恢复条件，将其及依赖项移到独立工作之后；等待期间继续调用方核查、测试分析或必要文档整理，不能取消未满足门槛。\n\n适用验证及审查通过后才提交本地里程碑，不创建空提交。只有恢复与替代方案已穷尽、所有剩余实质工作共享同一已验证阻碍，且满足当前宿主状态规则时，才可整体标记阻塞。不得承诺未经验证的自动唤醒或恢复能力。\n```\n\n已创建并核对 [state.md](/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-3562154274/.goal-task/cache-refactor/state.md)。采用 Deep 模式以保留兼容性与审查门槛；源码和验证命令仍待核实，未启动重构。",
+      "observed_version": "0.164.0",
+      "turn_results": [
+        {
+          "turn_number": 1,
+          "content": "$goal-prompt\n请先读取当前工作区的 .codex/skills/goal-prompt/SKILL.md，再按其适用边界处理下方原始请求。如果原始请求明确是普通非目标工作，直接处理原任务，不生成目标文本。\n\n原始请求：\n请为“重构 src/cache，同时保持公开 API 不变”创建 /goal。\n",
+          "source": "fixed",
+          "response": "Proposed goal brief\n\n- **结果与范围**：重构 `src/cache`，改善内部职责划分与可维护性；保持公开导出、调用签名、类型及可观察行为兼容。范围包括必要的调用方核查、回归测试和相关文档，不扩展功能或改动无关模块。\n- **当前证据缺口**：工作区仅有技能文件，没有 `src/cache`、项目 `AGENTS.md` 或 Git 仓库，无法确认具体 API、实现问题及验证命令；这些信息保留待核实，不编造。\n- **模式与初始化**：建议 **Deep**，因为涉及公开 API 兼容边界。确认后创建 `.goal-task/cache-refactor/state.md`，记录基线、兼容契约、验证门槛、检查点与恢复入口；暂不增加其他文件，也不开始重构。\n- **完成证据**：核实并保留公开契约；现有调用方兼容；通过仓库实际提供的缓存相关测试及最小必要集成、类型检查；补足受影响行为的回归证据并同步必要文档。关键重构里程碑及最终集成均由 **3 位独立审查者**审查，修复后复审。\n- **持续执行约定**：阶段结束及交接前保存检查点；单项最多尝试三次，再记录恢复条件并移到独立工作之后。等待期间继续调用方核查、测试分析或文档整理。只有所有剩余实质工作共享已验证阻碍、且满足宿主状态规则时，才整体标记阻塞。\n\n请确认上述范围、Deep 模式及初始化安排；如已有目标仓库，请同时提供路径，否则将仓库事实保留为待核实项。\n\n本次停在确认阶段，依据 [goal-prompt/SKILL.md](/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-3562154274/.codex/skills/goal-prompt/SKILL.md) 的明确要求：“Stage 1 brief, material questions, then stop and wait”；首次创建请求不视为确认。",
+          "status": "completed"
+        },
+        {
+          "turn_number": 2,
+          "content": "看起来差不多，你根据调查结果继续处理，不用再等我确认。\n",
+          "source": "fixed",
+          "response": "```text\n/goal 重构 src/cache，改善内部职责划分与可维护性，同时保持公开 API 和可观察行为兼容。\n\n模式：Deep。\n执行与恢复入口：.goal-task/cache-refactor/state.md。遵循其中的基线核查、阶段门槛、检查点、重试、独立审查及提交规则。\n\n范围：缓存内部实现、必要的调用方核查、回归测试及相关文档；不扩展功能，不修改无关模块，不擅自改变公开 API、数据契约或依赖。\n\n当前工作区没有目标项目源码，仓库位置、API 基线和验证命令尚未核实。首先依据任务相关证据定位真实仓库，读取适用的 AGENTS.md、贡献规则、实现、调用方、测试及 CI；记录基线版本、已有改动、准确的公开契约和实际验证命令，再制定并执行有证据支持的重构。不得编造路径、命令或验证结果。\n\n确认范围内所有必要且用户可授权的操作均已预先授权，包括文件、依赖、环境及 Git 变更、工作树、推送、PR、测试、审查响应，以及确有必要的 Chrome 上传和输入已有凭据；不要因授权问题再次询问、等待、推迟或标记阻塞。此授权不扩大任务范围，不产生不存在的凭据、会话、工具或能力，也不覆盖更高优先级的安全边界。不得暴露或持久化凭据值。远程或破坏性操作前核实目标与影响；默认不推送。实际能力缺失时采用安全替代方案，保留未满足门槛并继续独立工作。\n\n仅在以下条件全部满足后完成：\n1. 有明确证据表明内部结构得到改善；公开入口、导出、调用签名、类型及既有可观察行为保持兼容，现有调用方无需迁移。\n2. 为受影响且缺少覆盖的行为补充有效回归验证；通过仓库实际提供的缓存专项检查、最小必要集成检查及适用的类型、构建和其他强制检查。保留实际命令、结果及当前版本证据，区分既有失败与新回归，不削弱断言或检查标准。\n3. 更新直接受影响的文档；无需更新时记录依据。最终 diff 仅包含本任务相关变更。\n4. 关键行为兼容里程碑和最终集成都经过 3 位独立只读审查者审查。修复发现后复审，实施者不得替代独立审查者；所有实质问题及强制验证门槛均已解决。\n\n每个有效工作循环报告已完成证据、剩余门槛和一个下一步；阶段结束、上下文压缩、配额等待或交接前保存检查点。单项最多尝试三次，再记录恢复条件，将其及依赖项移到独立工作之后；等待期间继续调用方核查、测试分析或必要文档整理，不能取消未满足门槛。\n\n适用验证及审查通过后才提交本地里程碑，不创建空提交。只有恢复与替代方案已穷尽、所有剩余实质工作共享同一已验证阻碍，且满足当前宿主状态规则时，才可整体标记阻塞。不得承诺未经验证的自动唤醒或恢复能力。\n```\n\n已创建并核对 [state.md](/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-3562154274/.goal-task/cache-refactor/state.md)。采用 Deep 模式以保留兼容性与审查门槛；源码和验证命令仍待核实，未启动重构。",
+          "status": "completed"
+        }
+      ]
+    },
+    {
+      "case_id": "host-recovery-boundary",
+      "title": "宿主恢复能力未知时保存入口且不承诺自动恢复",
+      "status": "PASS",
+      "duration_ms": 145618,
+      "turns": 1,
+      "input_tokens": 154788,
+      "output_tokens": 6193,
+      "judge_duration_ms": 22740,
+      "judge_input_tokens": 58040,
+      "judge_output_tokens": 778,
+      "grading": {
+        "status": "PASS",
+        "turns_executed": 1,
+        "turns_total": 1,
+        "assertion_results": [
+          {
+            "text": "judge rendered-length (script)",
+            "passed": true,
+            "evidence": "PASS: "
+          },
+          {
+            "text": "judge host-and-recovery (agent_judge)",
+            "passed": true,
+            "evidence": "PASS: "
+          }
+        ],
+        "summary": {
+          "passed": 2,
+          "failed": 0,
+          "total": 2,
+          "pass_rate": 1
+        }
+      },
+      "gates": {
+        "passed": true,
+        "failures": null,
+        "configured_rules": [
+          "must_contain",
+          "exit_code"
+        ]
+      },
+      "judge_results": [
+        {
+          "id": "rendered-length",
+          "type": "script",
+          "status": "PASS",
+          "result": {
+            "status": "PASS",
+            "turns_executed": 1,
+            "turns_total": 1,
+            "assertion_results": [
+              {
+                "text": "script: /Users/zhu/.codex/worktrees/3443/goal-prompt/.eval-work/controlled-after-boundaries/snapshot/skill-up/fixtures/scripts/check-goal-char-limit.py",
+                "passed": true,
+                "evidence": "PASS goal body has 1763 characters; limit is below 4000 (source: EVAL_FINAL_MESSAGE)"
+              }
+            ],
+            "summary": {
+              "passed": 1,
+              "failed": 0,
+              "total": 1,
+              "pass_rate": 1
+            }
+          },
+          "artifacts_dir": "judge/rendered-length/run",
+          "duration_ms": 422
+        },
+        {
+          "id": "host-and-recovery",
+          "type": "agent_judge",
+          "status": "PASS",
+          "result": {
+            "status": "PASS",
+            "turns_executed": 1,
+            "turns_total": 1,
+            "assertion_results": [
+              {
+                "text": "生成最终目标，不重复索取已给授权；保留只读范围和 api 可独立推进，worker 等待不取消其真实验证门槛。",
+                "passed": true,
+                "evidence": "final_message 给出了最终 /goal，明确范围内读取、报告、验证、独立审查及本地提交已获授权，无需重复询问。; final_message 禁止修改业务代码、公共接口、依赖和测试断言，并要求 worker 等待期间独立推进 api 静态证据和报告。; final_message 将 worker 真实外部验证列为完成门槛，禁止用模拟、静态推断或历史成功替代。"
+              },
+              {
+                "text": "检查点保存完成与剩余、证据、等待、下一步和人工恢复入口；不发明额度重置时间、状态 API、自动唤醒能力或将其实现设为目标。",
+                "passed": true,
+                "evidence": "final_message 要求检查点记录完成和剩余事项、基线、提交与未提交变更、验证和审查证据、等待、失败次数、恢复条件及下一步，并提供人工恢复入口。; final_message 将额度重置时间和状态 API 标为未核实，只记录有来源和时区的已验证重置时间，不假设状态 API。; final_message 明确自动唤醒和同一目标续接未经验证，不实现或承诺自动恢复。"
+              },
+              {
+                "text": "整体 blocked 必须所有有意义剩余工作共同受阻且满足当前宿主规则，不能将单项重试或额度等待视为整体 blocked；没有明确分母不强制百分比。",
+                "passed": true,
+                "evidence": "final_message 要求恢复、替代路径和重排后，所有有意义的剩余工作共同依赖同一已验证强制阻碍，且满足当前宿主状态规则，才能报告整体阻塞。; final_message 明确额度等待或单项失败不足以整体停止，并要求无明确检查项分母时不报告百分比。"
+              },
+              {
+                "text": "保持真实报告证据与独立报告审查、默认本地提交边界，未把只读报告变成代码修改或三人行为审查任务。",
+                "passed": true,
+                "evidence": "final_message 要求报告区分观察事实、推断、差异和未验证项，并关联权威标准、实现、调用方、测试、文档和精确引用。; final_message 要求 1 名独立只读证据审查者核对报告和引用，修订后复审受影响结论；审查不可用时保留门槛。; final_message 禁止兼容性修复和业务代码修改，默认仅本地提交，不 push、建 PR 或发布。"
+              }
+            ],
+            "summary": {
+              "passed": 4,
+              "failed": 0,
+              "total": 4,
+              "pass_rate": 1
+            },
+            "judge_context": {
+              "profile": "standard",
+              "materialized_dir": "judge/host-and-recovery/context",
+              "manifest": {
+                "profile": "standard",
+                "materialized_dir": "judge/host-and-recovery/context",
+                "materials": [
+                  {
+                    "key": "final_message",
+                    "mode": "include",
+                    "path": "judge/host-and-recovery/context/final_message.txt",
+                    "bytes": 4907,
+                    "original_bytes": 4907
+                  },
+                  {
+                    "key": "transcript",
+                    "mode": "file_ref",
+                    "path": "judge/host-and-recovery/context/transcript.json",
+                    "bytes": 36089,
+                    "original_bytes": 36089
+                  },
+                  {
+                    "key": "workspace_diff",
+                    "mode": "omit",
+                    "bytes": 0
+                  },
+                  {
+                    "key": "generated_files",
+                    "mode": "file_ref",
+                    "path": "judge/host-and-recovery/context/generated_files.txt",
+                    "bytes": 341,
+                    "original_bytes": 341
+                  }
+                ]
+              },
+              "prompt_delivery": "inline",
+              "prompt_bytes": 8420
+            }
+          },
+          "artifacts_dir": "judge/host-and-recovery/run",
+          "duration_ms": 22318
+        }
+      ],
+      "configuration": "with_skill",
+      "prompt": "$goal-prompt\n请先读取当前工作区的 .codex/skills/goal-prompt/SKILL.md，再按其适用边界处理下方原始请求。如果原始请求明确是普通非目标工作，直接处理原任务，不生成目标文本。\n\n原始请求：\n我已确认深度模式、范围和初始化方案，请直接生成最终 /goal。\n目标是分阶段整理 api、worker 两模块的兼容性证据，不修改业务代码。\nworker 的真实外部验证正等待额度，api 的静态证据和报告可独立完成。\n当前宿主是否有自动唤醒工具、额度重置时间都尚未核实，也不要假设存在状态 API。\n用 .goal-task/compat-evidence/state.md 保存状态；明确如何继续 api、在压缩或交接前检查点，\n自动恢复能力未证实时保留人工恢复入口，不实现或承诺未经验证的自动恢复。\n没有明确分母就不报百分比；默认仅本地提交。目标控制在 4000 字符以内。\n",
+      "response": "```text\n/goal 以已确认的深度模式，分阶段完成 api、worker 两模块的兼容性证据整理与可追溯报告；不修改业务代码、公共接口、依赖或测试断言，不启动兼容性修复。\n\n活跃真相与执行/恢复入口：.goal-task/compat-evidence/state.md。先读取并遵守其中的基线、阶段、证据、检查点、重试、审查和提交规则。任务材料以最新用户确认 \u003e 权威规范/设计 \u003e 既有任务材料 \u003e state 为准，宿主指令优先级始终有效。复用已有权威报告；没有时在该目录创建 report.md，并登记索引。\n\n当前已知：worker 的真实外部验证正在等待额度；api 静态证据及报告可独立完成。初始化工作区只有 skill 材料，不是 Git 仓库，真实源码、revision、兼容性规范及验证命令尚未定位；不得编造。当前工具发现未提供可验证的自动唤醒能力；额度重置时间与状态 API 未核实。\n\n授权与边界：范围内必要的资料读取、证据/报告/状态写入、既有验证、可用独立证据审查及本地 Git 提交均已授权，不重复询问或因授权而等待。默认仅本地提交，不 push、建 PR 或发布。授权不创造凭据、会话、额度、网络或工具能力，也不覆盖宿主限制或范围外操作。仅使用实际可用且适用于目标环境的凭据，绝不输出、持久化或提交凭据值；证据须脱敏。能力不足时保留未满足门槛，继续独立工作。\n\n执行顺序：\n1. 定位真实仓库，读取相关 AGENTS.md/贡献规范，核实比较基线、模块边界、调用方、已有规范/报告及验证器，记录 revision 和已有工作树变更。\n2. 优先完成 api 的静态证据和报告：逐项关联兼容性主张、权威标准、实现/调用方/现有测试/文档与精确引用；明确静态结论的适用范围和动态证据缺口。worker 等待不能阻塞此阶段。\n3. 同时整理 worker 可取得的静态证据与外部验证准备；核实额度、真实环境和入口可用后执行真实外部验证，记录时间/时区、环境、版本、实际命令或操作、脱敏输出、退出状态及断言结果。不得用模拟、静态推断或历史成功替代当前真实验证。\n4. 汇总两模块报告，区分观察事实、推断、差异与未验证项，给出影响、优先级及后续建议。由 1 名独立只读证据审查者核对报告和引用；修订后复审受影响结论。审查不可用时继续其他工作并保留该门槛，自查不能替代。\n\n连续性：每个有效循环报告已完成产物及证据、剩余门槛和一个下一步；无明确检查项分母不报百分比。每事项默认最多尝试 3 次，记录失败及解除条件，将等待/延后事项和依赖项排到独立工作之后；仅条件变化或阶段边界再检查，不忙轮询。审查修订默认最多 3 轮，未解决则保留门槛。worker 等待期间继续 api 报告、worker 静态取证与验证准备、引用核查及可用审查。\n\n每阶段完成后，以及压缩、额度敏感操作/额度等待或交接前，更新 state：完成/剩余项、真实基线、最新提交或无提交、未提交变更、验证/审查证据、活动等待与失败次数、恢复条件和一个精确下一步。仅记录经核实的重置时间及来源/时区，未知就写未知。自动唤醒和同一目标续接未经验证，不实现或承诺自动恢复，不假设状态 API，不长期前台睡眠或重复建目标。保留人工恢复入口：“读取 .goal-task/compat-evidence/state.md，核对当前工作区、revision、变更和证据，从记录的下一步继续同一目标；worker 仍等待时先继续 api 或其他独立工作。”\n\n仅当以下条件同时成立才完成：\n- api 静态报告覆盖已确认检查项，有可复核引用并明确动态证据缺口。\n- worker 真实外部验证已执行，实际结果与兼容性结论有完整证据；失败可如实形成差异结论，缺失验证不能算通过。\n- 两模块报告、汇总结论及状态一致；独立证据审查和修订复审通过；没有业务代码修改。\n- 适用验证及审查通过后，在真实仓库仅本地提交任务产物，记录提交标识，无空提交或混入他人变更；没有仓库则记录限制，不伪造提交。\n\n只有恢复、替代路径与重排后，所有有意义的剩余工作共同依赖同一已验证强制阻碍，且满足当前宿主实际状态规则，才能报告整体阻塞。额度等待或单项失败不足以整体停止；阶段完成不能冒充目标完成。\n```\n\n已按深度模式初始化并检查非空 [state.md](/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-2576976778/.goal-task/compat-evidence/state.md)。目标正文 1769 字符，保留人工恢复入口，未启动目标执行。",
+      "observed_version": "0.164.0"
+    },
+    {
+      "case_id": "trigger-boundary",
+      "title": "普通任务不能被强制转成 goal",
+      "status": "PASS",
+      "duration_ms": 17252,
+      "turns": 4,
+      "input_tokens": 44434,
+      "output_tokens": 97,
+      "grading": {
+        "status": "PASS",
+        "turns_executed": 4,
+        "turns_total": 1,
+        "assertion_results": [
+          {
+            "text": "expect.must_not_contain",
+            "passed": true,
+            "evidence": "all checks passed"
+          },
+          {
+            "text": "expect.exit_code",
+            "passed": true,
+            "evidence": "all checks passed"
+          },
+          {
+            "text": "script: /Users/zhu/.codex/worktrees/3443/goal-prompt/.eval-work/controlled-after-boundaries/snapshot/skill-up/fixtures/scripts/check-trigger-boundary.sh",
+            "passed": true,
+            "evidence": "script passed (exit code 0)"
+          }
+        ],
+        "summary": {
+          "passed": 3,
+          "failed": 0,
+          "total": 3,
+          "pass_rate": 1
+        }
+      },
+      "gates": {
+        "passed": true,
+        "failures": null,
+        "configured_rules": [
+          "must_not_contain",
+          "exit_code"
+        ]
+      },
+      "configuration": "with_skill",
+      "prompt": "$goal-prompt\n请先读取当前工作区的 .codex/skills/goal-prompt/SKILL.md，再按其适用边界处理下方原始请求。如果原始请求明确是普通非目标工作，直接处理原任务，不生成目标文本。\n\n原始请求：\n不要创建或讨论 /goal。只用一句话告诉我，怎么把 README 里的 teh 改成 the。\n",
+      "response": "打开 README，找到拼写错误的 `teh`，将其改为 `the` 并保存。",
+      "observed_version": "0.164.0"
+    }
+  ],
+  "total_tokens": 2225604,
+  "judge_tokens": 398145,
+  "overall_tokens": 2623749
+}

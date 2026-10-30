@@ -93,6 +93,21 @@ expect_pass "check-goal-char-limit-case.py" \
 expect_fail "check-goal-char-limit-case.py" \
   $'Requirements: payments ledger reconciliation reporting public API webhook state.md 12 单元测试 契约测试 性能 5% 数据一致 回滚演练 CI 安全 5 reviewer 复审 迁移文档 运维手册 4 阶段 回退。\n```markdown\n/goal Migrate the system.\n```'
 char_case_body="payments ledger reconciliation reporting migration preserves public API and webhook contracts. state.md is the entrypoint. Unit tests, contract tests, and performance regression within 5%. Data consistency and rollback rehearsed. 12 gates, CI and security pass. 5 reviewers approve and re-review fixes. Migration docs and operations manual complete. 4 stages with rollback conditions."
+# 接受“门槛，共12/12项”的等价计数方向；不接受11/12或13/13。
+expect_pass "check-goal-char-limit-case.py" \
+  "/goal ${char_case_body/12 gates/gates total 12/12}"
+expect_fail "check-goal-char-limit-case.py" \
+  "/goal ${char_case_body/12 gates/gates total 11/12}"
+expect_fail "check-goal-char-limit-case.py" \
+  "/goal ${char_case_body/12 gates/gates total 13/13}"
+expect_fail "check-goal-char-limit-case.py" \
+  "/goal ${char_case_body/12 gates/gates total 11 / 12}"
+expect_pass "check-goal-char-limit-case.py" \
+  "/goal ${char_case_body/12 gates/十二 gates}"
+expect_fail "check-goal-char-limit-case.py" \
+  "/goal ${char_case_body/12 gates/二十二 gates}"
+expect_fail "check-goal-char-limit-case.py" \
+  "/goal ${char_case_body/12 gates/十二十二 gates}"
 char_case_padding="$(printf 'x%.0s' $(seq 1 $((3999 - ${#char_case_body}))))"
 expect_pass "check-goal-char-limit-case.py" \
   $'/goal\n'"$char_case_body$char_case_padding"
@@ -233,6 +248,11 @@ expect_fail "check-frontend-ui.sh" \
 
 expect_pass "check-confirmation-brief.sh" \
   "请决定是否确认这个 brief；范围和完成证据仍待验证。"
+# Skill 路径与命令不同；保留实际 pilot 触发的路径误判回归。
+expect_pass "check-confirmation-brief.sh" \
+  "当前只有 .codex/skills/goal-prompt/；范围与完成证据待确认，请确认。"
+expect_fail "check-confirmation-brief.sh" \
+  '范围与证据待确认，请确认；可复制命令是 `/goal`。'
 expect_fail "check-confirmation-brief.sh" \
   "Proposed goal brief. /goal do migration now. Scope is pending and evidence is pending. Please confirm."
 expect_fail "check-confirmation-brief.sh" \
@@ -357,6 +377,16 @@ expect_pass "check-preauthorized-permissions.sh" \
   "/goal 范围内操作已预授权，包括 Chrome 上传和输入已有凭据。不得因此再次询问或暂停；真实能力缺失时继续所有独立工作。不能虚构凭据，也不能覆盖更高优先级安全边界。不得回显或持久化凭据。"
 expect_pass "check-preauthorized-permissions.sh" \
   "/goal 范围内操作已预授权，包括 Chrome 上传和输入已有密码。不得因此再次询问、等待或 blocked；能力缺失时继续独立工作。预授权不代表可以虚构密码或会话，也不能越过安全边界。不得记录或截图密码。"
+expect_pass "check-preauthorized-permissions.sh" \
+  "/goal 范围内操作已预授权，包括 Chrome 上传和输入已有密码。不得因授权提示再次询问、等待或 blocked；继续独立工作。此授权不创造工具、会话、凭据或权限，不覆盖宿主安全边界。不得回显、截图或持久化密码。"
+expect_pass "check-preauthorized-permissions.sh" \
+  "/goal 范围内操作已预授权，包括 Chrome 上传和输入已有密码。不得因此重复请求许可、等待、延期或标记 blocked；继续所有独立工作。不得伪造凭据，也不能越过更高优先级安全边界。不得记录或截图密码。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "/goal 范围内操作已预授权，包括 Chrome 上传和输入已有密码。可以因此重复请求许可、等待、延期或标记 blocked；继续所有独立工作。不得伪造凭据，也不能越过更高优先级安全边界。不得记录或截图密码。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "/goal 范围内操作已预授权，包括 Chrome 上传和输入已有密码。不得因此重复请求许可、等待、延期或标记 blocked；但可以再次请求许可。继续所有独立工作。不得伪造凭据，也不能越过更高优先级安全边界。不得记录或截图密码。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "/goal 范围内操作已预授权，包括 Chrome 上传和输入已有密码。不得因授权提示再次询问、等待或 blocked；继续独立工作。此授权可以创造工具、会话、凭据或权限，不覆盖宿主安全边界。不得回显、截图或持久化密码。"
 expect_fail "check-preauthorized-permissions.sh" \
   "/goal Chrome 上传和输入密码前必须询问用户确认；权限不足就停止任务并标记 blocked。"
 expect_fail "check-preauthorized-permissions.sh" \

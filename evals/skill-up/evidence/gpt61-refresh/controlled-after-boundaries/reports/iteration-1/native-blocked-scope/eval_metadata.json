@@ -1,0 +1,10 @@
+{
+  "eval_id": 0,
+  "eval_name": "原生 Blocked 不能吞掉独立工作",
+  "prompt": "$goal-prompt\n请先读取当前工作区的 .codex/skills/goal-prompt/SKILL.md，再按其适用边界处理下方原始请求。如果原始请求明确是普通非目标工作，直接处理原任务，不生成目标文本。\n\n原始请求：\n你已经调查过并给了我 brief，我确认使用深度模式。\n请迁移 api、worker、web 三个模块。worker 的外部依赖已经连续三次失败，\n但 api 和 web 仍然可以独立完成。\n请生成最终 /goal，说明如何记录 worker 的 needs input 或 deferred，如何继续 api 和 web，\n也要把单项三次重试和 Codex 原生 update_goal 的 blocked 状态分开。\n只有同一个整体阻塞条件连续三个 goal turns，且所有剩余工作都无法推进时，才允许整体 blocked。\n",
+  "assertions": [
+    "expect.must_contain",
+    "expect.exit_code",
+    "script: /Users/zhu/.codex/worktrees/3443/goal-prompt/.eval-work/controlled-after-boundaries/snapshot/skill-up/fixtures/scripts/check-native-blocked-scope.sh"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "kind": "deterministic_script_replay_not_model_rerun",
+  "script_path": "/Users/zhu/.codex/worktrees/3443/goal-prompt/evals/skill-up/fixtures/scripts/check-goal-char-limit-case.py",
+  "script_sha256": "7f7748145881ca7d01d128394674cecb5ae873056bbd69bf6feb9ca3056ecf2c",
+  "command": [
+    "/opt/homebrew/opt/python@3.13/bin/python3.13",
+    "/Users/zhu/.codex/worktrees/3443/goal-prompt/evals/skill-up/fixtures/scripts/check-goal-char-limit-case.py"
+  ],
+  "exit_code": 0,
+  "stdout": "PASS goal body has 1606 characters and retains all required gates\n",
+  "stderr": "",
+  "verdict": "PASS",
+  "response_sha256": "65ccc20966b406c79a8e21670bebd5f60f7f683f6a6409d8848edff68ade7e7e",
+  "original_verdict_unchanged": true
+}

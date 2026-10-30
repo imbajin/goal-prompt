@@ -1,0 +1,11 @@
+{
+  "eval_id": 0,
+  "eval_name": "用户明确新范围并要求继续时视为授权",
+  "prompt": "$goal-prompt\n请先读取当前工作区的 .codex/skills/goal-prompt/SKILL.md，再按其适用边界处理下方原始请求。如果原始请求明确是普通非目标工作，直接处理原任务，不生成目标文本。\n\n原始请求：\n请为“只重构 src/cache，同时保持公开 API 不变”创建 /goal。\n",
+  "assertions": [
+    "expect.must_contain",
+    "expect.exit_code",
+    "第一轮调查并给出待确认 brief，没有提前生成最终 /goal；只要求语义确认，不要求固定状态字符串。",
+    "第二轮把用户给出的新范围和“请按新范围继续”视为明确授权，完成必要判断并生成最终 /goal，不重复索取确认。"
+  ]
+}

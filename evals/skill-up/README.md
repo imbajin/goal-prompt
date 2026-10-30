@@ -1,6 +1,6 @@
 # skill-up evaluation
 
-This directory contains the 30-case Prompt-level regression suite for
+This directory contains the 31-case Prompt-level regression suite for
 `goal-prompt`. The smaller `skills/goal-prompt/evals/` set ships with the
 Skill.
 
@@ -10,7 +10,7 @@ not prove that the generated goal was executed successfully.
 ## Run the evaluation
 
 Use the [latest skill-up release](https://github.com/alibaba/skill-up/releases/latest)
-for new runs. The repository CI still validates with 0.9.1.
+for new runs. CI is pinned to 0.14.0 with a checked installer and tests its multi-judge and expect-gate behavior without model calls.
 
 Validate the full suite before a run:
 
@@ -46,6 +46,87 @@ measure this configuration. A Claude Code
 cohort needs a separate config that replaces both the
 execution engine/model and every case-level Agent Judge model with compatible
 Claude values. Overriding only `--engine` and `--model` is insufficient.
+
+## Frozen targeted runs
+
+The default configuration now runs **with Skill only** (`benchmark.enabled: false`),
+collects generated `.goal-task/**/*.md`, and pins Codex 0.164.0 to avoid the
+adapter installing its older default. `--baseline` explicitly opts into both
+cohorts; use the isolation protocol below before publishing a paired comparison.
+
+For a frozen GPT 6.1 targeted run, use Python 3.10 or newer and install the development-only dependency with
+`python3 -m pip install -r evals/skill-up/requirements.txt` in a virtual environment,
+and use the checked
+skill-up 0.14.0 binary:
+
+```bash
+python3 evals/skill-up/scripts/run-targeted.py \
+  --skill skills/goal-prompt \
+  --invoke-skill \
+  --skill-up /path/to/skill-up \
+  --output .eval-work/targeted-new \
+  --cases research-goal no-fabrication repository-rule-conflict \
+    existing-requirement-design-todo preauthorized-permissions confirmation-brief
+```
+
+`--invoke-skill` adds one fixed explicit invocation prefix to the first user
+turn and retains both original and dispatched inputs. Omit it for a separate
+automatic-routing run; never attribute changes in invocation to Skill quality.
+For a future with/without comparison, use identical original task inputs in both
+cohorts, rather than the explicit target-path prefix used for this behavior trial.
+
+The output must not already exist. `--prepare-only` freezes and validates without
+calling a model. The runner snapshots the Skill, cases, fixtures and effective
+config; records hashes, versions, model/reasoning settings and command; and keeps
+responses, grading, transcripts and generated state. `--run-prepared --output
+<prepared-directory>` verifies the frozen hashes and delegates to the archived
+runner if needed; it refuses to overwrite started runs. After an interrupted
+run, preserve its evidence and freeze a new output for the remaining cases. It uses the existing Codex
+login without copying credentials or changing HOME/CODEX_HOME, disables user
+configuration and unrelated features, explicitly disables discovered host Skills,
+and uses a fresh case workspace. The initial skip_host_skill_discovery-only runs
+were found to retain host catalog entries; their results remain recorded as
+contaminated rather than being used as isolated comparisons. This is **not OS isolation** and does not establish a clean
+without-Skill baseline. Audit `transcript-audit.json` and the underlying transcripts
+for actual Skill/reference reads and observed model/effort.
+
+`host-recovery-boundary` uses the new independent `judges` list: a length check
+and a semantic judge assess the same execution. Every member must pass; inspect
+`evaluation.json` member verdicts rather than treating the compatibility assertion
+average as a case pass rate. Members share files and must remain read-only.
+The CI smoke deliberately mutates its fixture to prove that shared-runtime
+behavior; it uses a deterministic engine and makes no model calls.
+
+The [GPT 6.1 refresh report](gpt61-refresh.md) separates current targeted results,
+measurement repairs and the unchanged historical cohort below. Full 6.1 with-Skill
+regression and full without-Skill control remain separate TODOs, not implied passes.
+
+## Full-run follow-up command (not run in this refresh)
+
+After installing the development requirements, this command selects all declared
+cases without manually copying their IDs. It uses the checked local binary and
+creates a fresh output; `--prepare-only` can be added before `--cases` to validate
+and freeze without model calls. This is explicit-invocation with-Skill coverage;
+a natural with/without comparison still needs the separate isolation protocol.
+
+```bash
+python3 - <<'PYTHON'
+from pathlib import Path
+import subprocess
+import sys
+import yaml
+
+config = yaml.safe_load(Path("evals/skill-up/eval.yaml").read_text())
+cases = [yaml.safe_load((Path("evals") / item).read_text())["id"]
+         for item in config["cases"]["files"]]
+subprocess.run([
+    sys.executable, "evals/skill-up/scripts/run-targeted.py",
+    "--skill", "skills/goal-prompt", "--skill-up", ".eval-work/bin/skill-up",
+    "--output", ".eval-work/full-gpt61-with-skill", "--invoke-skill",
+    "--cases", *cases,
+], check=True)
+PYTHON
+```
 
 ## Isolation requirements
 

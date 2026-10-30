@@ -1,0 +1,25 @@
+{
+  "expectations": [
+    {
+      "text": "expect.must_contain",
+      "passed": true,
+      "evidence": "all checks passed"
+    },
+    {
+      "text": "expect.exit_code",
+      "passed": true,
+      "evidence": "all checks passed"
+    },
+    {
+      "text": "script: /Users/zhu/.codex/worktrees/3443/goal-prompt/.eval-work/controlled-after-rest/snapshot/skill-up/fixtures/scripts/check-preauthorized-permissions.sh",
+      "passed": false,
+      "evidence": "script exited with code 1"
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "failed": 1,
+    "total": 3,
+    "pass_rate": 0.6666666666666666
+  }
+}

@@ -67,6 +67,8 @@ The agent can select the skill automatically when your request matches, or you c
 
 ## Evaluation
 
+The current development suite uses skill-up 0.14.0 and 31 cases. The [GPT 6.1 refresh report](evals/skill-up/gpt61-refresh.md) tracks targeted verification separately; the 5.6 scores below remain historical.
+
 The recorded evaluation used 30 isolated cases with `skill-up 0.9.1`. The paired run held the inputs and Codex `gpt-5.6-luna` high constant; the baseline also had one timeout ERROR. The final operation-target wording was added afterward and has focused contract coverage, not a new full A/B run. For new runs, see the [evaluation guide](evals/skill-up/README.md#run-the-evaluation); the historical scores describe the recorded configuration.
 
 ![goal-prompt before and after evaluation](assets/eval-comparison-en.png)

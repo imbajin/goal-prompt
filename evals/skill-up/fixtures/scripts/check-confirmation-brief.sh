@@ -2,7 +2,7 @@
 set -euo pipefail
 
 message="${EVAL_FINAL_MESSAGE:-}"
-if printf '%s' "$message" | grep -Fq '/goal'; then
+if printf '%s' "$message" | grep -Eq '(^|[^[:alnum:]_./-])/goal($|[^[:alnum:]_./-])'; then
   echo "premature final goal" >&2
   exit 1
 fi

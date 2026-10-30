@@ -62,15 +62,20 @@ jobs:
           cp -R skills/goal-prompt/. .eval-work/target/
           test -f .eval-work/target/SKILL.md
           mkdir -p /tmp/skill-up-bin
-          export SKILL_UP_VERSION=v0.9.1
+          export SKILL_UP_VERSION=v0.14.0
           export INSTALL_DIR=/tmp/skill-up-bin
           installer=/tmp/skill-up-install.sh
           curl -fsSL \
-            https://raw.githubusercontent.com/alibaba/skill-up/80c3147101f81017c66f882b767bdc532de5e74f/install.sh \
+            https://raw.githubusercontent.com/alibaba/skill-up/53f6daecf4ac79e4e53ea53f3fe17dac3114debb/install.sh \
             -o "$installer"
           echo "2b7fbea303dc8b6feb09db6f9cc7307fb9263ff6cc4b0c68cdfe9c2897d109ef  $installer" \
             | sha256sum --check
           bash -n "$installer"
           bash "$installer"
-          test "$(/tmp/skill-up-bin/skill-up --version)" = "skill-up version 0.9.1"
+          test "$(/tmp/skill-up-bin/skill-up --version)" = "skill-up version 0.14.0"
           /tmp/skill-up-bin/skill-up validate evals/skill-up/eval.yaml
+          /tmp/skill-up-bin/skill-up run evals/skill-up/eval.yaml --dry-run
+
+      - name: Verify multi-judge and expect gate semantics without a model
+        run: |
+          python3 evals/skill-up/scripts/test-skill-up-upgrade.py /tmp/skill-up-bin/skill-up

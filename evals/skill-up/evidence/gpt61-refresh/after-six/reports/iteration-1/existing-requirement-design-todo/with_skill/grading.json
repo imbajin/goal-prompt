@@ -1,0 +1,75 @@
+{
+  "expectations": [
+    {
+      "text": "expect.must_contain",
+      "passed": true,
+      "evidence": "all checks passed"
+    },
+    {
+      "text": "expect.exit_code",
+      "passed": true,
+      "evidence": "all checks passed"
+    },
+    {
+      "text": "分别复用 requirement 的结果、design 的接口与不变量、todo 的实施范围，不合并复制成新的设计或 TODO sidecar。",
+      "passed": true,
+      "evidence": "final_message 分别将 docs/requirement.md 作为结果依据、docs/design.md 作为接口与不变量依据、docs/todo.md 作为实施范围。; workspace_diff 中的 state.md 明确将 docs/todo.md 设为唯一逐项状态来源，并注明不复制需求、另写设计或另建 TODO。"
+    },
+    {
+      "text": "检查当前实现和 package.json，使用真实的 npm run test:import、npm run test:integration 和 npm run typecheck 作为合取门槛。",
+      "passed": true,
+      "evidence": "transcript 显示检查了 package.json、src/import.js 和现有测试；当前实现只返回 records.length，集成测试和类型检查是占位验证。; transcript 记录实际运行 npm run test:import、npm run test:integration 和 npm run typecheck，三条基线命令均成功。; final_message 要求最终版本三条命令全部成功并记录证据，同时要求补足占位验证的实质内容。"
+    },
+    {
+      "text": "按中大型深度任务设计恢复入口、独立工作重排和重大里程碑 3 reviewer，同时不重新询问三份文档已确定的决定。",
+      "passed": false,
+      "evidence": "final_message 采用 deep 模式，以 .goal-task/import-migration/state.md 作为执行、证据和恢复入口，并要求将等待项移到独立工作之后。; workspace_diff 中的 state.md 要求恢复时核对 HEAD、工作区和证据，且不改写三份定稿的决定。; final_message 和 state.md 均要求 3 名独立 reviewer 审查最终集成 diff，并在修复后复审。 | Failures: 审查门槛只明确覆盖最终集成 diff，未要求在重大行为变更里程碑安排 3 名独立 reviewer。"
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 1,
+    "total": 5,
+    "pass_rate": 0.8
+  },
+  "judge_context": {
+    "profile": "standard",
+    "materialized_dir": "judge/context",
+    "manifest": {
+      "profile": "standard",
+      "materialized_dir": "judge/context",
+      "materials": [
+        {
+          "key": "final_message",
+          "mode": "include",
+          "path": "judge/context/final_message.txt",
+          "bytes": 3001,
+          "original_bytes": 3001
+        },
+        {
+          "key": "transcript",
+          "mode": "file_ref",
+          "path": "judge/context/transcript.json",
+          "bytes": 38477,
+          "original_bytes": 38477
+        },
+        {
+          "key": "workspace_diff",
+          "mode": "file_ref",
+          "path": "judge/context/workspace.diff",
+          "bytes": 8184,
+          "original_bytes": 8184
+        },
+        {
+          "key": "generated_files",
+          "mode": "file_ref",
+          "path": "judge/context/generated_files.txt",
+          "bytes": 325,
+          "original_bytes": 325
+        }
+      ]
+    },
+    "prompt_delivery": "inline",
+    "prompt_bytes": 6329
+  }
+}

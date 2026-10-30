@@ -1,0 +1,9 @@
+{
+  "eval_id": 0,
+  "eval_name": "深度模式最终 /goal 不得超出 Claude Code 字符硬限制",
+  "prompt": "$goal-prompt\n请先读取当前工作区的 .codex/skills/goal-prompt/SKILL.md，再按其适用边界处理下方原始请求。如果原始请求明确是普通非目标工作，直接处理原任务，不生成目标文本。\n\n原始请求：\n你已经调查过并给了我 brief，我确认使用深度模式和现有初始化方案，目标 harness 是 Claude Code。\n请把下面这项工作写成最终 /goal：把 payments、ledger、reconciliation、reporting\n四个模块迁移到新的幂等事件总线，同时保持所有现有公开 API 和 webhook 契约不变。\n每个模块要求：单元测试全绿、契约测试全绿、性能回归在 5% 以内、迁移前后数据一致性校验、\n回滚脚本可用并已演练。全局要求：4 个模块共 12 项子门槛全部通过、CI 全绿、\n安全审查通过、5 名独立只读 reviewer 批准、每条 reviewer 意见修复后必须复审、\n迁移文档和运维手册齐全、灰度发布计划分 4 个阶段且每阶段有明确回退条件。\n.goal-task/event-bus-migration/state.md 是执行契约和状态入口，所有细节都可以写进去。\n请不要因为细节多就删掉任何一项门槛,只允许精简措辞和把细节挪到 state.md。\n",
+  "assertions": [
+    "expect.exit_code",
+    "script: /Users/zhu/.codex/worktrees/3443/goal-prompt/.eval-work/controlled-after-boundaries/snapshot/skill-up/fixtures/scripts/check-goal-char-limit-case.py"
+  ]
+}

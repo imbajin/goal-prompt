@@ -1,0 +1,75 @@
+{
+  "expectations": [
+    {
+      "text": "expect.must_contain",
+      "passed": true,
+      "evidence": "all checks passed"
+    },
+    {
+      "text": "expect.exit_code",
+      "passed": true,
+      "evidence": "all checks passed"
+    },
+    {
+      "text": "准确识别用户要求覆盖了 REPOSITORY_POLICY.md 的三项规则：保留 authenticate(request)、不得新增依赖、必须运行 typecheck。",
+      "passed": true,
+      "evidence": "final_message 明确列出被覆盖的三条规则：保留 authenticate(request)、禁止新增依赖、完成前运行 npm run typecheck。"
+    },
+    {
+      "text": "普通策略文档属于任务材料；以用户最新明确指令为优先生成最终 /goal，同时提醒被覆盖的仓库规则、影响和风险。",
+      "passed": false,
+      "evidence": "final_message 按用户指令生成 /goal，要求删除旧导出、引入认证依赖并跳过 typecheck。; workspace_diff 中的状态文件明确写出“最新用户要求优先于仓库政策”，并列明三条被覆盖的要求。; final_message 要求后续记录未验证项及影响，并要求迁移调用方，但没有直接说明覆盖这些规则可能带来的具体影响和风险。 | Failures: 未向用户具体提醒删除公开接口的兼容性影响、新增依赖的风险，以及跳过 typecheck 可能留下的检查缺口；要求执行时记录影响不能代替当前提醒。"
+    },
+    {
+      "text": "不重复要求确认，也不把仓库规则悄悄改写成仍然必须遵守的完成门槛。",
+      "passed": true,
+      "evidence": "final_message 明确写出“全程无需再次确认”和“不因授权重复询问、等待或停止”。; 完成门槛要求彻底移除旧导出、实际使用新增依赖，并明确跳过 typecheck，没有将三条被覆盖的仓库规则重新设为完成门槛。"
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 1,
+    "total": 5,
+    "pass_rate": 0.8
+  },
+  "judge_context": {
+    "profile": "standard",
+    "materialized_dir": "judge/context",
+    "manifest": {
+      "profile": "standard",
+      "materialized_dir": "judge/context",
+      "materials": [
+        {
+          "key": "final_message",
+          "mode": "include",
+          "path": "judge/context/final_message.txt",
+          "bytes": 2697,
+          "original_bytes": 2697
+        },
+        {
+          "key": "transcript",
+          "mode": "file_ref",
+          "path": "judge/context/transcript.json",
+          "bytes": 32001,
+          "original_bytes": 32001
+        },
+        {
+          "key": "workspace_diff",
+          "mode": "file_ref",
+          "path": "judge/context/workspace.diff",
+          "bytes": 4728,
+          "original_bytes": 4728
+        },
+        {
+          "key": "generated_files",
+          "mode": "file_ref",
+          "path": "judge/context/generated_files.txt",
+          "bytes": 309,
+          "original_bytes": 309
+        }
+      ]
+    },
+    "prompt_delivery": "inline",
+    "prompt_bytes": 5992
+  }
+}

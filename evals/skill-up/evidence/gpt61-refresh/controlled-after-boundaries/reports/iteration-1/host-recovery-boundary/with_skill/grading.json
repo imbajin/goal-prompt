@@ -1,0 +1,20 @@
+{
+  "expectations": [
+    {
+      "text": "judge rendered-length (script)",
+      "passed": true,
+      "evidence": "PASS: "
+    },
+    {
+      "text": "judge host-and-recovery (agent_judge)",
+      "passed": true,
+      "evidence": "PASS: "
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "failed": 0,
+    "total": 2,
+    "pass_rate": 1
+  }
+}

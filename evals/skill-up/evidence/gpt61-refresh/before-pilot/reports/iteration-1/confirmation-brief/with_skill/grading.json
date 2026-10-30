@@ -1,0 +1,20 @@
+{
+  "expectations": [
+    {
+      "text": "expect.exit_code",
+      "passed": true,
+      "evidence": "all checks passed"
+    },
+    {
+      "text": "script: /Users/zhu/.codex/worktrees/3443/goal-prompt/.eval-work/before-pilot/snapshot/skill-up/fixtures/scripts/check-confirmation-brief.sh",
+      "passed": false,
+      "evidence": "script exited with code 1 [stderr: premature final goal]"
+    }
+  ],
+  "summary": {
+    "passed": 1,
+    "failed": 1,
+    "total": 2,
+    "pass_rate": 0.5
+  }
+}

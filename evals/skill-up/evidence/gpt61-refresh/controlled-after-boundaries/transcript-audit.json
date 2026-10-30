@@ -1,0 +1,595 @@
+[
+  {
+    "artifact": "reports/iteration-1/compaction-checkpoint/with_skill/outputs/agent/run/stdout.json",
+    "successful_skill_read_commands": [
+      {
+        "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/SKILL.md'",
+        "output_characters": 13163,
+        "output_utf8_bytes": 13179,
+        "output_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71"
+      },
+      {
+        "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/references/long-goal-execution.md'",
+        "output_characters": 6055,
+        "output_utf8_bytes": 6055,
+        "output_sha256": "9fdeea7aeea2f55be230c9a8828cac50f3ae0d2a518fe1392c29ac6f48a72c65"
+      },
+      {
+        "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/references/scenarios.md'",
+        "output_characters": 5247,
+        "output_utf8_bytes": 5251,
+        "output_sha256": "1bc43e441e4ed7d60fb7852f24e82377b8580b13812a3c11d4bf6b54357d235c"
+      },
+      {
+        "command": "/bin/zsh -lc \"python3 - <<'PY'\nfrom pathlib import Path\np = Path('.goal-task/reporting/state.md')\ns = p.read_text()\nrequired = ['payments → orders → reports', 'Initialization TODO', 'This loop:', 'Remaining:', 'Next:', 'compaction', '配额等待', '交接', '3 名独立', '最新 commit', '未提交变更', '验证证据', '本地里程碑 commit']\nmissing = [x for x in required if x not in s]\nassert not missing, missing\nassert s.count('\"'```'\"') % 2 == 0\nassert all((Path('.codex/skills/goal-prompt') / x).is_file() for x in ['SKILL.md', 'references/long-goal-execution.md', 'references/scenarios.md'])\nprint(f'Verified: {p}; {len(s.splitlines())} lines; required state, report, review, commit and recovery fields present.')\nprint('Initialization only; no migration, business validation or Git commit executed.')\nPY\"",
+        "output_characters": 198,
+        "output_utf8_bytes": 198,
+        "output_sha256": "bec06ad13718540a8554eb7956c3b08646a7c34b583ee2f1f0065d6aad300e0f"
+      }
+    ],
+    "reference_names_mentioned_in_commands": [
+      "references/long-goal-execution.md",
+      "references/scenarios.md"
+    ],
+    "host_target_or_memory_read_candidates": [],
+    "observed_turn_context": [
+      {
+        "model": "gpt-6.1-sol",
+        "effort": "high",
+        "cwd": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-2081499864",
+        "approval_policy": "never",
+        "sandbox_policy": {
+          "type": "workspace-write",
+          "network_access": false,
+          "exclude_tmpdir_env_var": false,
+          "exclude_slash_tmp": false
+        }
+      }
+    ],
+    "available_skill_names": [
+      "goal-prompt"
+    ],
+    "catalog_skill_roots": [
+      "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-2081499864/.codex/skills"
+    ],
+    "note": "成功命令及输出长度仅为审计线索；需结合 transcript 确认实际读取。重复读取累计与初始 context 不同；非 OS 隔离证明。"
+  },
+  {
+    "artifact": "reports/iteration-1/deep-compression-gates/with_skill/outputs/agent/run/stdout.json",
+    "successful_skill_read_commands": [
+      {
+        "command": "/bin/zsh -lc \"pwd; rg --files --hidden -g '\"'!.git'\"' -g 'AGENTS.md' -g '*goal*' -g 'state.md' -g 'package.json' -g '*lock*' -g '.github/workflows/*' -g 'SKILL.md' -g 'scenarios.md' -g 'long-goal-execution.md' -g 'parallel-agents.md'\"",
+        "output_characters": 336,
+        "output_utf8_bytes": 336,
+        "output_sha256": "882572b237a8612ae608b2aed8e686e5b4a9aee521e2c43a0c5982938ab41a26"
+      },
+      {
+        "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/SKILL.md'",
+        "output_characters": 13163,
+        "output_utf8_bytes": 13179,
+        "output_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71"
+      },
+      {
+        "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/references/long-goal-execution.md; cat .codex/skills/goal-prompt/references/parallel-agents.md; cat .codex/skills/goal-prompt/references/scenarios.md'",
+        "output_characters": 13377,
+        "output_utf8_bytes": 13381,
+        "output_sha256": "27335d33608e8d41da06ac9f83ee71564bd1ba7c008d6bac4cc33986109f03da"
+      }
+    ],
+    "reference_names_mentioned_in_commands": [
+      "references/long-goal-execution.md",
+      "references/parallel-agents.md",
+      "references/scenarios.md"
+    ],
+    "host_target_or_memory_read_candidates": [],
+    "observed_turn_context": [
+      {
+        "model": "gpt-6.1-sol",
+        "effort": "high",
+        "cwd": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-994923602",
+        "approval_policy": "never",
+        "sandbox_policy": {
+          "type": "workspace-write",
+          "network_access": false,
+          "exclude_tmpdir_env_var": false,
+          "exclude_slash_tmp": false
+        }
+      }
+    ],
+    "available_skill_names": [
+      "goal-prompt"
+    ],
+    "catalog_skill_roots": [
+      "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-994923602/.codex/skills"
+    ],
+    "note": "成功命令及输出长度仅为审计线索；需结合 transcript 确认实际读取。重复读取累计与初始 context 不同；非 OS 隔离证明。"
+  },
+  {
+    "artifact": "reports/iteration-1/deep-compression-gates/with_skill/outputs/judge/run/stdout.json",
+    "successful_skill_read_commands": [],
+    "reference_names_mentioned_in_commands": [],
+    "host_target_or_memory_read_candidates": [],
+    "observed_turn_context": [
+      {
+        "model": "gpt-6.1-terra",
+        "effort": "high",
+        "cwd": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-994923602",
+        "approval_policy": "never",
+        "sandbox_policy": {
+          "type": "workspace-write",
+          "network_access": false,
+          "exclude_tmpdir_env_var": false,
+          "exclude_slash_tmp": false
+        }
+      }
+    ],
+    "available_skill_names": [],
+    "catalog_skill_roots": [],
+    "note": "成功命令及输出长度仅为审计线索；需结合 transcript 确认实际读取。重复读取累计与初始 context 不同；非 OS 隔离证明。"
+  },
+  {
+    "artifact": "reports/iteration-1/delegated-judgment/with_skill/outputs/agent/run/stdout.json",
+    "successful_skill_read_commands": [
+      {
+        "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/references/parallel-agents.md'",
+        "output_characters": 2075,
+        "output_utf8_bytes": 2075,
+        "output_sha256": "1fa0663ed4057a90d573559fa011c03d9b184a3bb6602d15cdeba6b7d3ea7e44"
+      }
+    ],
+    "reference_names_mentioned_in_commands": [
+      "references/parallel-agents.md"
+    ],
+    "host_target_or_memory_read_candidates": [],
+    "observed_turn_context": [
+      {
+        "model": "gpt-6.1-sol",
+        "effort": "high",
+        "cwd": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-3562154274",
+        "approval_policy": "never",
+        "sandbox_policy": {
+          "type": "workspace-write",
+          "network_access": false,
+          "exclude_tmpdir_env_var": false,
+          "exclude_slash_tmp": false
+        }
+      },
+      {
+        "model": "gpt-6.1-sol",
+        "effort": "high",
+        "cwd": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-3562154274",
+        "approval_policy": "never",
+        "sandbox_policy": {
+          "type": "danger-full-access"
+        }
+      }
+    ],
+    "available_skill_names": [
+      "goal-prompt"
+    ],
+    "catalog_skill_roots": [
+      "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-3562154274/.codex/skills"
+    ],
+    "note": "成功命令及输出长度仅为审计线索；需结合 transcript 确认实际读取。重复读取累计与初始 context 不同；非 OS 隔离证明。"
+  },
+  {
+    "artifact": "reports/iteration-1/delegated-judgment/with_skill/outputs/judge/run/stdout.json",
+    "successful_skill_read_commands": [],
+    "reference_names_mentioned_in_commands": [],
+    "host_target_or_memory_read_candidates": [],
+    "observed_turn_context": [
+      {
+        "model": "gpt-6.1-terra",
+        "effort": "high",
+        "cwd": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-3562154274",
+        "approval_policy": "never",
+        "sandbox_policy": {
+          "type": "workspace-write",
+          "network_access": false,
+          "exclude_tmpdir_env_var": false,
+          "exclude_slash_tmp": false
+        }
+      }
+    ],
+    "available_skill_names": [],
+    "catalog_skill_roots": [],
+    "note": "成功命令及输出长度仅为审计线索；需结合 transcript 确认实际读取。重复读取累计与初始 context 不同；非 OS 隔离证明。"
+  },
+  {
+    "artifact": "reports/iteration-1/goal-char-limit/with_skill/outputs/agent/run/stdout.json",
+    "successful_skill_read_commands": [
+      {
+        "command": "/bin/zsh -lc \"pwd && rg --files -g 'AGENTS.md' -g '*goal*' -g 'SKILL.md' -g 'state.md' -g 'package.json' -g 'README*' -g '\"'!node_modules'\"' -g '\"'!.git'\"' --hidden\"",
+        "output_characters": 230,
+        "output_utf8_bytes": 230,
+        "output_sha256": "f4dc13d89d7c349531ed4fede104351fd613a8fb99daa9a751f57a260ceed992"
+      },
+      {
+        "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/SKILL.md'",
+        "output_characters": 13163,
+        "output_utf8_bytes": 13179,
+        "output_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71"
+      },
+      {
+        "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/references/long-goal-execution.md'",
+        "output_characters": 6055,
+        "output_utf8_bytes": 6055,
+        "output_sha256": "9fdeea7aeea2f55be230c9a8828cac50f3ae0d2a518fe1392c29ac6f48a72c65"
+      },
+      {
+        "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/references/scenarios.md && cat .codex/skills/goal-prompt/references/parallel-agents.md'",
+        "output_characters": 7322,
+        "output_utf8_bytes": 7326,
+        "output_sha256": "114a04e1fac8e37ca0973e02209e58beb614f50da0124b79c5491b04ab02af3a"
+      }
+    ],
+    "reference_names_mentioned_in_commands": [
+      "references/long-goal-execution.md",
+      "references/parallel-agents.md",
+      "references/scenarios.md"
+    ],
+    "host_target_or_memory_read_candidates": [],
+    "observed_turn_context": [
+      {
+        "model": "gpt-6.1-sol",
+        "effort": "high",
+        "cwd": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-912393383",
+        "approval_policy": "never",
+        "sandbox_policy": {
+          "type": "workspace-write",
+          "network_access": false,
+          "exclude_tmpdir_env_var": false,
+          "exclude_slash_tmp": false
+        }
+      }
+    ],
+    "available_skill_names": [
+      "goal-prompt"
+    ],
+    "catalog_skill_roots": [
+      "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-912393383/.codex/skills"
+    ],
+    "note": "成功命令及输出长度仅为审计线索；需结合 transcript 确认实际读取。重复读取累计与初始 context 不同；非 OS 隔离证明。"
+  },
+  {
+    "artifact": "reports/iteration-1/host-recovery-boundary/with_skill/outputs/agent/run/stdout.json",
+    "successful_skill_read_commands": [
+      {
+        "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/SKILL.md'",
+        "output_characters": 13163,
+        "output_utf8_bytes": 13179,
+        "output_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71"
+      },
+      {
+        "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/references/long-goal-execution.md; cat .codex/skills/goal-prompt/references/scenarios.md; cat .codex/skills/goal-prompt/references/parallel-agents.md'",
+        "output_characters": 13377,
+        "output_utf8_bytes": 13381,
+        "output_sha256": "039ae7337a47040fc103339608960a686c56f31eb1d9640397d0671909506622"
+      }
+    ],
+    "reference_names_mentioned_in_commands": [
+      "references/long-goal-execution.md",
+      "references/parallel-agents.md",
+      "references/scenarios.md"
+    ],
+    "host_target_or_memory_read_candidates": [],
+    "observed_turn_context": [
+      {
+        "model": "gpt-6.1-sol",
+        "effort": "high",
+        "cwd": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-2576976778",
+        "approval_policy": "never",
+        "sandbox_policy": {
+          "type": "workspace-write",
+          "network_access": false,
+          "exclude_tmpdir_env_var": false,
+          "exclude_slash_tmp": false
+        }
+      }
+    ],
+    "available_skill_names": [
+      "goal-prompt"
+    ],
+    "catalog_skill_roots": [
+      "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-2576976778/.codex/skills"
+    ],
+    "note": "成功命令及输出长度仅为审计线索；需结合 transcript 确认实际读取。重复读取累计与初始 context 不同；非 OS 隔离证明。"
+  },
+  {
+    "artifact": "reports/iteration-1/host-recovery-boundary/with_skill/outputs/judge/host-and-recovery/run/stdout.json",
+    "successful_skill_read_commands": [],
+    "reference_names_mentioned_in_commands": [],
+    "host_target_or_memory_read_candidates": [],
+    "observed_turn_context": [
+      {
+        "model": "gpt-6.1-terra",
+        "effort": "high",
+        "cwd": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-2576976778",
+        "approval_policy": "never",
+        "sandbox_policy": {
+          "type": "workspace-write",
+          "network_access": false,
+          "exclude_tmpdir_env_var": false,
+          "exclude_slash_tmp": false
+        }
+      }
+    ],
+    "available_skill_names": [],
+    "catalog_skill_roots": [],
+    "note": "成功命令及输出长度仅为审计线索；需结合 transcript 确认实际读取。重复读取累计与初始 context 不同；非 OS 隔离证明。"
+  },
+  {
+    "artifact": "reports/iteration-1/multiturn-confirmation/with_skill/outputs/agent/run/stdout.json",
+    "successful_skill_read_commands": [],
+    "reference_names_mentioned_in_commands": [],
+    "host_target_or_memory_read_candidates": [],
+    "observed_turn_context": [
+      {
+        "model": "gpt-6.1-sol",
+        "effort": "high",
+        "cwd": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-3104706368",
+        "approval_policy": "never",
+        "sandbox_policy": {
+          "type": "workspace-write",
+          "network_access": false,
+          "exclude_tmpdir_env_var": false,
+          "exclude_slash_tmp": false
+        }
+      },
+      {
+        "model": "gpt-6.1-sol",
+        "effort": "high",
+        "cwd": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-3104706368",
+        "approval_policy": "never",
+        "sandbox_policy": {
+          "type": "danger-full-access"
+        }
+      }
+    ],
+    "available_skill_names": [
+      "goal-prompt"
+    ],
+    "catalog_skill_roots": [
+      "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-3104706368/.codex/skills"
+    ],
+    "note": "成功命令及输出长度仅为审计线索；需结合 transcript 确认实际读取。重复读取累计与初始 context 不同；非 OS 隔离证明。"
+  },
+  {
+    "artifact": "reports/iteration-1/multiturn-confirmation/with_skill/outputs/judge/run/stdout.json",
+    "successful_skill_read_commands": [],
+    "reference_names_mentioned_in_commands": [],
+    "host_target_or_memory_read_candidates": [],
+    "observed_turn_context": [
+      {
+        "model": "gpt-6.1-terra",
+        "effort": "high",
+        "cwd": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-3104706368",
+        "approval_policy": "never",
+        "sandbox_policy": {
+          "type": "workspace-write",
+          "network_access": false,
+          "exclude_tmpdir_env_var": false,
+          "exclude_slash_tmp": false
+        }
+      }
+    ],
+    "available_skill_names": [],
+    "catalog_skill_roots": [],
+    "note": "成功命令及输出长度仅为审计线索；需结合 transcript 确认实际读取。重复读取累计与初始 context 不同；非 OS 隔离证明。"
+  },
+  {
+    "artifact": "reports/iteration-1/multiturn-correction/with_skill/outputs/agent/run/stdout.json",
+    "successful_skill_read_commands": [],
+    "reference_names_mentioned_in_commands": [],
+    "host_target_or_memory_read_candidates": [],
+    "observed_turn_context": [
+      {
+        "model": "gpt-6.1-sol",
+        "effort": "high",
+        "cwd": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-2005028654",
+        "approval_policy": "never",
+        "sandbox_policy": {
+          "type": "workspace-write",
+          "network_access": false,
+          "exclude_tmpdir_env_var": false,
+          "exclude_slash_tmp": false
+        }
+      },
+      {
+        "model": "gpt-6.1-sol",
+        "effort": "high",
+        "cwd": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-2005028654",
+        "approval_policy": "never",
+        "sandbox_policy": {
+          "type": "danger-full-access"
+        }
+      }
+    ],
+    "available_skill_names": [
+      "goal-prompt"
+    ],
+    "catalog_skill_roots": [
+      "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-2005028654/.codex/skills"
+    ],
+    "note": "成功命令及输出长度仅为审计线索；需结合 transcript 确认实际读取。重复读取累计与初始 context 不同；非 OS 隔离证明。"
+  },
+  {
+    "artifact": "reports/iteration-1/multiturn-correction/with_skill/outputs/judge/run/stdout.json",
+    "successful_skill_read_commands": [],
+    "reference_names_mentioned_in_commands": [],
+    "host_target_or_memory_read_candidates": [],
+    "observed_turn_context": [
+      {
+        "model": "gpt-6.1-terra",
+        "effort": "high",
+        "cwd": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-2005028654",
+        "approval_policy": "never",
+        "sandbox_policy": {
+          "type": "workspace-write",
+          "network_access": false,
+          "exclude_tmpdir_env_var": false,
+          "exclude_slash_tmp": false
+        }
+      }
+    ],
+    "available_skill_names": [],
+    "catalog_skill_roots": [],
+    "note": "成功命令及输出长度仅为审计线索；需结合 transcript 确认实际读取。重复读取累计与初始 context 不同；非 OS 隔离证明。"
+  },
+  {
+    "artifact": "reports/iteration-1/native-blocked-scope/with_skill/outputs/agent/run/stdout.json",
+    "successful_skill_read_commands": [
+      {
+        "command": "/bin/zsh -lc \"pwd; rg --files --hidden -g '\"'!.git/**'\"' -g '\"'!node_modules/**'\"' -g 'AGENTS.md' -g '*goal*' -g 'SKILL.md' -g 'scenarios.md' -g 'long-goal-execution.md' -g 'parallel-agents.md' -g 'ui-acceptance.md' -g 'package.json' -g 'README*' -g 'state.md' -g 'todo.md'\"",
+        "output_characters": 391,
+        "output_utf8_bytes": 391,
+        "output_sha256": "9ea71d6f219ed4dbbe4f04f8e6dc2150e9fa7b09915eba0ef4fdf53c57026948"
+      },
+      {
+        "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/SKILL.md'",
+        "output_characters": 13163,
+        "output_utf8_bytes": 13179,
+        "output_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71"
+      },
+      {
+        "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/references/long-goal-execution.md .codex/skills/goal-prompt/references/parallel-agents.md .codex/skills/goal-prompt/references/ui-acceptance.md'",
+        "output_characters": 9984,
+        "output_utf8_bytes": 9984,
+        "output_sha256": "a486041a693fbc3182f24f215d0176ab1da0d1fd3dd97ed6bfe5b8d61844cc10"
+      }
+    ],
+    "reference_names_mentioned_in_commands": [
+      "references/long-goal-execution.md",
+      "references/parallel-agents.md",
+      "references/ui-acceptance.md"
+    ],
+    "host_target_or_memory_read_candidates": [],
+    "observed_turn_context": [
+      {
+        "model": "gpt-6.1-sol",
+        "effort": "high",
+        "cwd": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-1852964708",
+        "approval_policy": "never",
+        "sandbox_policy": {
+          "type": "workspace-write",
+          "network_access": false,
+          "exclude_tmpdir_env_var": false,
+          "exclude_slash_tmp": false
+        }
+      }
+    ],
+    "available_skill_names": [
+      "goal-prompt"
+    ],
+    "catalog_skill_roots": [
+      "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-1852964708/.codex/skills"
+    ],
+    "note": "成功命令及输出长度仅为审计线索；需结合 transcript 确认实际读取。重复读取累计与初始 context 不同；非 OS 隔离证明。"
+  },
+  {
+    "artifact": "reports/iteration-1/skip-investigation/with_skill/outputs/agent/run/stdout.json",
+    "successful_skill_read_commands": [
+      {
+        "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/SKILL.md'",
+        "output_characters": 13163,
+        "output_utf8_bytes": 13179,
+        "output_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71"
+      },
+      {
+        "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/references/scenarios.md'",
+        "output_characters": 5247,
+        "output_utf8_bytes": 5251,
+        "output_sha256": "1bc43e441e4ed7d60fb7852f24e82377b8580b13812a3c11d4bf6b54357d235c"
+      },
+      {
+        "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/references/long-goal-execution.md'",
+        "output_characters": 6055,
+        "output_utf8_bytes": 6055,
+        "output_sha256": "9fdeea7aeea2f55be230c9a8828cac50f3ae0d2a518fe1392c29ac6f48a72c65"
+      }
+    ],
+    "reference_names_mentioned_in_commands": [
+      "references/long-goal-execution.md",
+      "references/scenarios.md"
+    ],
+    "host_target_or_memory_read_candidates": [],
+    "observed_turn_context": [
+      {
+        "model": "gpt-6.1-sol",
+        "effort": "high",
+        "cwd": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-351576045",
+        "approval_policy": "never",
+        "sandbox_policy": {
+          "type": "workspace-write",
+          "network_access": false,
+          "exclude_tmpdir_env_var": false,
+          "exclude_slash_tmp": false
+        }
+      }
+    ],
+    "available_skill_names": [
+      "goal-prompt"
+    ],
+    "catalog_skill_roots": [
+      "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-351576045/.codex/skills"
+    ],
+    "note": "成功命令及输出长度仅为审计线索；需结合 transcript 确认实际读取。重复读取累计与初始 context 不同；非 OS 隔离证明。"
+  },
+  {
+    "artifact": "reports/iteration-1/skip-investigation/with_skill/outputs/judge/run/stdout.json",
+    "successful_skill_read_commands": [],
+    "reference_names_mentioned_in_commands": [],
+    "host_target_or_memory_read_candidates": [],
+    "observed_turn_context": [
+      {
+        "model": "gpt-6.1-terra",
+        "effort": "high",
+        "cwd": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-351576045",
+        "approval_policy": "never",
+        "sandbox_policy": {
+          "type": "workspace-write",
+          "network_access": false,
+          "exclude_tmpdir_env_var": false,
+          "exclude_slash_tmp": false
+        }
+      }
+    ],
+    "available_skill_names": [],
+    "catalog_skill_roots": [],
+    "note": "成功命令及输出长度仅为审计线索；需结合 transcript 确认实际读取。重复读取累计与初始 context 不同；非 OS 隔离证明。"
+  },
+  {
+    "artifact": "reports/iteration-1/trigger-boundary/with_skill/outputs/agent/run/stdout.json",
+    "successful_skill_read_commands": [
+      {
+        "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/SKILL.md'",
+        "output_characters": 13163,
+        "output_utf8_bytes": 13179,
+        "output_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71"
+      }
+    ],
+    "reference_names_mentioned_in_commands": [],
+    "host_target_or_memory_read_candidates": [],
+    "observed_turn_context": [
+      {
+        "model": "gpt-6.1-sol",
+        "effort": "high",
+        "cwd": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-14512513",
+        "approval_policy": "never",
+        "sandbox_policy": {
+          "type": "workspace-write",
+          "network_access": false,
+          "exclude_tmpdir_env_var": false,
+          "exclude_slash_tmp": false
+        }
+      }
+    ],
+    "available_skill_names": [
+      "goal-prompt"
+    ],
+    "catalog_skill_roots": [
+      "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-14512513/.codex/skills"
+    ],
+    "note": "成功命令及输出长度仅为审计线索；需结合 transcript 确认实际读取。重复读取累计与初始 context 不同；非 OS 隔离证明。"
+  }
+]

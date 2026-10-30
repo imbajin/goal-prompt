@@ -91,23 +91,26 @@ latest user confirmation > authoritative spec/design > issue/todo > state
 
 - Try an ordinary failed item at most three times by default, then record and
   defer it while continuing independent work.
-- Mark permission or authorization gaps `needs input`, not overall `blocked`.
+- In-scope user-authorizable actions are pre-authorized; ordinary authorization
+  prompts do not cause another question, wait or `blocked`. Record genuine
+  capability gaps separately and continue independent work.
 - Address resource limits first by reducing concurrency or batch size, or
   adjusting resource use.
 - A deferred item's completion gate remains active, so progress cannot be
   reported as `100%`.
-- Use overall `blocked` only under a user-defined rule or when all remaining work
-  shares one logical conflict, safety boundary, or verified mandatory external
-  dependency.
+- Use overall `blocked` only when all meaningful remaining work shares one
+  verified blocker after recovery and independent work are exhausted, and the
+  current host status rules are satisfied. User rules cannot bypass the host.
 
 ## Progress, review, and commits
 
-- Report a three-line summary after each productive loop and when a major review
-  or commit spans its own loop; combine them when they occur in one loop.
-- Derive percentage from scoped milestones, deliverables, and gates; label it
-  `estimate` when the denominator is unstable.
+- After each productive loop report completed work/evidence, remaining work and
+  one next primary action; include a milestone commit when one was created.
+- Use a percentage only for a verified fixed denominator. Otherwise report
+  completed items and remaining evidence without an estimated percentage.
 - Use 1 independent reviewer for focused low-risk fast-mode behavior changes;
-  use exactly 3 at deep-mode or major behavior-change milestones.
+  use 3 by default at deep/major behavior milestones and final integration.
+  Preserve a user-specified count and re-review affected changes after fixes.
 - Use 1 independent reviewer by default for pure documentation, read-only
   research, or analysis.
 - Run at most 3 fix/re-review rounds by default. Record and defer unresolved

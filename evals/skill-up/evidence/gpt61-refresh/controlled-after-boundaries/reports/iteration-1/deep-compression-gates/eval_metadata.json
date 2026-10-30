@@ -1,0 +1,12 @@
+{
+  "eval_id": 0,
+  "eval_name": "大任务压缩不得丢失核心门槛",
+  "prompt": "$goal-prompt\n请先读取当前工作区的 .codex/skills/goal-prompt/SKILL.md，再按其适用边界处理下方原始请求。如果原始请求明确是普通非目标工作，直接处理原任务，不生成目标文本。\n\n原始请求：\n你已经调查过并给了我 brief，我确认使用深度模式和现有初始化方案。\n请把下面这项工作压缩成简洁的最终 /goal，但这些完成条件一个都不能漏掉。\n把 auth、billing、notifications 迁移到统一事件接口，并保持公开兼容。\n每个模块测试、跨模块集成测试、CI、迁移文档、3 名独立只读 reviewer 和修复后的复审都必须完成。\n.goal-task/event-migration/state.md 是执行契约和状态入口。\n",
+  "assertions": [
+    "expect.must_contain",
+    "expect.exit_code",
+    "最终 /goal 保留三个模块、公开兼容、逐模块测试、集成测试、CI 和迁移文档的合取门槛。",
+    "保留恰好 3 个独立只读 reviewer、修复后复审，以及所有门槛通过前不得完成。",
+    "保留 state.md 真相入口和仅当全部剩余工作共同受阻时才允许整体 blocked 的语义，同时保持简洁。"
+  ]
+}

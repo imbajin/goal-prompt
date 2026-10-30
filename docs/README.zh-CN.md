@@ -66,6 +66,8 @@ npx skills update goal-prompt
 
 ## 实测结果
 
+当前开发评测已升级到 skill-up 0.14.0，共 31 个用例。[GPT 6.1 刷新报告](../evals/skill-up/gpt61-refresh.md) 单独记录定向验证；下方 5.6 成绩保留为历史事实。
+
 已记录的评测使用 `skill-up 0.9.1` 做了 30 个 case 的隔离回归。主对照统一使用 Codex `gpt-5.6-luna` high，同一批输入分别运行 with Skill 和 without Skill。with Skill 通过 24/30，without Skill 通过 6/30，后者另有 1 个超时 ERROR。最终补充的操作目标边界已做定向契约覆盖，但没有重新执行完整 A/B。新评测的运行方法见[评测说明](../evals/skill-up/README.md#run-the-evaluation)；历史分数仅对应当时的评测配置。
 
 ![goal-prompt 的 30-case 同输入对照实测](../assets/eval-comparison-zh.png)

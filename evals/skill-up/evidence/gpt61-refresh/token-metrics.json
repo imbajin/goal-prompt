@@ -1,0 +1,85 @@
+{
+  "rows": [
+    {
+      "run": "controlled-before-v2",
+      "case": "preauthorized-permissions",
+      "raw_turn_completed_usage": {
+        "input_tokens": 123931,
+        "cached_input_tokens": 96512,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 5039,
+        "reasoning_output_tokens": 237
+      },
+      "skill_up_result": {
+        "input_tokens": 220443,
+        "output_tokens": 5039,
+        "duration_ms": 137588
+      },
+      "source_stdout": "/Users/zhu/.codex/worktrees/3443/goal-prompt/.eval-work/controlled-before-v2/reports/iteration-1/preauthorized-permissions/with_skill/outputs/agent/run/stdout.json",
+      "source_stdout_sha256": "368c5f860259dd7a4a155006273466d9d7559a662f9017a6392f161686cc2d0c",
+      "source_result": "/Users/zhu/.codex/worktrees/3443/goal-prompt/.eval-work/controlled-before-v2/reports/iteration-1/result.json",
+      "source_result_sha256": "222f58fd7adad0303297346184cead7dbd151fd213f07e8ec98c909e3fd00ae4"
+    },
+    {
+      "run": "controlled-after-rest",
+      "case": "preauthorized-permissions",
+      "raw_turn_completed_usage": {
+        "input_tokens": 122022,
+        "cached_input_tokens": 100864,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 5713,
+        "reasoning_output_tokens": 726
+      },
+      "skill_up_result": {
+        "input_tokens": 222886,
+        "output_tokens": 5713,
+        "duration_ms": 152587
+      },
+      "source_stdout": "/Users/zhu/.codex/worktrees/3443/goal-prompt/.eval-work/controlled-after-rest/reports/iteration-1/preauthorized-permissions/with_skill/outputs/agent/run/stdout.json",
+      "source_stdout_sha256": "b59c373aa8b60fddc882b1b027efd75fd8c12b351858b540fa1ff888bb3b9f12",
+      "source_result": "/Users/zhu/.codex/worktrees/3443/goal-prompt/.eval-work/controlled-after-rest/reports/iteration-1/result.json",
+      "source_result_sha256": "34d941d7b3e49140de48cabebb27973eb6b800ccd135566bf395ac5aaa52b85c"
+    },
+    {
+      "run": "controlled-before-v2",
+      "case": "compaction-checkpoint",
+      "raw_turn_completed_usage": {
+        "input_tokens": 123708,
+        "cached_input_tokens": 95872,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 5255,
+        "reasoning_output_tokens": 384
+      },
+      "skill_up_result": {
+        "input_tokens": 219580,
+        "output_tokens": 5255,
+        "duration_ms": 144788
+      },
+      "source_stdout": "/Users/zhu/.codex/worktrees/3443/goal-prompt/.eval-work/controlled-before-v2/reports/iteration-1/compaction-checkpoint/with_skill/outputs/agent/run/stdout.json",
+      "source_stdout_sha256": "fe99ac17ccd1a1c2dfccaa1af5d751ce0a796dcc9382b5e8a58ea4f7a42c8ee4",
+      "source_result": "/Users/zhu/.codex/worktrees/3443/goal-prompt/.eval-work/controlled-before-v2/reports/iteration-1/result.json",
+      "source_result_sha256": "222f58fd7adad0303297346184cead7dbd151fd213f07e8ec98c909e3fd00ae4"
+    },
+    {
+      "run": "controlled-after-boundaries",
+      "case": "compaction-checkpoint",
+      "raw_turn_completed_usage": {
+        "input_tokens": 119275,
+        "cached_input_tokens": 107648,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 5671,
+        "reasoning_output_tokens": 623
+      },
+      "skill_up_result": {
+        "input_tokens": 226923,
+        "output_tokens": 5671,
+        "duration_ms": 140732
+      },
+      "source_stdout": "/Users/zhu/.codex/worktrees/3443/goal-prompt/.eval-work/controlled-after-boundaries/reports/iteration-1/compaction-checkpoint/with_skill/outputs/agent/run/stdout.json",
+      "source_stdout_sha256": "ada4130558f4676923e4c599a816956e56eb9748ec76cc310c38e076a9fbf0ff",
+      "source_result": "/Users/zhu/.codex/worktrees/3443/goal-prompt/.eval-work/controlled-after-boundaries/reports/iteration-1/result.json",
+      "source_result_sha256": "a9dcdee6eb402557e5716c3c5b68d115e7883e0aea121b9ace3f426dd1da85ba"
+    }
+  ],
+  "note": "CLI原生字段与skill-up派生字段分列；不推断缓存是否额外消耗或计费，不将累计input当作初始context。"
+}

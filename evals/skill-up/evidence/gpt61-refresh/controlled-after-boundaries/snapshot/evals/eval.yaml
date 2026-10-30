@@ -1,0 +1,45 @@
+schema_version: v1alpha1
+environment:
+  type: none
+skills:
+- source: local_path
+  path: target/goal-prompt
+engine:
+  name: codex
+  version: 0.164.0
+  model:
+    provider: openai
+    name: gpt-6.1-sol
+judge:
+  model: gpt-6.1-terra
+cases:
+  files:
+  - skill-up/cases/multiturn-confirmation.yaml
+  - skill-up/cases/multiturn-correction.yaml
+  - skill-up/cases/deep-compression-gates.yaml
+  - skill-up/cases/goal-char-limit.yaml
+  - skill-up/cases/compaction-checkpoint.yaml
+  - skill-up/cases/native-blocked-scope.yaml
+  - skill-up/cases/skip-investigation.yaml
+  - skill-up/cases/delegated-judgment.yaml
+  - skill-up/cases/host-recovery-boundary.yaml
+  - skill-up/cases/trigger-boundary.yaml
+  defaults:
+    timeout_seconds: 420
+    max_turns: 12
+    collect_artifacts:
+    - .goal-task/**/*.md
+  parallelism: 1
+  retry_policy:
+    max_retries: 1
+    retry_on:
+    - timeout
+    - error
+benchmark:
+  enabled: false
+report:
+  formats:
+  - json
+  - html
+  artifacts:
+  - transcript

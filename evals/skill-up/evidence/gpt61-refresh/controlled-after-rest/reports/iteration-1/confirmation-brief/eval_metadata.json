@@ -1,0 +1,9 @@
+{
+  "eval_id": 0,
+  "eval_name": "未确认前只输出 brief",
+  "prompt": "$goal-prompt\n请先读取当前工作区的 .codex/skills/goal-prompt/SKILL.md，再按其适用边界处理下方原始请求。如果原始请求明确是普通非目标工作，直接处理原任务，不生成目标文本。\n\n原始请求：\n请先看一下当前仓库，帮我把认证中间件迁移整理成一个可执行目标的 brief。\n结果、范围和完成证据我还没确认。\n这一轮只给调查结论和需要我决定的关键问题，不要直接给最终可复制的 /goal。\n",
+  "assertions": [
+    "expect.exit_code",
+    "script: /Users/zhu/.codex/worktrees/3443/goal-prompt/.eval-work/controlled-after-rest/snapshot/skill-up/fixtures/scripts/check-confirmation-brief.sh"
+  ]
+}

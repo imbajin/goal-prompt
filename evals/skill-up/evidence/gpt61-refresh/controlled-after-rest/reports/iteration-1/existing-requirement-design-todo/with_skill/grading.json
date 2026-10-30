@@ -1,0 +1,75 @@
+{
+  "expectations": [
+    {
+      "text": "expect.must_contain",
+      "passed": true,
+      "evidence": "all checks passed"
+    },
+    {
+      "text": "expect.exit_code",
+      "passed": true,
+      "evidence": "all checks passed"
+    },
+    {
+      "text": "分别复用 requirement 的结果、design 的接口与不变量、todo 的实施范围，不合并复制成新的设计或 TODO sidecar。",
+      "passed": true,
+      "evidence": "workspace_diff 中的 state.md 分别将 docs/requirement.md 定位为结果与验收、docs/design.md 定位为接口与不变量、docs/todo.md 定位为实施范围与条目状态。; workspace_diff 仅新增 state.md，并明确不复制三份文档正文、不另建设计或 TODO；final_message 同样要求复用定稿文档。"
+    },
+    {
+      "text": "检查当前实现和 package.json，使用真实的 npm run test:import、npm run test:integration 和 npm run typecheck 作为合取门槛。",
+      "passed": true,
+      "evidence": "transcript 记录了对 src/import.js、调用方和测试的核查，并实际运行 npm run test:import、npm run test:integration 和 npm run typecheck。; workspace_diff 记录当前 importBatch(records) 仅返回记录数，集成测试为占位断言，typecheck 脚本为 node -e \"process.exit(0)\"。; final_message 要求最终代码上的三条脚本及真实单元、集成和类型检查全部通过，明确占位脚本成功退出不能关闭验收门槛。"
+    },
+    {
+      "text": "按中大型深度任务设计恢复入口、独立工作重排和重大里程碑 3 reviewer，同时不重新询问三份文档已确定的决定。",
+      "passed": true,
+      "evidence": "workspace_diff 中的 Deep 模式 state.md 提供检查点和恢复入口，要求恢复时对照权威文档、HEAD、工作树和验证证据。; final_message 要求将等待、延期、需输入项及其依赖排到独立工作之后，并列出兼容调用核查和故障验证准备等可继续推进的工作。; final_message 要求幂等与检查点、恢复路径等重大里程碑及最终集成都由 3 名独立只读审查者审查，修复后重新验证并复审。; final_message 直接沿用已定稿接口、幂等键和检查点约束，仅在必要契约无法确定或与定稿约束冲突时提出具体问题，没有重新询问已确定决定。"
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1
+  },
+  "judge_context": {
+    "profile": "standard",
+    "materialized_dir": "judge/context",
+    "manifest": {
+      "profile": "standard",
+      "materialized_dir": "judge/context",
+      "materials": [
+        {
+          "key": "final_message",
+          "mode": "include",
+          "path": "judge/context/final_message.txt",
+          "bytes": 4111,
+          "original_bytes": 4111
+        },
+        {
+          "key": "transcript",
+          "mode": "file_ref",
+          "path": "judge/context/transcript.json",
+          "bytes": 49903,
+          "original_bytes": 49903
+        },
+        {
+          "key": "workspace_diff",
+          "mode": "file_ref",
+          "path": "judge/context/workspace.diff",
+          "bytes": 8698,
+          "original_bytes": 8698
+        },
+        {
+          "key": "generated_files",
+          "mode": "file_ref",
+          "path": "judge/context/generated_files.txt",
+          "bytes": 349,
+          "original_bytes": 349
+        }
+      ]
+    },
+    "prompt_delivery": "inline",
+    "prompt_bytes": 7439
+  }
+}

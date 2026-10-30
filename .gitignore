@@ -6,3 +6,6 @@
 
 # macOS metadata.
 .DS_Store
+
+# Bytecode from evaluation tooling.
+evals/skill-up/scripts/__pycache__/

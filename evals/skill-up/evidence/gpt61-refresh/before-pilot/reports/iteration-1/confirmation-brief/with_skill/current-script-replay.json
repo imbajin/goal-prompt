@@ -1,0 +1,15 @@
+{
+  "kind": "deterministic_script_replay_not_model_rerun",
+  "script_path": "/Users/zhu/.codex/worktrees/3443/goal-prompt/evals/skill-up/fixtures/scripts/check-confirmation-brief.sh",
+  "script_sha256": "8aa4df50ec7795143a1d800db28cc9302d29cd79dd7d0f53438eff7b4bb8fd92",
+  "command": [
+    "bash",
+    "/Users/zhu/.codex/worktrees/3443/goal-prompt/evals/skill-up/fixtures/scripts/check-confirmation-brief.sh"
+  ],
+  "exit_code": 0,
+  "stdout": "",
+  "stderr": "",
+  "verdict": "PASS",
+  "response_sha256": "042172c6875d663ff32c58bddd4eead19d8575c4f598664a0aff65bdc464d67f",
+  "original_verdict_unchanged": true
+}

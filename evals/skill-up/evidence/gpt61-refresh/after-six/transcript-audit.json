@@ -1,0 +1,685 @@
+[
+  {
+    "artifact": "reports/iteration-1/confirmation-brief/with_skill/outputs/agent/run/stdout.json",
+    "successful_skill_read_commands": [
+      {
+        "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/SKILL.md'",
+        "output_characters": 12765,
+        "output_utf8_bytes": 12781,
+        "output_sha256": "306fef65eedda2d0d631b00c145e18ce2778d7324ecd865e6a899014dac0f1a1"
+      },
+      {
+        "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/references/scenarios.md && cat .codex/skills/goal-prompt/references/long-goal-execution.md'",
+        "output_characters": 11302,
+        "output_utf8_bytes": 11306,
+        "output_sha256": "11701e31467d1b34ab057aa82d5fc045b23d585ebf5ff0152fbbf169d78e88fc"
+      }
+    ],
+    "reference_names_mentioned_in_commands": [
+      "references/long-goal-execution.md",
+      "references/scenarios.md"
+    ],
+    "host_target_or_memory_read_candidates": [],
+    "observed_turn_context": [
+      {
+        "model": "gpt-6.1-sol",
+        "effort": "high",
+        "cwd": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-583467725",
+        "approval_policy": "never",
+        "sandbox_policy": {
+          "type": "workspace-write",
+          "network_access": false,
+          "exclude_tmpdir_env_var": false,
+          "exclude_slash_tmp": false
+        }
+      }
+    ],
+    "available_skill_names": [
+      "apply-comments",
+      "code-review-helper",
+      "create-slide",
+      "create-theme",
+      "current-slide",
+      "deep-research",
+      "domain-modeling",
+      "find-skills",
+      "gh-review",
+      "goal-prompt",
+      "grilling",
+      "guizang-ppt-skill",
+      "hatch-pet",
+      "html-ppt",
+      "huashu-design",
+      "imagegen",
+      "imagegen-scene-ppt",
+      "lark-doc",
+      "lark-im",
+      "lark-shared",
+      "multica-cli",
+      "openai-docs",
+      "skill-creator",
+      "skill-installer",
+      "skill-upper",
+      "slide-authoring",
+      "systematic-debugging",
+      "todo-manager",
+      "write",
+      "writing-human"
+    ],
+    "catalog_skill_roots": [
+      "/Users/zhu/.agents/skills",
+      "/Users/zhu/.codex/skills",
+      "/Users/zhu/.codex/skills/.system",
+      "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-583467725/.codex/skills"
+    ],
+    "note": "成功命令及输出长度仅为审计线索；需结合 transcript 确认实际读取。重复读取累计与初始 context 不同；非 OS 隔离证明。"
+  },
+  {
+    "artifact": "reports/iteration-1/existing-requirement-design-todo/with_skill/outputs/agent/run/stdout.json",
+    "successful_skill_read_commands": [
+      {
+        "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/SKILL.md'",
+        "output_characters": 12765,
+        "output_utf8_bytes": 12781,
+        "output_sha256": "306fef65eedda2d0d631b00c145e18ce2778d7324ecd865e6a899014dac0f1a1"
+      },
+      {
+        "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/references/scenarios.md .codex/skills/goal-prompt/references/long-goal-execution.md'",
+        "output_characters": 11302,
+        "output_utf8_bytes": 11306,
+        "output_sha256": "11701e31467d1b34ab057aa82d5fc045b23d585ebf5ff0152fbbf169d78e88fc"
+      },
+      {
+        "command": "/bin/zsh -lc 'node --version; npm --version; cat .codex/skills/goal-prompt/references/parallel-agents.md'",
+        "output_characters": 2092,
+        "output_utf8_bytes": 2092,
+        "output_sha256": "8d9e6b8730d6e39fc96cd2fe6d52881f75bc696cfaddb83107993e7413ed276f"
+      }
+    ],
+    "reference_names_mentioned_in_commands": [
+      "references/long-goal-execution.md",
+      "references/parallel-agents.md",
+      "references/scenarios.md"
+    ],
+    "host_target_or_memory_read_candidates": [],
+    "observed_turn_context": [
+      {
+        "model": "gpt-6.1-sol",
+        "effort": "high",
+        "cwd": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-1550329667",
+        "approval_policy": "never",
+        "sandbox_policy": {
+          "type": "workspace-write",
+          "network_access": false,
+          "exclude_tmpdir_env_var": false,
+          "exclude_slash_tmp": false
+        }
+      }
+    ],
+    "available_skill_names": [
+      "apply-comments",
+      "code-review-helper",
+      "create-slide",
+      "create-theme",
+      "current-slide",
+      "deep-research",
+      "domain-modeling",
+      "find-skills",
+      "gh-review",
+      "goal-prompt",
+      "grilling",
+      "guizang-ppt-skill",
+      "hatch-pet",
+      "html-ppt",
+      "huashu-design",
+      "imagegen",
+      "imagegen-scene-ppt",
+      "lark-doc",
+      "lark-im",
+      "lark-shared",
+      "multica-cli",
+      "openai-docs",
+      "skill-creator",
+      "skill-installer",
+      "skill-upper",
+      "slide-authoring",
+      "systematic-debugging",
+      "todo-manager",
+      "write",
+      "writing-human"
+    ],
+    "catalog_skill_roots": [
+      "/Users/zhu/.agents/skills",
+      "/Users/zhu/.codex/skills",
+      "/Users/zhu/.codex/skills/.system",
+      "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-1550329667/.codex/skills"
+    ],
+    "note": "成功命令及输出长度仅为审计线索；需结合 transcript 确认实际读取。重复读取累计与初始 context 不同；非 OS 隔离证明。"
+  },
+  {
+    "artifact": "reports/iteration-1/existing-requirement-design-todo/with_skill/outputs/judge/run/stdout.json",
+    "successful_skill_read_commands": [],
+    "reference_names_mentioned_in_commands": [],
+    "host_target_or_memory_read_candidates": [],
+    "observed_turn_context": [
+      {
+        "model": "gpt-6.1-terra",
+        "effort": "high",
+        "cwd": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-1550329667",
+        "approval_policy": "never",
+        "sandbox_policy": {
+          "type": "workspace-write",
+          "network_access": false,
+          "exclude_tmpdir_env_var": false,
+          "exclude_slash_tmp": false
+        }
+      }
+    ],
+    "available_skill_names": [
+      "apply-comments",
+      "code-review-helper",
+      "create-slide",
+      "create-theme",
+      "current-slide",
+      "deep-research",
+      "domain-modeling",
+      "find-skills",
+      "gh-review",
+      "goal-prompt",
+      "grilling",
+      "guizang-ppt-skill",
+      "hatch-pet",
+      "html-ppt",
+      "huashu-design",
+      "imagegen",
+      "imagegen-scene-ppt",
+      "lark-doc",
+      "lark-im",
+      "lark-shared",
+      "multica-cli",
+      "openai-docs",
+      "skill-creator",
+      "skill-installer",
+      "skill-upper",
+      "slide-authoring",
+      "systematic-debugging",
+      "todo-manager",
+      "write",
+      "writing-human"
+    ],
+    "catalog_skill_roots": [
+      "/Users/zhu/.agents/skills",
+      "/Users/zhu/.codex/skills",
+      "/Users/zhu/.codex/skills/.system"
+    ],
+    "note": "成功命令及输出长度仅为审计线索；需结合 transcript 确认实际读取。重复读取累计与初始 context 不同；非 OS 隔离证明。"
+  },
+  {
+    "artifact": "reports/iteration-1/no-fabrication/with_skill/outputs/agent/run/stdout.json",
+    "successful_skill_read_commands": [
+      {
+        "command": "/bin/zsh -lc 'cat /Users/zhu/.codex/skills/write/SKILL.md'",
+        "output_characters": 16041,
+        "output_utf8_bytes": 16262,
+        "output_sha256": "4dbc0681354eaace69fd65fa23c9a74dc72a9743561f81cee0f8713b4612c1d8"
+      },
+      {
+        "command": "/bin/zsh -lc 'cat /Users/zhu/.codex/skills/write/references/write-zh-prose.md'",
+        "output_characters": 1199,
+        "output_utf8_bytes": 2745,
+        "output_sha256": "87a65b18440a05d8d6515e10d09202c12d958406f908557aa9dab8f1c0bd8646"
+      }
+    ],
+    "reference_names_mentioned_in_commands": [
+      "references/write-zh-prose.md"
+    ],
+    "host_target_or_memory_read_candidates": [
+      "/bin/zsh -lc 'cat /Users/zhu/.codex/skills/write/SKILL.md'",
+      "/bin/zsh -lc 'cat /Users/zhu/.codex/skills/write/references/write-zh-prose.md'",
+      "/bin/zsh -lc \"bash /Users/zhu/.codex/skills/write/scripts/check-punctuation.sh --lang zh <<'BRIEF'\n🥷 支付回调偶发重复入账 brief\n\n- 已知信息：用户希望修复“支付回调偶发重复入账”。当前未提供仓库、规范或接口资料，也暂时无法补充上下文。问题尚未经过代码、日志或账务记录核验。\n- 目标：查明重复入账的原因，并修复导致重复账务效果的处理逻辑。具体入账单位和去重边界需依据业务规则确定。\n- 待确认：重复入账的判定依据、受影响范围、回调与入账的关联方式、现有处理流程及可用证据。当前无法确定根因、修改位置或技术方案。\n- 建议后续工作：取得资料后，核对回调记录与实际账务结果，追踪相关处理流程，再制定修复及验证方案。历史重复账务是否需要处理，应单独明确范围。\n- 当前交付边界：本 brief 仅整理问题、目标和信息缺口；尚未实施修复或验证，无法判断是否已解决。\nBRIEF\""
+    ],
+    "observed_turn_context": [
+      {
+        "model": "gpt-6.1-sol",
+        "effort": "high",
+        "cwd": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-2707140609",
+        "approval_policy": "never",
+        "sandbox_policy": {
+          "type": "workspace-write",
+          "network_access": false,
+          "exclude_tmpdir_env_var": false,
+          "exclude_slash_tmp": false
+        }
+      }
+    ],
+    "available_skill_names": [
+      "apply-comments",
+      "code-review-helper",
+      "create-slide",
+      "create-theme",
+      "current-slide",
+      "deep-research",
+      "domain-modeling",
+      "find-skills",
+      "gh-review",
+      "goal-prompt",
+      "grilling",
+      "guizang-ppt-skill",
+      "hatch-pet",
+      "html-ppt",
+      "huashu-design",
+      "imagegen",
+      "imagegen-scene-ppt",
+      "lark-doc",
+      "lark-im",
+      "lark-shared",
+      "multica-cli",
+      "openai-docs",
+      "skill-creator",
+      "skill-installer",
+      "skill-upper",
+      "slide-authoring",
+      "systematic-debugging",
+      "todo-manager",
+      "write",
+      "writing-human"
+    ],
+    "catalog_skill_roots": [
+      "/Users/zhu/.agents/skills",
+      "/Users/zhu/.codex/skills",
+      "/Users/zhu/.codex/skills/.system",
+      "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-2707140609/.codex/skills"
+    ],
+    "note": "成功命令及输出长度仅为审计线索；需结合 transcript 确认实际读取。重复读取累计与初始 context 不同；非 OS 隔离证明。"
+  },
+  {
+    "artifact": "reports/iteration-1/no-fabrication/with_skill/outputs/judge/run/stdout.json",
+    "successful_skill_read_commands": [],
+    "reference_names_mentioned_in_commands": [],
+    "host_target_or_memory_read_candidates": [],
+    "observed_turn_context": [
+      {
+        "model": "gpt-6.1-terra",
+        "effort": "high",
+        "cwd": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-2707140609",
+        "approval_policy": "never",
+        "sandbox_policy": {
+          "type": "workspace-write",
+          "network_access": false,
+          "exclude_tmpdir_env_var": false,
+          "exclude_slash_tmp": false
+        }
+      }
+    ],
+    "available_skill_names": [
+      "apply-comments",
+      "code-review-helper",
+      "create-slide",
+      "create-theme",
+      "current-slide",
+      "deep-research",
+      "domain-modeling",
+      "find-skills",
+      "gh-review",
+      "goal-prompt",
+      "grilling",
+      "guizang-ppt-skill",
+      "hatch-pet",
+      "html-ppt",
+      "huashu-design",
+      "imagegen",
+      "imagegen-scene-ppt",
+      "lark-doc",
+      "lark-im",
+      "lark-shared",
+      "multica-cli",
+      "openai-docs",
+      "skill-creator",
+      "skill-installer",
+      "skill-upper",
+      "slide-authoring",
+      "systematic-debugging",
+      "todo-manager",
+      "write",
+      "writing-human"
+    ],
+    "catalog_skill_roots": [
+      "/Users/zhu/.agents/skills",
+      "/Users/zhu/.codex/skills",
+      "/Users/zhu/.codex/skills/.system"
+    ],
+    "note": "成功命令及输出长度仅为审计线索；需结合 transcript 确认实际读取。重复读取累计与初始 context 不同；非 OS 隔离证明。"
+  },
+  {
+    "artifact": "reports/iteration-1/preauthorized-permissions/with_skill/outputs/agent/run/stdout.json",
+    "successful_skill_read_commands": [
+      {
+        "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/SKILL.md'",
+        "output_characters": 12765,
+        "output_utf8_bytes": 12781,
+        "output_sha256": "306fef65eedda2d0d631b00c145e18ce2778d7324ecd865e6a899014dac0f1a1"
+      },
+      {
+        "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/references/long-goal-execution.md .codex/skills/goal-prompt/references/ui-acceptance.md .codex/skills/goal-prompt/references/scenarios.md'",
+        "output_characters": 13156,
+        "output_utf8_bytes": 13160,
+        "output_sha256": "9fa18c33a3bd70e93e99182ae4fd8e1a350b01825e632ea24553ee1e235743ae"
+      },
+      {
+        "command": "/bin/zsh -lc \"rg --files --hidden -g '\"'!.git/**'\"' -g '\"'!node_modules/**'\"' -g '\"'!**/references/**'\"' -g '\"'!**/SKILL.md'\"' .\"",
+        "output_characters": 47,
+        "output_utf8_bytes": 47,
+        "output_sha256": "098782a85b1e2b3fc80fa03fa1d8159a3023c82cf3eb10f67d61190bdc0011f8"
+      }
+    ],
+    "reference_names_mentioned_in_commands": [
+      "references/long-goal-execution.md",
+      "references/scenarios.md",
+      "references/ui-acceptance.md"
+    ],
+    "host_target_or_memory_read_candidates": [],
+    "observed_turn_context": [
+      {
+        "model": "gpt-6.1-sol",
+        "effort": "high",
+        "cwd": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-1108978697",
+        "approval_policy": "never",
+        "sandbox_policy": {
+          "type": "workspace-write",
+          "network_access": false,
+          "exclude_tmpdir_env_var": false,
+          "exclude_slash_tmp": false
+        }
+      }
+    ],
+    "available_skill_names": [
+      "apply-comments",
+      "code-review-helper",
+      "create-slide",
+      "create-theme",
+      "current-slide",
+      "deep-research",
+      "domain-modeling",
+      "find-skills",
+      "gh-review",
+      "goal-prompt",
+      "grilling",
+      "guizang-ppt-skill",
+      "hatch-pet",
+      "html-ppt",
+      "huashu-design",
+      "imagegen",
+      "imagegen-scene-ppt",
+      "lark-doc",
+      "lark-im",
+      "lark-shared",
+      "multica-cli",
+      "openai-docs",
+      "skill-creator",
+      "skill-installer",
+      "skill-upper",
+      "slide-authoring",
+      "systematic-debugging",
+      "todo-manager",
+      "write",
+      "writing-human"
+    ],
+    "catalog_skill_roots": [
+      "/Users/zhu/.agents/skills",
+      "/Users/zhu/.codex/skills",
+      "/Users/zhu/.codex/skills/.system",
+      "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-1108978697/.codex/skills"
+    ],
+    "note": "成功命令及输出长度仅为审计线索；需结合 transcript 确认实际读取。重复读取累计与初始 context 不同；非 OS 隔离证明。"
+  },
+  {
+    "artifact": "reports/iteration-1/repository-rule-conflict/with_skill/outputs/agent/run/stdout.json",
+    "successful_skill_read_commands": [
+      {
+        "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/SKILL.md'",
+        "output_characters": 12765,
+        "output_utf8_bytes": 12781,
+        "output_sha256": "306fef65eedda2d0d631b00c145e18ce2778d7324ecd865e6a899014dac0f1a1"
+      },
+      {
+        "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/references/scenarios.md .codex/skills/goal-prompt/references/long-goal-execution.md'",
+        "output_characters": 11302,
+        "output_utf8_bytes": 11306,
+        "output_sha256": "11701e31467d1b34ab057aa82d5fc045b23d585ebf5ff0152fbbf169d78e88fc"
+      }
+    ],
+    "reference_names_mentioned_in_commands": [
+      "references/long-goal-execution.md",
+      "references/scenarios.md"
+    ],
+    "host_target_or_memory_read_candidates": [],
+    "observed_turn_context": [
+      {
+        "model": "gpt-6.1-sol",
+        "effort": "high",
+        "cwd": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-2889377917",
+        "approval_policy": "never",
+        "sandbox_policy": {
+          "type": "workspace-write",
+          "network_access": false,
+          "exclude_tmpdir_env_var": false,
+          "exclude_slash_tmp": false
+        }
+      }
+    ],
+    "available_skill_names": [
+      "apply-comments",
+      "code-review-helper",
+      "create-slide",
+      "create-theme",
+      "current-slide",
+      "deep-research",
+      "domain-modeling",
+      "find-skills",
+      "gh-review",
+      "goal-prompt",
+      "grilling",
+      "guizang-ppt-skill",
+      "hatch-pet",
+      "html-ppt",
+      "huashu-design",
+      "imagegen",
+      "imagegen-scene-ppt",
+      "lark-doc",
+      "lark-im",
+      "lark-shared",
+      "multica-cli",
+      "openai-docs",
+      "skill-creator",
+      "skill-installer",
+      "skill-upper",
+      "slide-authoring",
+      "systematic-debugging",
+      "todo-manager",
+      "write",
+      "writing-human"
+    ],
+    "catalog_skill_roots": [
+      "/Users/zhu/.agents/skills",
+      "/Users/zhu/.codex/skills",
+      "/Users/zhu/.codex/skills/.system",
+      "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-2889377917/.codex/skills"
+    ],
+    "note": "成功命令及输出长度仅为审计线索；需结合 transcript 确认实际读取。重复读取累计与初始 context 不同；非 OS 隔离证明。"
+  },
+  {
+    "artifact": "reports/iteration-1/repository-rule-conflict/with_skill/outputs/judge/run/stdout.json",
+    "successful_skill_read_commands": [],
+    "reference_names_mentioned_in_commands": [],
+    "host_target_or_memory_read_candidates": [],
+    "observed_turn_context": [
+      {
+        "model": "gpt-6.1-terra",
+        "effort": "high",
+        "cwd": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-2889377917",
+        "approval_policy": "never",
+        "sandbox_policy": {
+          "type": "workspace-write",
+          "network_access": false,
+          "exclude_tmpdir_env_var": false,
+          "exclude_slash_tmp": false
+        }
+      }
+    ],
+    "available_skill_names": [
+      "apply-comments",
+      "code-review-helper",
+      "create-slide",
+      "create-theme",
+      "current-slide",
+      "deep-research",
+      "domain-modeling",
+      "find-skills",
+      "gh-review",
+      "goal-prompt",
+      "grilling",
+      "guizang-ppt-skill",
+      "hatch-pet",
+      "html-ppt",
+      "huashu-design",
+      "imagegen",
+      "imagegen-scene-ppt",
+      "lark-doc",
+      "lark-im",
+      "lark-shared",
+      "multica-cli",
+      "openai-docs",
+      "skill-creator",
+      "skill-installer",
+      "skill-upper",
+      "slide-authoring",
+      "systematic-debugging",
+      "todo-manager",
+      "write",
+      "writing-human"
+    ],
+    "catalog_skill_roots": [
+      "/Users/zhu/.agents/skills",
+      "/Users/zhu/.codex/skills",
+      "/Users/zhu/.codex/skills/.system"
+    ],
+    "note": "成功命令及输出长度仅为审计线索；需结合 transcript 确认实际读取。重复读取累计与初始 context 不同；非 OS 隔离证明。"
+  },
+  {
+    "artifact": "reports/iteration-1/research-goal/with_skill/outputs/agent/run/stdout.json",
+    "successful_skill_read_commands": [],
+    "reference_names_mentioned_in_commands": [],
+    "host_target_or_memory_read_candidates": [],
+    "observed_turn_context": [
+      {
+        "model": "gpt-6.1-sol",
+        "effort": "high",
+        "cwd": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-3493264527",
+        "approval_policy": "never",
+        "sandbox_policy": {
+          "type": "workspace-write",
+          "network_access": false,
+          "exclude_tmpdir_env_var": false,
+          "exclude_slash_tmp": false
+        }
+      }
+    ],
+    "available_skill_names": [
+      "apply-comments",
+      "code-review-helper",
+      "create-slide",
+      "create-theme",
+      "current-slide",
+      "deep-research",
+      "domain-modeling",
+      "find-skills",
+      "gh-review",
+      "goal-prompt",
+      "grilling",
+      "guizang-ppt-skill",
+      "hatch-pet",
+      "html-ppt",
+      "huashu-design",
+      "imagegen",
+      "imagegen-scene-ppt",
+      "lark-doc",
+      "lark-im",
+      "lark-shared",
+      "multica-cli",
+      "openai-docs",
+      "skill-creator",
+      "skill-installer",
+      "skill-upper",
+      "slide-authoring",
+      "systematic-debugging",
+      "todo-manager",
+      "write",
+      "writing-human"
+    ],
+    "catalog_skill_roots": [
+      "/Users/zhu/.agents/skills",
+      "/Users/zhu/.codex/skills",
+      "/Users/zhu/.codex/skills/.system",
+      "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-3493264527/.codex/skills"
+    ],
+    "note": "成功命令及输出长度仅为审计线索；需结合 transcript 确认实际读取。重复读取累计与初始 context 不同；非 OS 隔离证明。"
+  },
+  {
+    "artifact": "reports/iteration-1/research-goal/with_skill/outputs/judge/run/stdout.json",
+    "successful_skill_read_commands": [],
+    "reference_names_mentioned_in_commands": [],
+    "host_target_or_memory_read_candidates": [],
+    "observed_turn_context": [
+      {
+        "model": "gpt-6.1-terra",
+        "effort": "high",
+        "cwd": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-3493264527",
+        "approval_policy": "never",
+        "sandbox_policy": {
+          "type": "workspace-write",
+          "network_access": false,
+          "exclude_tmpdir_env_var": false,
+          "exclude_slash_tmp": false
+        }
+      }
+    ],
+    "available_skill_names": [
+      "apply-comments",
+      "code-review-helper",
+      "create-slide",
+      "create-theme",
+      "current-slide",
+      "deep-research",
+      "domain-modeling",
+      "find-skills",
+      "gh-review",
+      "goal-prompt",
+      "grilling",
+      "guizang-ppt-skill",
+      "hatch-pet",
+      "html-ppt",
+      "huashu-design",
+      "imagegen",
+      "imagegen-scene-ppt",
+      "lark-doc",
+      "lark-im",
+      "lark-shared",
+      "multica-cli",
+      "openai-docs",
+      "skill-creator",
+      "skill-installer",
+      "skill-upper",
+      "slide-authoring",
+      "systematic-debugging",
+      "todo-manager",
+      "write",
+      "writing-human"
+    ],
+    "catalog_skill_roots": [
+      "/Users/zhu/.agents/skills",
+      "/Users/zhu/.codex/skills",
+      "/Users/zhu/.codex/skills/.system"
+    ],
+    "note": "成功命令及输出长度仅为审计线索；需结合 transcript 确认实际读取。重复读取累计与初始 context 不同；非 OS 隔离证明。"
+  }
+]

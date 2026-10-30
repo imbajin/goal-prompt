@@ -9,6 +9,7 @@ skills:
 
 engine:
   name: codex
+  version: "0.164.0"
   # 非 Codex 对照需在独立配置中同时替换执行与 Judge 模型。
   model:
     provider: openai
@@ -49,16 +50,18 @@ cases:
     - skill-up/cases/research-brief-boundary.yaml
     - skill-up/cases/deep-existing-docs.yaml
     - skill-up/cases/delegated-goal.yaml
+    - skill-up/cases/host-recovery-boundary.yaml
   defaults:
     timeout_seconds: 420
     max_turns: 12
+    collect_artifacts: [".goal-task/**/*.md"]
   parallelism: 1
   retry_policy:
     max_retries: 1
     retry_on: [timeout, error]
 
 benchmark:
-  enabled: true
+  enabled: false
 
 report:
   formats: [json, html]

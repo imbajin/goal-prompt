@@ -1,0 +1,1422 @@
+{
+  "completed_case_executions": 20,
+  "after_case_executions": 18,
+  "after_unique_cases": 17,
+  "pending_batches": [],
+  "audit_failures": [],
+  "all_completed_audits_pass": true,
+  "native_full_skill_injection_count": 20,
+  "additional_target_tool_read_count": 17,
+  "note": "实际加载区分Codex原生精确全文注入与额外工具读取；raw_status保留原判分，测量修正后的同标准复判见主agent evidence summary。所有结果为prompt-level，非OS hermetic，未证明目标实际执行/Claude运行/自动恢复。原生CLI token字段和skill-up派生字段分列，不交叉比较或估算费用。",
+  "cases": [
+    {
+      "batch": "controlled-research-v2",
+      "case_id": "research-goal",
+      "raw_status": "PASS",
+      "raw_failed_or_skipped_assertions": [],
+      "checks": {
+        "runner_catalog_only_workspace_target": true,
+        "actual_frozen_target_content_loaded": true,
+        "runner_model_high": true,
+        "judge_present_when_semantic_required": true,
+        "judge_catalog_empty": true,
+        "judge_model_high": true,
+        "no_host_target_or_memory_read_candidates": true
+      },
+      "actual_target_tool_content_read": true,
+      "full_target_content_seen_in_tool_output": true,
+      "native_skill_injection": [
+        {
+          "artifact": "reports/iteration-1/research-goal/with_skill/outputs/agent/run/rollout-2026-10-30T04-57-54-01a18974-7883-7812-8977-ffb60e40119b.jsonl",
+          "role": "user",
+          "injected_text_characters": 13330,
+          "target_path": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-1637391596/.codex/skills/goal-prompt/SKILL.md",
+          "contains_exact_frozen_skill": true,
+          "skill_main_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71"
+        }
+      ],
+      "target_read_commands": [
+        "/bin/zsh -lc 'cat .codex/skills/goal-prompt/SKILL.md'",
+        "/bin/zsh -lc 'nl -ba .codex/skills/goal-prompt/SKILL.md'"
+      ],
+      "full_reference_texts_seen": [
+        "references/scenarios.md"
+      ],
+      "reference_command_outputs": [
+        {
+          "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/references/scenarios.md'",
+          "output_characters": 5247,
+          "output_utf8_bytes": 5251,
+          "output_sha256": "1bc43e441e4ed7d60fb7852f24e82377b8580b13812a3c11d4bf6b54357d235c",
+          "note": "按成功工具命令的实际输出记载；部分读取/重复读取不能按全文件相加。"
+        },
+        {
+          "command": "/bin/zsh -lc \"awk '/\"'^## Research/{show=1} /''^## Audit/{show=0} show {printf \"%d:%s'\"\\\\n\\\", NR, \"'$0}'\"' .codex/skills/goal-prompt/references/scenarios.md\"",
+          "output_characters": 1528,
+          "output_utf8_bytes": 1528,
+          "output_sha256": "67d2d792415f1d5f162c30184d3215e9b4cd0a84c51fccd9fa1d42918712ce11",
+          "note": "按成功工具命令的实际输出记载；部分读取/重复读取不能按全文件相加。"
+        }
+      ],
+      "skill_main_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71",
+      "agent_duration_ms": 47582,
+      "case_wall_ms": 67643,
+      "skill_up_derived_input_tokens": 126600,
+      "output_tokens": 1339,
+      "native_cli_usage": [
+        {
+          "artifact": "reports/iteration-1/research-goal/with_skill/outputs/agent/run/stdout.json",
+          "usage": {
+            "input_tokens": 73096,
+            "cached_input_tokens": 53504,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 1339,
+            "reasoning_output_tokens": 314
+          }
+        }
+      ],
+      "collected_task_documents": [],
+      "audit_artifacts": [
+        "reports/iteration-1/research-goal/with_skill/outputs/agent/run/stdout.json",
+        "reports/iteration-1/research-goal/with_skill/outputs/judge/run/stdout.json"
+      ]
+    },
+    {
+      "batch": "controlled-before-v2",
+      "case_id": "preauthorized-permissions",
+      "raw_status": "PASS",
+      "raw_failed_or_skipped_assertions": [],
+      "checks": {
+        "runner_catalog_only_workspace_target": true,
+        "actual_frozen_target_content_loaded": true,
+        "runner_model_high": true,
+        "judge_present_when_semantic_required": true,
+        "judge_catalog_empty": true,
+        "judge_model_high": true,
+        "no_host_target_or_memory_read_candidates": true
+      },
+      "actual_target_tool_content_read": true,
+      "full_target_content_seen_in_tool_output": true,
+      "native_skill_injection": [
+        {
+          "artifact": "reports/iteration-1/preauthorized-permissions/with_skill/outputs/agent/run/rollout-2026-10-30T04-59-50-01a18976-3fb3-71a2-a499-4be90f9dc961.jsonl",
+          "role": "user",
+          "injected_text_characters": 26381,
+          "target_path": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-1048567621/.codex/skills/goal-prompt/SKILL.md",
+          "contains_exact_frozen_skill": true,
+          "skill_main_sha256": "05338a38ae7e142b0fc08280a1dd055b47c39de750653bb02ae396e3faed47a9"
+        }
+      ],
+      "target_read_commands": [
+        "/bin/zsh -lc 'cat .codex/skills/goal-prompt/SKILL.md'"
+      ],
+      "full_reference_texts_seen": [
+        "references/long-goal-execution.md",
+        "references/parallel-agents.md",
+        "references/ui-acceptance.md"
+      ],
+      "reference_command_outputs": [
+        {
+          "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/references/long-goal-execution.md .codex/skills/goal-prompt/references/ui-acceptance.md .codex/skills/goal-prompt/references/parallel-agents.md'",
+          "output_characters": 13170,
+          "output_utf8_bytes": 13190,
+          "output_sha256": "bbf236ebde258859deb338e6521459f62299619abf620f432e325b25f02d8c78",
+          "note": "按成功工具命令的实际输出记载；部分读取/重复读取不能按全文件相加。"
+        }
+      ],
+      "skill_main_sha256": "05338a38ae7e142b0fc08280a1dd055b47c39de750653bb02ae396e3faed47a9",
+      "agent_duration_ms": 137588,
+      "case_wall_ms": 138332,
+      "skill_up_derived_input_tokens": 220443,
+      "output_tokens": 5039,
+      "native_cli_usage": [
+        {
+          "artifact": "reports/iteration-1/preauthorized-permissions/with_skill/outputs/agent/run/stdout.json",
+          "usage": {
+            "input_tokens": 123931,
+            "cached_input_tokens": 96512,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 5039,
+            "reasoning_output_tokens": 237
+          }
+        }
+      ],
+      "collected_task_documents": [
+        ".goal-task/account-import/state.md"
+      ],
+      "audit_artifacts": [
+        "reports/iteration-1/preauthorized-permissions/with_skill/outputs/agent/run/stdout.json"
+      ]
+    },
+    {
+      "batch": "controlled-before-v2",
+      "case_id": "compaction-checkpoint",
+      "raw_status": "FAIL",
+      "raw_failed_or_skipped_assertions": [
+        {
+          "text": "expect.must_contain",
+          "passed": false,
+          "evidence": "output does not contain \"Progress\""
+        },
+        {
+          "text": "script: skill-up/fixtures/scripts/check-compaction-checkpoint.sh",
+          "passed": false,
+          "skipped": true,
+          "evidence": "not evaluated: expect gate failed"
+        }
+      ],
+      "checks": {
+        "runner_catalog_only_workspace_target": true,
+        "actual_frozen_target_content_loaded": true,
+        "runner_model_high": true,
+        "judge_present_when_semantic_required": true,
+        "judge_catalog_empty": true,
+        "judge_model_high": true,
+        "no_host_target_or_memory_read_candidates": true
+      },
+      "actual_target_tool_content_read": true,
+      "full_target_content_seen_in_tool_output": true,
+      "native_skill_injection": [
+        {
+          "artifact": "reports/iteration-1/compaction-checkpoint/with_skill/outputs/agent/run/rollout-2026-10-30T05-02-10-01a18978-5af3-7923-9d38-1e02e06d5abc.jsonl",
+          "role": "user",
+          "injected_text_characters": 26381,
+          "target_path": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-3777580636/.codex/skills/goal-prompt/SKILL.md",
+          "contains_exact_frozen_skill": true,
+          "skill_main_sha256": "05338a38ae7e142b0fc08280a1dd055b47c39de750653bb02ae396e3faed47a9"
+        }
+      ],
+      "target_read_commands": [
+        "/bin/zsh -lc 'cat .codex/skills/goal-prompt/SKILL.md'"
+      ],
+      "full_reference_texts_seen": [
+        "references/long-goal-execution.md",
+        "references/parallel-agents.md"
+      ],
+      "reference_command_outputs": [
+        {
+          "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/references/long-goal-execution.md'",
+          "output_characters": 9241,
+          "output_utf8_bytes": 9261,
+          "output_sha256": "386ae117c3b38084e87bfac62b8add0b59661e2a78498774ab99a243820447d5",
+          "note": "按成功工具命令的实际输出记载；部分读取/重复读取不能按全文件相加。"
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,22p' .codex/skills/goal-prompt/references/scenarios.md; cat .codex/skills/goal-prompt/references/parallel-agents.md\"",
+          "output_characters": 3157,
+          "output_utf8_bytes": 3157,
+          "output_sha256": "7859612753452bf2c22cc0b3ab817a61d64b6f4774d7fa405dedce45ad02eb74",
+          "note": "按成功工具命令的实际输出记载；部分读取/重复读取不能按全文件相加。"
+        }
+      ],
+      "skill_main_sha256": "05338a38ae7e142b0fc08280a1dd055b47c39de750653bb02ae396e3faed47a9",
+      "agent_duration_ms": 144788,
+      "case_wall_ms": 144891,
+      "skill_up_derived_input_tokens": 219580,
+      "output_tokens": 5255,
+      "native_cli_usage": [
+        {
+          "artifact": "reports/iteration-1/compaction-checkpoint/with_skill/outputs/agent/run/stdout.json",
+          "usage": {
+            "input_tokens": 123708,
+            "cached_input_tokens": 95872,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 5255,
+            "reasoning_output_tokens": 384
+          }
+        }
+      ],
+      "collected_task_documents": [
+        ".goal-task/reporting/state.md"
+      ],
+      "audit_artifacts": [
+        "reports/iteration-1/compaction-checkpoint/with_skill/outputs/agent/run/stdout.json"
+      ]
+    },
+    {
+      "batch": "controlled-after-rest",
+      "case_id": "no-fabrication",
+      "raw_status": "PASS",
+      "raw_failed_or_skipped_assertions": [],
+      "checks": {
+        "runner_catalog_only_workspace_target": true,
+        "actual_frozen_target_content_loaded": true,
+        "runner_model_high": true,
+        "judge_present_when_semantic_required": true,
+        "judge_catalog_empty": true,
+        "judge_model_high": true,
+        "no_host_target_or_memory_read_candidates": true
+      },
+      "actual_target_tool_content_read": true,
+      "full_target_content_seen_in_tool_output": true,
+      "native_skill_injection": [
+        {
+          "artifact": "reports/iteration-1/no-fabrication/with_skill/outputs/agent/run/rollout-2026-10-30T05-05-34-01a1897b-769c-7961-b2a8-c0cb6579dce5.jsonl",
+          "role": "user",
+          "injected_text_characters": 13330,
+          "target_path": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-1684719053/.codex/skills/goal-prompt/SKILL.md",
+          "contains_exact_frozen_skill": true,
+          "skill_main_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71"
+        }
+      ],
+      "target_read_commands": [
+        "/bin/zsh -lc 'cat .codex/skills/goal-prompt/SKILL.md'"
+      ],
+      "full_reference_texts_seen": [
+        "references/long-goal-execution.md"
+      ],
+      "reference_command_outputs": [
+        {
+          "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/references/long-goal-execution.md'",
+          "output_characters": 6055,
+          "output_utf8_bytes": 6055,
+          "output_sha256": "9fdeea7aeea2f55be230c9a8828cac50f3ae0d2a518fe1392c29ac6f48a72c65",
+          "note": "按成功工具命令的实际输出记载；部分读取/重复读取不能按全文件相加。"
+        },
+        {
+          "command": "/bin/zsh -lc \"rg -n '\"'^#{1,4} '\"' .codex/skills/goal-prompt/references/scenarios.md\"",
+          "output_characters": 126,
+          "output_utf8_bytes": 126,
+          "output_sha256": "ac7fd438c184e6bc9308095b14092cb0e98706c397fb104c20626ed56a8deca6",
+          "note": "按成功工具命令的实际输出记载；部分读取/重复读取不能按全文件相加。"
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '96,150p' .codex/skills/goal-prompt/references/scenarios.md\"",
+          "output_characters": 359,
+          "output_utf8_bytes": 359,
+          "output_sha256": "fc7178787068b5875d7159b9d79ee801a5bdcfcc3efddc270e91ba32a4f574d0",
+          "note": "按成功工具命令的实际输出记载；部分读取/重复读取不能按全文件相加。"
+        }
+      ],
+      "skill_main_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71",
+      "agent_duration_ms": 60007,
+      "case_wall_ms": 78600,
+      "skill_up_derived_input_tokens": 120743,
+      "output_tokens": 1363,
+      "native_cli_usage": [
+        {
+          "artifact": "reports/iteration-1/no-fabrication/with_skill/outputs/agent/run/stdout.json",
+          "usage": {
+            "input_tokens": 68135,
+            "cached_input_tokens": 52608,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 1363,
+            "reasoning_output_tokens": 492
+          }
+        }
+      ],
+      "collected_task_documents": [],
+      "audit_artifacts": [
+        "reports/iteration-1/no-fabrication/with_skill/outputs/agent/run/stdout.json",
+        "reports/iteration-1/no-fabrication/with_skill/outputs/judge/run/stdout.json"
+      ]
+    },
+    {
+      "batch": "controlled-after-rest",
+      "case_id": "repository-rule-conflict",
+      "raw_status": "PASS",
+      "raw_failed_or_skipped_assertions": [],
+      "checks": {
+        "runner_catalog_only_workspace_target": true,
+        "actual_frozen_target_content_loaded": true,
+        "runner_model_high": true,
+        "judge_present_when_semantic_required": true,
+        "judge_catalog_empty": true,
+        "judge_model_high": true,
+        "no_host_target_or_memory_read_candidates": true
+      },
+      "actual_target_tool_content_read": true,
+      "full_target_content_seen_in_tool_output": true,
+      "native_skill_injection": [
+        {
+          "artifact": "reports/iteration-1/repository-rule-conflict/with_skill/outputs/agent/run/rollout-2026-10-30T05-06-50-01a1897c-a75a-7c40-a63f-b99ad7194035.jsonl",
+          "role": "user",
+          "injected_text_characters": 13329,
+          "target_path": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-150570506/.codex/skills/goal-prompt/SKILL.md",
+          "contains_exact_frozen_skill": true,
+          "skill_main_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71"
+        }
+      ],
+      "target_read_commands": [
+        "/bin/zsh -lc 'cat .codex/skills/goal-prompt/SKILL.md'"
+      ],
+      "full_reference_texts_seen": [
+        "references/long-goal-execution.md",
+        "references/scenarios.md"
+      ],
+      "reference_command_outputs": [
+        {
+          "command": "/bin/zsh -lc \"cat package.json; rg -n --hidden -g '\"'!.git'\"' -g '\"'!node_modules'\"' 'authenticate|Bearer|typecheck|dependenc|认证|export' .; cat .codex/skills/goal-prompt/references/scenarios.md; cat .codex/skills/goal-prompt/references/long-goal-execution.md\"",
+          "output_characters": 13577,
+          "output_utf8_bytes": 13581,
+          "output_sha256": "f18363b99d1e0210980136681870d22219a7c3aabaf235b01edf18d551ed30bf",
+          "note": "按成功工具命令的实际输出记载；部分读取/重复读取不能按全文件相加。"
+        }
+      ],
+      "skill_main_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71",
+      "agent_duration_ms": 126998,
+      "case_wall_ms": 140842,
+      "skill_up_derived_input_tokens": 175586,
+      "output_tokens": 4580,
+      "native_cli_usage": [
+        {
+          "artifact": "reports/iteration-1/repository-rule-conflict/with_skill/outputs/agent/run/stdout.json",
+          "usage": {
+            "input_tokens": 96866,
+            "cached_input_tokens": 78720,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 4580,
+            "reasoning_output_tokens": 767
+          }
+        }
+      ],
+      "collected_task_documents": [
+        ".goal-task/bearer-auth/state.md"
+      ],
+      "audit_artifacts": [
+        "reports/iteration-1/repository-rule-conflict/with_skill/outputs/agent/run/stdout.json",
+        "reports/iteration-1/repository-rule-conflict/with_skill/outputs/judge/run/stdout.json"
+      ]
+    },
+    {
+      "batch": "controlled-after-rest",
+      "case_id": "existing-requirement-design-todo",
+      "raw_status": "PASS",
+      "raw_failed_or_skipped_assertions": [],
+      "checks": {
+        "runner_catalog_only_workspace_target": true,
+        "actual_frozen_target_content_loaded": true,
+        "runner_model_high": true,
+        "judge_present_when_semantic_required": true,
+        "judge_catalog_empty": true,
+        "judge_model_high": true,
+        "no_host_target_or_memory_read_candidates": true
+      },
+      "actual_target_tool_content_read": true,
+      "full_target_content_seen_in_tool_output": true,
+      "native_skill_injection": [
+        {
+          "artifact": "reports/iteration-1/existing-requirement-design-todo/with_skill/outputs/agent/run/rollout-2026-10-30T05-09-11-01a1897e-cd9f-7442-bf26-b7225f7c22c5.jsonl",
+          "role": "user",
+          "injected_text_characters": 13330,
+          "target_path": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-2731566309/.codex/skills/goal-prompt/SKILL.md",
+          "contains_exact_frozen_skill": true,
+          "skill_main_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71"
+        }
+      ],
+      "target_read_commands": [
+        "/bin/zsh -lc 'cat .codex/skills/goal-prompt/SKILL.md'"
+      ],
+      "full_reference_texts_seen": [
+        "references/long-goal-execution.md",
+        "references/parallel-agents.md",
+        "references/scenarios.md"
+      ],
+      "reference_command_outputs": [
+        {
+          "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/references/scenarios.md .codex/skills/goal-prompt/references/long-goal-execution.md'",
+          "output_characters": 11302,
+          "output_utf8_bytes": 11306,
+          "output_sha256": "11701e31467d1b34ab057aa82d5fc045b23d585ebf5ff0152fbbf169d78e88fc",
+          "note": "按成功工具命令的实际输出记载；部分读取/重复读取不能按全文件相加。"
+        },
+        {
+          "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/references/parallel-agents.md'",
+          "output_characters": 2075,
+          "output_utf8_bytes": 2075,
+          "output_sha256": "1fa0663ed4057a90d573559fa011c03d9b184a3bb6602d15cdeba6b7d3ea7e44",
+          "note": "按成功工具命令的实际输出记载；部分读取/重复读取不能按全文件相加。"
+        }
+      ],
+      "skill_main_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71",
+      "agent_duration_ms": 152561,
+      "case_wall_ms": 173513,
+      "skill_up_derived_input_tokens": 230935,
+      "output_tokens": 5593,
+      "native_cli_usage": [
+        {
+          "artifact": "reports/iteration-1/existing-requirement-design-todo/with_skill/outputs/agent/run/stdout.json",
+          "usage": {
+            "input_tokens": 125975,
+            "cached_input_tokens": 104960,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 5593,
+            "reasoning_output_tokens": 1255
+          }
+        }
+      ],
+      "collected_task_documents": [
+        ".goal-task/import-migration/state.md"
+      ],
+      "audit_artifacts": [
+        "reports/iteration-1/existing-requirement-design-todo/with_skill/outputs/agent/run/stdout.json",
+        "reports/iteration-1/existing-requirement-design-todo/with_skill/outputs/judge/run/stdout.json"
+      ]
+    },
+    {
+      "batch": "controlled-after-rest",
+      "case_id": "preauthorized-permissions",
+      "raw_status": "FAIL",
+      "raw_failed_or_skipped_assertions": [
+        {
+          "text": "script: /Users/zhu/.codex/worktrees/3443/goal-prompt/.eval-work/controlled-after-rest/snapshot/skill-up/fixtures/scripts/check-preauthorized-permissions.sh",
+          "passed": false,
+          "evidence": "script exited with code 1"
+        }
+      ],
+      "checks": {
+        "runner_catalog_only_workspace_target": true,
+        "actual_frozen_target_content_loaded": true,
+        "runner_model_high": true,
+        "judge_present_when_semantic_required": true,
+        "judge_catalog_empty": true,
+        "judge_model_high": true,
+        "no_host_target_or_memory_read_candidates": true
+      },
+      "actual_target_tool_content_read": true,
+      "full_target_content_seen_in_tool_output": true,
+      "native_skill_injection": [
+        {
+          "artifact": "reports/iteration-1/preauthorized-permissions/with_skill/outputs/agent/run/rollout-2026-10-30T05-12-04-01a18981-722c-7930-89a9-947121d78e70.jsonl",
+          "role": "user",
+          "injected_text_characters": 13330,
+          "target_path": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-3110988423/.codex/skills/goal-prompt/SKILL.md",
+          "contains_exact_frozen_skill": true,
+          "skill_main_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71"
+        }
+      ],
+      "target_read_commands": [
+        "/bin/zsh -lc 'cat .codex/skills/goal-prompt/SKILL.md'"
+      ],
+      "full_reference_texts_seen": [
+        "references/long-goal-execution.md",
+        "references/parallel-agents.md",
+        "references/ui-acceptance.md"
+      ],
+      "reference_command_outputs": [
+        {
+          "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/references/long-goal-execution.md .codex/skills/goal-prompt/references/ui-acceptance.md .codex/skills/goal-prompt/references/parallel-agents.md'",
+          "output_characters": 9984,
+          "output_utf8_bytes": 9984,
+          "output_sha256": "481c3af16ea4d1ba953f05489d1824950a30064296f864175b35cfb88add3b16",
+          "note": "按成功工具命令的实际输出记载；部分读取/重复读取不能按全文件相加。"
+        },
+        {
+          "command": "/bin/zsh -lc \"rg -n '\"'^#|''^##|''^###'\"' .codex/skills/goal-prompt/references/scenarios.md\"",
+          "output_characters": 126,
+          "output_utf8_bytes": 126,
+          "output_sha256": "ac7fd438c184e6bc9308095b14092cb0e98706c397fb104c20626ed56a8deca6",
+          "note": "按成功工具命令的实际输出记载；部分读取/重复读取不能按全文件相加。"
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '22,32p' .codex/skills/goal-prompt/references/scenarios.md\"",
+          "output_characters": 457,
+          "output_utf8_bytes": 457,
+          "output_sha256": "733dd666c447811d2c09afc86b5fa537f066606b7fa53ce6141c54f8b19087d4",
+          "note": "按成功工具命令的实际输出记载；部分读取/重复读取不能按全文件相加。"
+        },
+        {
+          "command": "/bin/zsh -lc \"python3 - <<'PY'\nfrom pathlib import Path\np = Path('.goal-task/account-import/state.md')\ns = p.read_text()\nassert s.strip()\nfor phrase in ('Initialization TODO', '3 名独立只读 reviewer', '最多尝试 3 次', 'overall blocked', '下一步', '未开始业务实现'):\n    assert phrase in s, phrase\nprint(f'状态文件已核实：{p}（{len(s)} 字符）')\nprint('活动真相：仅此状态文件；未创建其他任务材料。')\nfor ref in ('.codex/skills/goal-prompt/SKILL.md', '.codex/skills/goal-prompt/references/scenarios.md', '.codex/skills/goal-prompt/references/long-goal-execution.md', '.codex/skills/goal-prompt/references/ui-acceptance.md', '.codex/skills/goal-prompt/references/parallel-agents.md'):\n    assert Path(ref).is_file(), ref\nprint('已引用的技能和指导路径均存在；未运行业务测试。')\nPY\"",
+          "output_characters": 99,
+          "output_utf8_bytes": 213,
+          "output_sha256": "2563853f9684d42325d9f2b55f247a35888a53c4d0e91df64a50412869f2a8d8",
+          "note": "按成功工具命令的实际输出记载；部分读取/重复读取不能按全文件相加。"
+        }
+      ],
+      "skill_main_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71",
+      "agent_duration_ms": 152587,
+      "case_wall_ms": 153282,
+      "skill_up_derived_input_tokens": 222886,
+      "output_tokens": 5713,
+      "native_cli_usage": [
+        {
+          "artifact": "reports/iteration-1/preauthorized-permissions/with_skill/outputs/agent/run/stdout.json",
+          "usage": {
+            "input_tokens": 122022,
+            "cached_input_tokens": 100864,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 5713,
+            "reasoning_output_tokens": 726
+          }
+        }
+      ],
+      "collected_task_documents": [
+        ".goal-task/account-import/state.md"
+      ],
+      "audit_artifacts": [
+        "reports/iteration-1/preauthorized-permissions/with_skill/outputs/agent/run/stdout.json"
+      ]
+    },
+    {
+      "batch": "controlled-after-rest",
+      "case_id": "confirmation-brief",
+      "raw_status": "PASS",
+      "raw_failed_or_skipped_assertions": [],
+      "checks": {
+        "runner_catalog_only_workspace_target": true,
+        "actual_frozen_target_content_loaded": true,
+        "runner_model_high": true,
+        "judge_present_when_semantic_required": true,
+        "judge_catalog_empty": true,
+        "judge_model_high": true,
+        "no_host_target_or_memory_read_candidates": true
+      },
+      "actual_target_tool_content_read": true,
+      "full_target_content_seen_in_tool_output": true,
+      "native_skill_injection": [
+        {
+          "artifact": "reports/iteration-1/confirmation-brief/with_skill/outputs/agent/run/rollout-2026-10-30T05-14-40-01a18983-c93e-7263-ac25-b5fce420c4a7.jsonl",
+          "role": "user",
+          "injected_text_characters": 13330,
+          "target_path": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-3029089210/.codex/skills/goal-prompt/SKILL.md",
+          "contains_exact_frozen_skill": true,
+          "skill_main_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71"
+        }
+      ],
+      "target_read_commands": [
+        "/bin/zsh -lc 'cat .codex/skills/goal-prompt/SKILL.md'"
+      ],
+      "full_reference_texts_seen": [
+        "references/long-goal-execution.md",
+        "references/scenarios.md"
+      ],
+      "reference_command_outputs": [
+        {
+          "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/references/scenarios.md; cat .codex/skills/goal-prompt/references/long-goal-execution.md'",
+          "output_characters": 11302,
+          "output_utf8_bytes": 11306,
+          "output_sha256": "11701e31467d1b34ab057aa82d5fc045b23d585ebf5ff0152fbbf169d78e88fc",
+          "note": "按成功工具命令的实际输出记载；部分读取/重复读取不能按全文件相加。"
+        }
+      ],
+      "skill_main_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71",
+      "agent_duration_ms": 53563,
+      "case_wall_ms": 53971,
+      "skill_up_derived_input_tokens": 74107,
+      "output_tokens": 1526,
+      "native_cli_usage": [
+        {
+          "artifact": "reports/iteration-1/confirmation-brief/with_skill/outputs/agent/run/stdout.json",
+          "usage": {
+            "input_tokens": 51067,
+            "cached_input_tokens": 23040,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 1526,
+            "reasoning_output_tokens": 336
+          }
+        }
+      ],
+      "collected_task_documents": [],
+      "audit_artifacts": [
+        "reports/iteration-1/confirmation-brief/with_skill/outputs/agent/run/stdout.json"
+      ]
+    },
+    {
+      "batch": "controlled-after-boundaries",
+      "case_id": "multiturn-confirmation",
+      "raw_status": "PASS",
+      "raw_failed_or_skipped_assertions": [],
+      "checks": {
+        "runner_catalog_only_workspace_target": true,
+        "actual_frozen_target_content_loaded": true,
+        "runner_model_high": true,
+        "judge_present_when_semantic_required": true,
+        "judge_catalog_empty": true,
+        "judge_model_high": true,
+        "no_host_target_or_memory_read_candidates": true
+      },
+      "actual_target_tool_content_read": false,
+      "full_target_content_seen_in_tool_output": false,
+      "native_skill_injection": [
+        {
+          "artifact": "reports/iteration-1/multiturn-confirmation/with_skill/outputs/agent/run/rollout-2026-10-30T05-16-30-01a18985-7604-7892-aa0c-3518da660c44.jsonl",
+          "role": "user",
+          "injected_text_characters": 13330,
+          "target_path": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-3104706368/.codex/skills/goal-prompt/SKILL.md",
+          "contains_exact_frozen_skill": true,
+          "skill_main_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71"
+        }
+      ],
+      "target_read_commands": [],
+      "full_reference_texts_seen": [],
+      "reference_command_outputs": [],
+      "skill_main_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71",
+      "agent_duration_ms": 137947,
+      "case_wall_ms": 157507,
+      "skill_up_derived_input_tokens": 425215,
+      "output_tokens": 5881,
+      "native_cli_usage": [
+        {
+          "artifact": "reports/iteration-1/multiturn-confirmation/with_skill/outputs/agent/run/stdout.json",
+          "usage": {
+            "input_tokens": 155405,
+            "cached_input_tokens": 142848,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 4702,
+            "reasoning_output_tokens": 433
+          }
+        }
+      ],
+      "collected_task_documents": [
+        ".goal-task/cache-adapter/state.md"
+      ],
+      "audit_artifacts": [
+        "reports/iteration-1/multiturn-confirmation/with_skill/outputs/agent/run/stdout.json",
+        "reports/iteration-1/multiturn-confirmation/with_skill/outputs/judge/run/stdout.json"
+      ]
+    },
+    {
+      "batch": "controlled-after-boundaries",
+      "case_id": "multiturn-correction",
+      "raw_status": "PASS",
+      "raw_failed_or_skipped_assertions": [],
+      "checks": {
+        "runner_catalog_only_workspace_target": true,
+        "actual_frozen_target_content_loaded": true,
+        "runner_model_high": true,
+        "judge_present_when_semantic_required": true,
+        "judge_catalog_empty": true,
+        "judge_model_high": true,
+        "no_host_target_or_memory_read_candidates": true
+      },
+      "actual_target_tool_content_read": false,
+      "full_target_content_seen_in_tool_output": false,
+      "native_skill_injection": [
+        {
+          "artifact": "reports/iteration-1/multiturn-correction/with_skill/outputs/agent/run/rollout-2026-10-30T05-19-04-01a18987-daa8-7470-9107-cd55d3b7a571.jsonl",
+          "role": "user",
+          "injected_text_characters": 13330,
+          "target_path": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-2005028654/.codex/skills/goal-prompt/SKILL.md",
+          "contains_exact_frozen_skill": true,
+          "skill_main_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71"
+        }
+      ],
+      "target_read_commands": [],
+      "full_reference_texts_seen": [],
+      "reference_command_outputs": [],
+      "skill_main_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71",
+      "agent_duration_ms": 144080,
+      "case_wall_ms": 162255,
+      "skill_up_derived_input_tokens": 308038,
+      "output_tokens": 6590,
+      "native_cli_usage": [
+        {
+          "artifact": "reports/iteration-1/multiturn-correction/with_skill/outputs/agent/run/stdout.json",
+          "usage": {
+            "input_tokens": 141218,
+            "cached_input_tokens": 99072,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 5297,
+            "reasoning_output_tokens": 1065
+          }
+        }
+      ],
+      "collected_task_documents": [
+        ".goal-task/cache-api-migration/state.md"
+      ],
+      "audit_artifacts": [
+        "reports/iteration-1/multiturn-correction/with_skill/outputs/agent/run/stdout.json",
+        "reports/iteration-1/multiturn-correction/with_skill/outputs/judge/run/stdout.json"
+      ]
+    },
+    {
+      "batch": "controlled-after-boundaries",
+      "case_id": "deep-compression-gates",
+      "raw_status": "PASS",
+      "raw_failed_or_skipped_assertions": [],
+      "checks": {
+        "runner_catalog_only_workspace_target": true,
+        "actual_frozen_target_content_loaded": true,
+        "runner_model_high": true,
+        "judge_present_when_semantic_required": true,
+        "judge_catalog_empty": true,
+        "judge_model_high": true,
+        "no_host_target_or_memory_read_candidates": true
+      },
+      "actual_target_tool_content_read": true,
+      "full_target_content_seen_in_tool_output": true,
+      "native_skill_injection": [
+        {
+          "artifact": "reports/iteration-1/deep-compression-gates/with_skill/outputs/agent/run/rollout-2026-10-30T05-21-46-01a1898a-5559-7761-85ea-2f9996da5610.jsonl",
+          "role": "user",
+          "injected_text_characters": 13329,
+          "target_path": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-994923602/.codex/skills/goal-prompt/SKILL.md",
+          "contains_exact_frozen_skill": true,
+          "skill_main_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71"
+        }
+      ],
+      "target_read_commands": [
+        "/bin/zsh -lc 'cat .codex/skills/goal-prompt/SKILL.md'"
+      ],
+      "full_reference_texts_seen": [
+        "references/long-goal-execution.md",
+        "references/parallel-agents.md",
+        "references/scenarios.md"
+      ],
+      "reference_command_outputs": [
+        {
+          "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/references/long-goal-execution.md; cat .codex/skills/goal-prompt/references/parallel-agents.md; cat .codex/skills/goal-prompt/references/scenarios.md'",
+          "output_characters": 13377,
+          "output_utf8_bytes": 13381,
+          "output_sha256": "27335d33608e8d41da06ac9f83ee71564bd1ba7c008d6bac4cc33986109f03da",
+          "note": "按成功工具命令的实际输出记载；部分读取/重复读取不能按全文件相加。"
+        }
+      ],
+      "skill_main_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71",
+      "agent_duration_ms": 100087,
+      "case_wall_ms": 115622,
+      "skill_up_derived_input_tokens": 178826,
+      "output_tokens": 3966,
+      "native_cli_usage": [
+        {
+          "artifact": "reports/iteration-1/deep-compression-gates/with_skill/outputs/agent/run/stdout.json",
+          "usage": {
+            "input_tokens": 98186,
+            "cached_input_tokens": 80640,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 3966,
+            "reasoning_output_tokens": 209
+          }
+        }
+      ],
+      "collected_task_documents": [
+        ".goal-task/event-migration/state.md"
+      ],
+      "audit_artifacts": [
+        "reports/iteration-1/deep-compression-gates/with_skill/outputs/agent/run/stdout.json",
+        "reports/iteration-1/deep-compression-gates/with_skill/outputs/judge/run/stdout.json"
+      ]
+    },
+    {
+      "batch": "controlled-after-boundaries",
+      "case_id": "goal-char-limit",
+      "raw_status": "FAIL",
+      "raw_failed_or_skipped_assertions": [
+        {
+          "text": "script: /Users/zhu/.codex/worktrees/3443/goal-prompt/.eval-work/controlled-after-boundaries/snapshot/skill-up/fixtures/scripts/check-goal-char-limit-case.py",
+          "passed": false,
+          "evidence": "script exited with code 1 [stderr: goal body is missing: twelve sub-gates]"
+        }
+      ],
+      "checks": {
+        "runner_catalog_only_workspace_target": true,
+        "actual_frozen_target_content_loaded": true,
+        "runner_model_high": true,
+        "judge_present_when_semantic_required": true,
+        "judge_catalog_empty": true,
+        "judge_model_high": true,
+        "no_host_target_or_memory_read_candidates": true
+      },
+      "actual_target_tool_content_read": true,
+      "full_target_content_seen_in_tool_output": true,
+      "native_skill_injection": [
+        {
+          "artifact": "reports/iteration-1/goal-char-limit/with_skill/outputs/agent/run/rollout-2026-10-30T05-23-42-01a1898c-1827-7242-a792-6f1c7238e6fb.jsonl",
+          "role": "user",
+          "injected_text_characters": 13329,
+          "target_path": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-912393383/.codex/skills/goal-prompt/SKILL.md",
+          "contains_exact_frozen_skill": true,
+          "skill_main_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71"
+        }
+      ],
+      "target_read_commands": [
+        "/bin/zsh -lc 'cat .codex/skills/goal-prompt/SKILL.md'"
+      ],
+      "full_reference_texts_seen": [
+        "references/long-goal-execution.md",
+        "references/parallel-agents.md",
+        "references/scenarios.md"
+      ],
+      "reference_command_outputs": [
+        {
+          "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/references/long-goal-execution.md'",
+          "output_characters": 6055,
+          "output_utf8_bytes": 6055,
+          "output_sha256": "9fdeea7aeea2f55be230c9a8828cac50f3ae0d2a518fe1392c29ac6f48a72c65",
+          "note": "按成功工具命令的实际输出记载；部分读取/重复读取不能按全文件相加。"
+        },
+        {
+          "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/references/scenarios.md && cat .codex/skills/goal-prompt/references/parallel-agents.md'",
+          "output_characters": 7322,
+          "output_utf8_bytes": 7326,
+          "output_sha256": "114a04e1fac8e37ca0973e02209e58beb614f50da0124b79c5491b04ab02af3a",
+          "note": "按成功工具命令的实际输出记载；部分读取/重复读取不能按全文件相加。"
+        }
+      ],
+      "skill_main_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71",
+      "agent_duration_ms": 153341,
+      "case_wall_ms": 153757,
+      "skill_up_derived_input_tokens": 223607,
+      "output_tokens": 6482,
+      "native_cli_usage": [
+        {
+          "artifact": "reports/iteration-1/goal-char-limit/with_skill/outputs/agent/run/stdout.json",
+          "usage": {
+            "input_tokens": 122487,
+            "cached_input_tokens": 101120,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 6482,
+            "reasoning_output_tokens": 516
+          }
+        }
+      ],
+      "collected_task_documents": [
+        ".goal-task/event-bus-migration/state.md"
+      ],
+      "audit_artifacts": [
+        "reports/iteration-1/goal-char-limit/with_skill/outputs/agent/run/stdout.json"
+      ]
+    },
+    {
+      "batch": "controlled-after-boundaries",
+      "case_id": "compaction-checkpoint",
+      "raw_status": "PASS",
+      "raw_failed_or_skipped_assertions": [],
+      "checks": {
+        "runner_catalog_only_workspace_target": true,
+        "actual_frozen_target_content_loaded": true,
+        "runner_model_high": true,
+        "judge_present_when_semantic_required": true,
+        "judge_catalog_empty": true,
+        "judge_model_high": true,
+        "no_host_target_or_memory_read_candidates": true
+      },
+      "actual_target_tool_content_read": true,
+      "full_target_content_seen_in_tool_output": true,
+      "native_skill_injection": [
+        {
+          "artifact": "reports/iteration-1/compaction-checkpoint/with_skill/outputs/agent/run/rollout-2026-10-30T05-26-16-01a1898e-7184-7c33-b76c-43e0f48e6bc6.jsonl",
+          "role": "user",
+          "injected_text_characters": 13330,
+          "target_path": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-2081499864/.codex/skills/goal-prompt/SKILL.md",
+          "contains_exact_frozen_skill": true,
+          "skill_main_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71"
+        }
+      ],
+      "target_read_commands": [
+        "/bin/zsh -lc 'cat .codex/skills/goal-prompt/SKILL.md'"
+      ],
+      "full_reference_texts_seen": [
+        "references/long-goal-execution.md",
+        "references/scenarios.md"
+      ],
+      "reference_command_outputs": [
+        {
+          "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/references/long-goal-execution.md'",
+          "output_characters": 6055,
+          "output_utf8_bytes": 6055,
+          "output_sha256": "9fdeea7aeea2f55be230c9a8828cac50f3ae0d2a518fe1392c29ac6f48a72c65",
+          "note": "按成功工具命令的实际输出记载；部分读取/重复读取不能按全文件相加。"
+        },
+        {
+          "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/references/scenarios.md'",
+          "output_characters": 5247,
+          "output_utf8_bytes": 5251,
+          "output_sha256": "1bc43e441e4ed7d60fb7852f24e82377b8580b13812a3c11d4bf6b54357d235c",
+          "note": "按成功工具命令的实际输出记载；部分读取/重复读取不能按全文件相加。"
+        },
+        {
+          "command": "/bin/zsh -lc \"python3 - <<'PY'\nfrom pathlib import Path\np = Path('.goal-task/reporting/state.md')\ns = p.read_text()\nrequired = ['payments → orders → reports', 'Initialization TODO', 'This loop:', 'Remaining:', 'Next:', 'compaction', '配额等待', '交接', '3 名独立', '最新 commit', '未提交变更', '验证证据', '本地里程碑 commit']\nmissing = [x for x in required if x not in s]\nassert not missing, missing\nassert s.count('\"'```'\"') % 2 == 0\nassert all((Path('.codex/skills/goal-prompt') / x).is_file() for x in ['SKILL.md', 'references/long-goal-execution.md', 'references/scenarios.md'])\nprint(f'Verified: {p}; {len(s.splitlines())} lines; required state, report, review, commit and recovery fields present.')\nprint('Initialization only; no migration, business validation or Git commit executed.')\nPY\"",
+          "output_characters": 198,
+          "output_utf8_bytes": 198,
+          "output_sha256": "bec06ad13718540a8554eb7956c3b08646a7c34b583ee2f1f0065d6aad300e0f",
+          "note": "按成功工具命令的实际输出记载；部分读取/重复读取不能按全文件相加。"
+        }
+      ],
+      "skill_main_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71",
+      "agent_duration_ms": 140732,
+      "case_wall_ms": 141512,
+      "skill_up_derived_input_tokens": 226923,
+      "output_tokens": 5671,
+      "native_cli_usage": [
+        {
+          "artifact": "reports/iteration-1/compaction-checkpoint/with_skill/outputs/agent/run/stdout.json",
+          "usage": {
+            "input_tokens": 119275,
+            "cached_input_tokens": 107648,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 5671,
+            "reasoning_output_tokens": 623
+          }
+        }
+      ],
+      "collected_task_documents": [
+        ".goal-task/reporting/state.md"
+      ],
+      "audit_artifacts": [
+        "reports/iteration-1/compaction-checkpoint/with_skill/outputs/agent/run/stdout.json"
+      ]
+    },
+    {
+      "batch": "controlled-after-boundaries",
+      "case_id": "native-blocked-scope",
+      "raw_status": "PASS",
+      "raw_failed_or_skipped_assertions": [],
+      "checks": {
+        "runner_catalog_only_workspace_target": true,
+        "actual_frozen_target_content_loaded": true,
+        "runner_model_high": true,
+        "judge_present_when_semantic_required": true,
+        "judge_catalog_empty": true,
+        "judge_model_high": true,
+        "no_host_target_or_memory_read_candidates": true
+      },
+      "actual_target_tool_content_read": true,
+      "full_target_content_seen_in_tool_output": true,
+      "native_skill_injection": [
+        {
+          "artifact": "reports/iteration-1/native-blocked-scope/with_skill/outputs/agent/run/rollout-2026-10-30T05-28-40-01a18990-9a3b-7f53-834a-6a23c4b59059.jsonl",
+          "role": "user",
+          "injected_text_characters": 13330,
+          "target_path": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-1852964708/.codex/skills/goal-prompt/SKILL.md",
+          "contains_exact_frozen_skill": true,
+          "skill_main_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71"
+        }
+      ],
+      "target_read_commands": [
+        "/bin/zsh -lc 'cat .codex/skills/goal-prompt/SKILL.md'"
+      ],
+      "full_reference_texts_seen": [
+        "references/long-goal-execution.md",
+        "references/parallel-agents.md",
+        "references/ui-acceptance.md"
+      ],
+      "reference_command_outputs": [
+        {
+          "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/references/long-goal-execution.md .codex/skills/goal-prompt/references/parallel-agents.md .codex/skills/goal-prompt/references/ui-acceptance.md'",
+          "output_characters": 9984,
+          "output_utf8_bytes": 9984,
+          "output_sha256": "a486041a693fbc3182f24f215d0176ab1da0d1fd3dd97ed6bfe5b8d61844cc10",
+          "note": "按成功工具命令的实际输出记载；部分读取/重复读取不能按全文件相加。"
+        }
+      ],
+      "skill_main_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71",
+      "agent_duration_ms": 132283,
+      "case_wall_ms": 132794,
+      "skill_up_derived_input_tokens": 162942,
+      "output_tokens": 4923,
+      "native_cli_usage": [
+        {
+          "artifact": "reports/iteration-1/native-blocked-scope/with_skill/outputs/agent/run/stdout.json",
+          "usage": {
+            "input_tokens": 97918,
+            "cached_input_tokens": 65024,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 4923,
+            "reasoning_output_tokens": 307
+          }
+        }
+      ],
+      "collected_task_documents": [
+        ".goal-task/api-worker-web-migration/state.md"
+      ],
+      "audit_artifacts": [
+        "reports/iteration-1/native-blocked-scope/with_skill/outputs/agent/run/stdout.json"
+      ]
+    },
+    {
+      "batch": "controlled-after-boundaries",
+      "case_id": "skip-investigation",
+      "raw_status": "PASS",
+      "raw_failed_or_skipped_assertions": [],
+      "checks": {
+        "runner_catalog_only_workspace_target": true,
+        "actual_frozen_target_content_loaded": true,
+        "runner_model_high": true,
+        "judge_present_when_semantic_required": true,
+        "judge_catalog_empty": true,
+        "judge_model_high": true,
+        "no_host_target_or_memory_read_candidates": true
+      },
+      "actual_target_tool_content_read": true,
+      "full_target_content_seen_in_tool_output": true,
+      "native_skill_injection": [
+        {
+          "artifact": "reports/iteration-1/skip-investigation/with_skill/outputs/agent/run/rollout-2026-10-30T05-30-50-01a18992-a0a1-7331-a27a-4a61f6dbba5f.jsonl",
+          "role": "user",
+          "injected_text_characters": 13329,
+          "target_path": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-351576045/.codex/skills/goal-prompt/SKILL.md",
+          "contains_exact_frozen_skill": true,
+          "skill_main_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71"
+        }
+      ],
+      "target_read_commands": [
+        "/bin/zsh -lc 'cat .codex/skills/goal-prompt/SKILL.md'"
+      ],
+      "full_reference_texts_seen": [
+        "references/long-goal-execution.md",
+        "references/scenarios.md"
+      ],
+      "reference_command_outputs": [
+        {
+          "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/references/scenarios.md'",
+          "output_characters": 5247,
+          "output_utf8_bytes": 5251,
+          "output_sha256": "1bc43e441e4ed7d60fb7852f24e82377b8580b13812a3c11d4bf6b54357d235c",
+          "note": "按成功工具命令的实际输出记载；部分读取/重复读取不能按全文件相加。"
+        },
+        {
+          "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/references/long-goal-execution.md'",
+          "output_characters": 6055,
+          "output_utf8_bytes": 6055,
+          "output_sha256": "9fdeea7aeea2f55be230c9a8828cac50f3ae0d2a518fe1392c29ac6f48a72c65",
+          "note": "按成功工具命令的实际输出记载；部分读取/重复读取不能按全文件相加。"
+        }
+      ],
+      "skill_main_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71",
+      "agent_duration_ms": 62517,
+      "case_wall_ms": 80819,
+      "skill_up_derived_input_tokens": 90010,
+      "output_tokens": 1735,
+      "native_cli_usage": [
+        {
+          "artifact": "reports/iteration-1/skip-investigation/with_skill/outputs/agent/run/stdout.json",
+          "usage": {
+            "input_tokens": 50330,
+            "cached_input_tokens": 39680,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 1735,
+            "reasoning_output_tokens": 342
+          }
+        }
+      ],
+      "collected_task_documents": [],
+      "audit_artifacts": [
+        "reports/iteration-1/skip-investigation/with_skill/outputs/agent/run/stdout.json",
+        "reports/iteration-1/skip-investigation/with_skill/outputs/judge/run/stdout.json"
+      ]
+    },
+    {
+      "batch": "controlled-after-boundaries",
+      "case_id": "delegated-judgment",
+      "raw_status": "PASS",
+      "raw_failed_or_skipped_assertions": [],
+      "checks": {
+        "runner_catalog_only_workspace_target": true,
+        "actual_frozen_target_content_loaded": true,
+        "runner_model_high": true,
+        "judge_present_when_semantic_required": true,
+        "judge_catalog_empty": true,
+        "judge_model_high": true,
+        "no_host_target_or_memory_read_candidates": true
+      },
+      "actual_target_tool_content_read": false,
+      "full_target_content_seen_in_tool_output": false,
+      "native_skill_injection": [
+        {
+          "artifact": "reports/iteration-1/delegated-judgment/with_skill/outputs/agent/run/rollout-2026-10-30T05-32-13-01a18993-dbfd-7c22-ade2-b3127c459c63.jsonl",
+          "role": "user",
+          "injected_text_characters": 13330,
+          "target_path": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-3562154274/.codex/skills/goal-prompt/SKILL.md",
+          "contains_exact_frozen_skill": true,
+          "skill_main_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71"
+        }
+      ],
+      "target_read_commands": [],
+      "full_reference_texts_seen": [
+        "references/parallel-agents.md"
+      ],
+      "reference_command_outputs": [
+        {
+          "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/references/parallel-agents.md'",
+          "output_characters": 2075,
+          "output_utf8_bytes": 2075,
+          "output_sha256": "1fa0663ed4057a90d573559fa011c03d9b184a3bb6602d15cdeba6b7d3ea7e44",
+          "note": "按成功工具命令的实际输出记载；部分读取/重复读取不能按全文件相加。"
+        }
+      ],
+      "skill_main_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71",
+      "agent_duration_ms": 149398,
+      "case_wall_ms": 173425,
+      "skill_up_derived_input_tokens": 363445,
+      "output_tokens": 5838,
+      "native_cli_usage": [
+        {
+          "artifact": "reports/iteration-1/delegated-judgment/with_skill/outputs/agent/run/stdout.json",
+          "usage": {
+            "input_tokens": 143053,
+            "cached_input_tokens": 129280,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 4733,
+            "reasoning_output_tokens": 659
+          }
+        }
+      ],
+      "collected_task_documents": [
+        ".goal-task/cache-refactor/state.md"
+      ],
+      "audit_artifacts": [
+        "reports/iteration-1/delegated-judgment/with_skill/outputs/agent/run/stdout.json",
+        "reports/iteration-1/delegated-judgment/with_skill/outputs/judge/run/stdout.json"
+      ]
+    },
+    {
+      "batch": "controlled-after-boundaries",
+      "case_id": "host-recovery-boundary",
+      "raw_status": "PASS",
+      "raw_failed_or_skipped_assertions": [],
+      "checks": {
+        "runner_catalog_only_workspace_target": true,
+        "actual_frozen_target_content_loaded": true,
+        "runner_model_high": true,
+        "judge_present_when_semantic_required": true,
+        "judge_catalog_empty": true,
+        "judge_model_high": true,
+        "no_host_target_or_memory_read_candidates": true
+      },
+      "actual_target_tool_content_read": true,
+      "full_target_content_seen_in_tool_output": true,
+      "native_skill_injection": [
+        {
+          "artifact": "reports/iteration-1/host-recovery-boundary/with_skill/outputs/agent/run/rollout-2026-10-30T05-35-04-01a18996-817e-7853-80d9-b5f41f3138c1.jsonl",
+          "role": "user",
+          "injected_text_characters": 13330,
+          "target_path": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-2576976778/.codex/skills/goal-prompt/SKILL.md",
+          "contains_exact_frozen_skill": true,
+          "skill_main_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71"
+        }
+      ],
+      "target_read_commands": [
+        "/bin/zsh -lc 'cat .codex/skills/goal-prompt/SKILL.md'"
+      ],
+      "full_reference_texts_seen": [
+        "references/long-goal-execution.md",
+        "references/parallel-agents.md",
+        "references/scenarios.md"
+      ],
+      "reference_command_outputs": [
+        {
+          "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/references/long-goal-execution.md; cat .codex/skills/goal-prompt/references/scenarios.md; cat .codex/skills/goal-prompt/references/parallel-agents.md'",
+          "output_characters": 13377,
+          "output_utf8_bytes": 13381,
+          "output_sha256": "039ae7337a47040fc103339608960a686c56f31eb1d9640397d0671909506622",
+          "note": "按成功工具命令的实际输出记载；部分读取/重复读取不能按全文件相加。"
+        }
+      ],
+      "skill_main_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71",
+      "agent_duration_ms": 145618,
+      "case_wall_ms": 168473,
+      "skill_up_derived_input_tokens": 154788,
+      "output_tokens": 6193,
+      "native_cli_usage": [
+        {
+          "artifact": "reports/iteration-1/host-recovery-boundary/with_skill/outputs/agent/run/stdout.json",
+          "usage": {
+            "input_tokens": 100260,
+            "cached_input_tokens": 54528,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 6193,
+            "reasoning_output_tokens": 538
+          }
+        }
+      ],
+      "collected_task_documents": [
+        ".goal-task/compat-evidence/state.md"
+      ],
+      "audit_artifacts": [
+        "reports/iteration-1/host-recovery-boundary/with_skill/outputs/agent/run/stdout.json",
+        "reports/iteration-1/host-recovery-boundary/with_skill/outputs/judge/host-and-recovery/run/stdout.json"
+      ]
+    },
+    {
+      "batch": "controlled-after-boundaries",
+      "case_id": "trigger-boundary",
+      "raw_status": "PASS",
+      "raw_failed_or_skipped_assertions": [],
+      "checks": {
+        "runner_catalog_only_workspace_target": true,
+        "actual_frozen_target_content_loaded": true,
+        "runner_model_high": true,
+        "judge_present_when_semantic_required": true,
+        "judge_catalog_empty": true,
+        "judge_model_high": true,
+        "no_host_target_or_memory_read_candidates": true
+      },
+      "actual_target_tool_content_read": true,
+      "full_target_content_seen_in_tool_output": true,
+      "native_skill_injection": [
+        {
+          "artifact": "reports/iteration-1/trigger-boundary/with_skill/outputs/agent/run/rollout-2026-10-30T05-37-53-01a18999-1378-7dc0-bfe2-1caf40c1295e.jsonl",
+          "role": "user",
+          "injected_text_characters": 13328,
+          "target_path": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-14512513/.codex/skills/goal-prompt/SKILL.md",
+          "contains_exact_frozen_skill": true,
+          "skill_main_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71"
+        }
+      ],
+      "target_read_commands": [
+        "/bin/zsh -lc 'cat .codex/skills/goal-prompt/SKILL.md'"
+      ],
+      "full_reference_texts_seen": [],
+      "reference_command_outputs": [],
+      "skill_main_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71",
+      "agent_duration_ms": 17252,
+      "case_wall_ms": 17679,
+      "skill_up_derived_input_tokens": 44434,
+      "output_tokens": 97,
+      "native_cli_usage": [
+        {
+          "artifact": "reports/iteration-1/trigger-boundary/with_skill/outputs/agent/run/stdout.json",
+          "usage": {
+            "input_tokens": 30610,
+            "cached_input_tokens": 13824,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 97,
+            "reasoning_output_tokens": 0
+          }
+        }
+      ],
+      "collected_task_documents": [],
+      "audit_artifacts": [
+        "reports/iteration-1/trigger-boundary/with_skill/outputs/agent/run/stdout.json"
+      ]
+    },
+    {
+      "batch": "final-followup",
+      "case_id": "batch-goal",
+      "raw_status": "PASS",
+      "raw_failed_or_skipped_assertions": [],
+      "checks": {
+        "runner_catalog_only_workspace_target": true,
+        "actual_frozen_target_content_loaded": true,
+        "runner_model_high": true,
+        "judge_present_when_semantic_required": true,
+        "judge_catalog_empty": true,
+        "judge_model_high": true,
+        "no_host_target_or_memory_read_candidates": true
+      },
+      "actual_target_tool_content_read": true,
+      "full_target_content_seen_in_tool_output": true,
+      "native_skill_injection": [
+        {
+          "artifact": "reports/iteration-1/batch-goal/with_skill/outputs/agent/run/rollout-2026-10-30T05-39-48-01a1899a-d830-7383-a6a6-2800e2d6c19a.jsonl",
+          "role": "user",
+          "injected_text_characters": 13330,
+          "target_path": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-4241484181/.codex/skills/goal-prompt/SKILL.md",
+          "contains_exact_frozen_skill": true,
+          "skill_main_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71"
+        }
+      ],
+      "target_read_commands": [
+        "/bin/zsh -lc 'cat .codex/skills/goal-prompt/SKILL.md'"
+      ],
+      "full_reference_texts_seen": [
+        "references/long-goal-execution.md"
+      ],
+      "reference_command_outputs": [
+        {
+          "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/references/long-goal-execution.md'",
+          "output_characters": 6055,
+          "output_utf8_bytes": 6055,
+          "output_sha256": "9fdeea7aeea2f55be230c9a8828cac50f3ae0d2a518fe1392c29ac6f48a72c65",
+          "note": "按成功工具命令的实际输出记载；部分读取/重复读取不能按全文件相加。"
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '1,9p' .codex/skills/goal-prompt/references/scenarios.md && sed -n '33,47p' .codex/skills/goal-prompt/references/scenarios.md\"",
+          "output_characters": 1125,
+          "output_utf8_bytes": 1125,
+          "output_sha256": "81e07144aec3ab3500210bc9377827a1973c7ebcb17ac668f065c649314dc162",
+          "note": "按成功工具命令的实际输出记载；部分读取/重复读取不能按全文件相加。"
+        }
+      ],
+      "skill_main_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71",
+      "agent_duration_ms": 105737,
+      "case_wall_ms": 121850,
+      "skill_up_derived_input_tokens": 163106,
+      "output_tokens": 3945,
+      "native_cli_usage": [
+        {
+          "artifact": "reports/iteration-1/batch-goal/with_skill/outputs/agent/run/stdout.json",
+          "usage": {
+            "input_tokens": 91554,
+            "cached_input_tokens": 71552,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 3945,
+            "reasoning_output_tokens": 292
+          }
+        }
+      ],
+      "collected_task_documents": [
+        ".goal-task/config-migration/state.md"
+      ],
+      "audit_artifacts": [
+        "reports/iteration-1/batch-goal/with_skill/outputs/agent/run/stdout.json",
+        "reports/iteration-1/batch-goal/with_skill/outputs/judge/run/stdout.json"
+      ]
+    },
+    {
+      "batch": "final-followup",
+      "case_id": "host-recovery-boundary",
+      "raw_status": "PASS",
+      "raw_failed_or_skipped_assertions": [],
+      "checks": {
+        "runner_catalog_only_workspace_target": true,
+        "actual_frozen_target_content_loaded": true,
+        "runner_model_high": true,
+        "judge_present_when_semantic_required": true,
+        "judge_catalog_empty": true,
+        "judge_model_high": true,
+        "no_host_target_or_memory_read_candidates": true
+      },
+      "actual_target_tool_content_read": true,
+      "full_target_content_seen_in_tool_output": true,
+      "native_skill_injection": [
+        {
+          "artifact": "reports/iteration-1/host-recovery-boundary/with_skill/outputs/agent/run/rollout-2026-10-30T05-41-50-01a1899c-b243-7b52-ac18-26b11bdf2d43.jsonl",
+          "role": "user",
+          "injected_text_characters": 13330,
+          "target_path": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-3216086327/.codex/skills/goal-prompt/SKILL.md",
+          "contains_exact_frozen_skill": true,
+          "skill_main_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71"
+        }
+      ],
+      "target_read_commands": [
+        "/bin/zsh -lc 'cat .codex/skills/goal-prompt/SKILL.md'"
+      ],
+      "full_reference_texts_seen": [
+        "references/long-goal-execution.md",
+        "references/parallel-agents.md"
+      ],
+      "reference_command_outputs": [
+        {
+          "command": "/bin/zsh -lc \"cat .codex/skills/goal-prompt/references/long-goal-execution.md; cat .codex/skills/goal-prompt/references/parallel-agents.md; rg -n '\"'^#|research|audit|report|证据'\"' .codex/skills/goal-prompt/references/scenarios.md\"",
+          "output_characters": 8922,
+          "output_utf8_bytes": 8922,
+          "output_sha256": "56056eb01520555a4a9f4f8f11ad9ae7c4df1cd6a8099fd09368214848623be8",
+          "note": "按成功工具命令的实际输出记载；部分读取/重复读取不能按全文件相加。"
+        },
+        {
+          "command": "/bin/zsh -lc \"sed -n '48,81p' .codex/skills/goal-prompt/references/scenarios.md\"",
+          "output_characters": 1963,
+          "output_utf8_bytes": 1963,
+          "output_sha256": "676952e634aa446d970f497c135c9ef8f9679dcd8ee3883a69242fa8f8642ff9",
+          "note": "按成功工具命令的实际输出记载；部分读取/重复读取不能按全文件相加。"
+        }
+      ],
+      "skill_main_sha256": "d73fa2aa1446c3aa13ecec36676e2fcf8561af274fddca867d39a00372f76c71",
+      "agent_duration_ms": 147249,
+      "case_wall_ms": 166851,
+      "skill_up_derived_input_tokens": 174002,
+      "output_tokens": 5690,
+      "native_cli_usage": [
+        {
+          "artifact": "reports/iteration-1/host-recovery-boundary/with_skill/outputs/agent/run/stdout.json",
+          "usage": {
+            "input_tokens": 95538,
+            "cached_input_tokens": 78464,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 5690,
+            "reasoning_output_tokens": 604
+          }
+        }
+      ],
+      "collected_task_documents": [
+        ".goal-task/compat-evidence/state.md"
+      ],
+      "audit_artifacts": [
+        "reports/iteration-1/host-recovery-boundary/with_skill/outputs/agent/run/stdout.json",
+        "reports/iteration-1/host-recovery-boundary/with_skill/outputs/judge/host-and-recovery/run/stdout.json"
+      ]
+    }
+  ]
+}

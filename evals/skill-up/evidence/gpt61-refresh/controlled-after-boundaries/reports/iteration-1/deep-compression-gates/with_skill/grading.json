@@ -1,0 +1,73 @@
+{
+  "expectations": [
+    {
+      "text": "expect.must_contain",
+      "passed": true,
+      "evidence": "all checks passed"
+    },
+    {
+      "text": "expect.exit_code",
+      "passed": true,
+      "evidence": "all checks passed"
+    },
+    {
+      "text": "最终 /goal 保留三个模块、公开兼容、逐模块测试、集成测试、CI 和迁移文档的合取门槛。",
+      "passed": true,
+      "evidence": "final_message 的 /goal 要求 auth、billing、notifications 全部迁移到统一事件接口，并保持公开接口及对外行为兼容。; final_message 明确要求三个模块各自的测试、跨模块集成测试、目标 revision 的全部必需 CI 检查通过，以及迁移文档完成并与最终实现一致；这些均列在“仅当以下条件全部满足才完成”之下。"
+    },
+    {
+      "text": "保留恰好 3 个独立只读 reviewer、修复后复审，以及所有门槛通过前不得完成。",
+      "passed": true,
+      "evidence": "final_message 要求每个重大行为变更里程碑及最终集成都由 3 名独立只读 reviewer 审查集成 diff 和证据。; final_message 要求修复发现的问题后复审受影响范围并进行必要验证，且只有全部条件满足、无未解决的阻断问题时才完成。"
+    },
+    {
+      "text": "保留 state.md 真相入口和仅当全部剩余工作共同受阻时才允许整体 blocked 的语义，同时保持简洁。",
+      "passed": true,
+      "evidence": "final_message 将 .goal-task/event-migration/state.md 指定为执行契约、状态与恢复入口，并要求遵循其中的真源优先级。; final_message 规定只有恢复、替代和独立工作均已穷尽，所有有意义的剩余工作共同受同一已验证阻塞约束且满足宿主状态规则时，才可整体 blocked。; 相关状态入口和 blocked 条件均以简短段落表达。"
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1
+  },
+  "judge_context": {
+    "profile": "standard",
+    "materialized_dir": "judge/context",
+    "manifest": {
+      "profile": "standard",
+      "materialized_dir": "judge/context",
+      "materials": [
+        {
+          "key": "final_message",
+          "mode": "include",
+          "path": "judge/context/final_message.txt",
+          "bytes": 2224,
+          "original_bytes": 2224
+        },
+        {
+          "key": "transcript",
+          "mode": "file_ref",
+          "path": "judge/context/transcript.json",
+          "bytes": 34071,
+          "original_bytes": 34071
+        },
+        {
+          "key": "workspace_diff",
+          "mode": "omit",
+          "bytes": 0
+        },
+        {
+          "key": "generated_files",
+          "mode": "file_ref",
+          "path": "judge/context/generated_files.txt",
+          "bytes": 341,
+          "original_bytes": 341
+        }
+      ]
+    },
+    "prompt_delivery": "inline",
+    "prompt_bytes": 5314
+  }
+}

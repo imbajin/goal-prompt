@@ -1,0 +1,39 @@
+[
+  {
+    "artifact": "reports/iteration-1/confirmation-brief/with_skill/outputs/agent/run/stdout.json",
+    "successful_skill_read_commands": [
+      {
+        "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/SKILL.md'",
+        "output_characters": 26214,
+        "output_utf8_bytes": 26256,
+        "output_sha256": "05338a38ae7e142b0fc08280a1dd055b47c39de750653bb02ae396e3faed47a9"
+      },
+      {
+        "command": "/bin/zsh -lc 'cat .codex/skills/goal-prompt/references/scenarios.md; cat .codex/skills/goal-prompt/references/long-goal-execution.md'",
+        "output_characters": 14488,
+        "output_utf8_bytes": 14512,
+        "output_sha256": "ca37e3d5c652ae3c7454b3b80c8daffca5aa829eda33083a4f75f830cdb29065"
+      }
+    ],
+    "reference_names_mentioned_in_commands": [
+      "references/long-goal-execution.md",
+      "references/scenarios.md"
+    ],
+    "host_target_or_memory_read_candidates": [],
+    "observed_turn_context": [
+      {
+        "model": "gpt-6.1-sol",
+        "effort": "high",
+        "cwd": "/private/var/folders/sx/1999c8sj0bv26zt9kgxcp7wr0000gn/T/skill-up-3786389505",
+        "approval_policy": "never",
+        "sandbox_policy": {
+          "type": "workspace-write",
+          "network_access": false,
+          "exclude_tmpdir_env_var": false,
+          "exclude_slash_tmp": false
+        }
+      }
+    ],
+    "note": "成功命令及输出长度仅为审计线索；需结合 transcript 确认实际读取。重复读取累计与初始 context 不同；非 OS 隔离证明。"
+  }
+]

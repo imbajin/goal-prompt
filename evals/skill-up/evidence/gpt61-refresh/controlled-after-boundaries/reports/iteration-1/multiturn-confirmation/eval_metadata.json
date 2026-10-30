@@ -1,0 +1,11 @@
+{
+  "eval_id": 0,
+  "eval_name": "同一会话中确认后才进入最终阶段",
+  "prompt": "$goal-prompt\n请先读取当前工作区的 .codex/skills/goal-prompt/SKILL.md，再按其适用边界处理下方原始请求。如果原始请求明确是普通非目标工作，直接处理原任务，不生成目标文本。\n\n原始请求：\n请为“把 src/cache 重构成统一缓存适配层，同时保持公开 API 不变”创建 /goal。\n",
+  "assertions": [
+    "expect.must_contain",
+    "expect.exit_code",
+    "第一轮语义上请用户确认结果、范围和完成证据，没有生成最终 /goal；不要求出现固定状态字符串。",
+    "第二轮把用户的明确确认视为授权，生成最终可执行 /goal，不重复要求确认。"
+  ]
+}

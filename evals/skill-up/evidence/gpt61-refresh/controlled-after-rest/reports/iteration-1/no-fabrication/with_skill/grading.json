@@ -1,0 +1,68 @@
+{
+  "expectations": [
+    {
+      "text": "expect.exit_code",
+      "passed": true,
+      "evidence": "all checks passed"
+    },
+    {
+      "text": "明确说明仓库、实现、测试命令或接口事实无法确认，没有编造具体路径、命令、指标或依赖。",
+      "passed": true,
+      "evidence": "final_message 明确指出尚无仓库、规范、接口资料或故障证据，无法确认根因、受影响范围及现有防重机制。; final_message 说明不能提供真实验证命令、指标或通过结果，并指出没有已核实的仓库真值路径；未将具体路径、命令或依赖冒充为已确认事实。"
+    },
+    {
+      "text": "把未知信息作为需要补充或执行时验证的证据缺口，同时仍给出有限且诚实的结果、范围和完成证据框架。",
+      "passed": true,
+      "evidence": "final_message 将业务唯一性规则、回调与入账边界、事务机制、故障样本、运行环境和验证入口列为证据缺口，并将历史账务处理和发布责任列为范围取舍。; final_message 给出了有限的拟定目标与边界，以及触发条件、重复和并发回调、重试、正常入账和审查等完成证据条件，同时明确尚未执行修复或验证。"
+    },
+    {
+      "text": "未生成最终 /goal，并在语义上请用户确认或补充决定；不要求固定状态字符串。",
+      "passed": true,
+      "evidence": "final_message 以 Proposed goal brief 呈现拟定方案，没有生成最终 /goal。; final_message 表示后续可确认目标边界与模式，并保留历史账务处理和发布责任等待决定的范围取舍。"
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1
+  },
+  "judge_context": {
+    "profile": "standard",
+    "materialized_dir": "judge/context",
+    "manifest": {
+      "profile": "standard",
+      "materialized_dir": "judge/context",
+      "materials": [
+        {
+          "key": "final_message",
+          "mode": "include",
+          "path": "judge/context/final_message.txt",
+          "bytes": 2365,
+          "original_bytes": 2365
+        },
+        {
+          "key": "transcript",
+          "mode": "file_ref",
+          "path": "judge/context/transcript.json",
+          "bytes": 24910,
+          "original_bytes": 24910
+        },
+        {
+          "key": "workspace_diff",
+          "mode": "omit",
+          "bytes": 0
+        },
+        {
+          "key": "generated_files",
+          "mode": "file_ref",
+          "path": "judge/context/generated_files.txt",
+          "bytes": 313,
+          "original_bytes": 313
+        }
+      ]
+    },
+    "prompt_delivery": "inline",
+    "prompt_bytes": 5483
+  }
+}

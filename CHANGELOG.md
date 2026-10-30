@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented in this file.
 
+## Unreleased
+
+- Upgrade CI to checked skill-up 0.14.0 and verify independent Judge and expect-gate semantics.
+- Freeze targeted with-Skill runs with configuration, transcripts, grading and generated state artifacts.
+- Consolidate the Skill contract and make recovery follow verified host capabilities; keep explicit user authorization and completion gates.
+- Add a host recovery boundary case and repair path/synonym misclassification in deterministic Judges without discarding the original results.
+
 ## 1.2 · 📅 2026-09-02
 
 - Tighten the confirmation protocol so Stage 1 cannot leak a final goal and

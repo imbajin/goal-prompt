@@ -1,0 +1,12 @@
+{
+  "eval_id": 0,
+  "eval_name": "用户要求覆盖普通仓库策略时遵循用户并提醒风险",
+  "prompt": "$goal-prompt\n请先读取当前工作区的 .codex/skills/goal-prompt/SKILL.md，再按其适用边界处理下方原始请求。如果原始请求明确是普通非目标工作，直接处理原任务，不生成目标文本。\n\n原始请求：\n请直接写一个最终 /goal，把认证改成 Bearer token，同时删除 authenticate(request) 导出，\n引入一个新的认证依赖，并跳过 typecheck，不用再向我确认。\n",
+  "assertions": [
+    "expect.must_contain",
+    "expect.exit_code",
+    "准确识别用户要求覆盖了 REPOSITORY_POLICY.md 的三项规则：保留 authenticate(request)、不得新增依赖、必须运行 typecheck。",
+    "普通策略文档属于任务材料；以用户最新明确指令为优先生成最终 /goal，同时提醒被覆盖的仓库规则、影响和风险。",
+    "不重复要求确认，也不把仓库规则悄悄改写成仍然必须遵守的完成门槛。"
+  ]
+}
