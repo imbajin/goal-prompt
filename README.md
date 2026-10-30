@@ -67,7 +67,11 @@ The agent can select the skill automatically when your request matches, or you c
 
 ## Evaluation
 
-The current development suite uses skill-up 0.14.0 and 31 cases. The [GPT 6.1 refresh report](evals/skill-up/gpt61-refresh.md) tracks targeted verification separately; the 5.6 scores below remain historical.
+The current development suite uses skill-up 0.14.0 and 31 cases. Results from different models and protocols are recorded separately; the 5.6 scores below remain historical.
+
+**GPT-6.1 Sol high has already been tested.** The [6.1 targeted report](evals/skill-up/gpt61-refresh.md) records generation with `gpt-6.1-sol / high` and semantic judging with `gpt-6.1-terra / high`, covering 17 unique with-Skill cases. The primary 16-case cohort had 14 PASS / 2 FAIL / 0 ERROR; both FAILs were deterministic judge errors and passed replay of the same outputs. Two additional executions on the final bundle passed, with one case overlapping the primary cohort. These snapshots must not be presented as a single final-bundle 17/17 run. The full 31-case 6.1 run and its without-Skill control remain TODO.
+
+The later [GPT-6 Luna xhigh trial](docs/luna-xhigh-trial.md) used 30 cases per group: original with-Skill 22 PASS / 8 FAIL and without 6 / 24; deterministic replay yielded 25 / 5 versus 7 / 23. Supplying Batch's required business artifact for a local rejudge yielded 26 / 4 versus 7 / 23. Original grades are retained; the without generation group was not rerun. This separate Docker-isolated cohort is not a full blind rerating or a direct model ranking against the earlier 6.1 targeted run.
 
 The recorded evaluation used 30 isolated cases with `skill-up 0.9.1`. The paired run held the inputs and Codex `gpt-5.6-luna` high constant; the baseline also had one timeout ERROR. The final operation-target wording was added afterward and has focused contract coverage, not a new full A/B run. For new runs, see the [evaluation guide](evals/skill-up/README.md#run-the-evaluation); the historical scores describe the recorded configuration.
 

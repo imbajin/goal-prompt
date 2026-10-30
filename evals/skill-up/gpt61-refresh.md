@@ -1,10 +1,20 @@
-# GPT 6.1 定向刷新
+# GPT-6.1 Sol high 定向实测与 Skill 精简
 
-核查日期 2026-10-30。此次升级评测工具并精简 Skill，保留历史 5.6 成绩。
-本轮已完成六个历史失败及选定边界的真实定向验证，共覆盖 17 个唯一案例。
-原16例冻结批次为14 PASS / 2 FAIL / 0 ERROR；两项FAIL已确认是词面误判，修正Judge对同一输出replay PASS，原FAIL保留。
-最后分支对齐另以最终bundle补测 batch-goal 与 host-recovery-boundary，两例原始PASS。
-[逐项输出、原判分、重判与配置](evidence/gpt61-refresh/summary.md)均已归档；历史5.6成绩未改，完整6.1与without全量对照未运行。
+原始输出、冻结快照和运行回执保留在本地`evals/skill-up/evidence/`，已加入ignore，不随源码PR合入。下文以代码路径标注本地证据，获取档案后才能重放；不是可点击的公开下载。
+
+核查日期2026-10-30。**GPT-6.1 Sol已有真实with-Skill定向实测；尚未执行的是完整31例及without-Skill全量对照。** 后续用户限定只测Luna后没有新增6.1运行，本页保留此前结果。
+
+| 项目 | 已核实配置与结果 |
+| --- | --- |
+| 执行模型 | `gpt-6.1-sol / high`，Codex 0.164.0 |
+| 语义评分模型 | `gpt-6.1-terra / high`；确定性脚本评分另列 |
+| 主要受控16例 | 原始14 PASS / 2 FAIL / 0 ERROR；两项词面误报用同一输出重判PASS，原FAIL保留 |
+| 最终bundle补测 | batch-goal、host-recovery-boundary两次原始PASS；后者与16例重叠 |
+| 实际覆盖 | 17个唯一case，包含六个历史失败及选定边界；不是单一最终bundle的17/17或完整31例通过 |
+
+逐项输出、原判分、重判与冻结配置（本地归档：`evidence/gpt61-refresh/summary.md`）和含精确模型的机器汇总（本地归档：`evidence/gpt61-refresh/summary.json`）均已归档。16例来自controlled-research-v2、controlled-after-rest及controlled-after-boundaries；补测来自另一个final-followup快照，不合并伪装成同一批次。
+
+此批用显式Skill配置约束catalog，仍非OS密闭隔离，不作为干净without对照；早期受污染自然六例另存，不能当作精简效果。后续[GPT-6 Luna xhigh实测](../../docs/luna-xhigh-trial.md)的模型、深度和Docker协议不同，结果分列，不能直接作模型排名。历史5.6成绩不改。
 
 ## 来源与适用边界
 
@@ -25,7 +35,7 @@
 - 新版修复 expect 失败时的评分分母；不能把新汇总直接拼接到历史成绩。
 
 本地工具证据在 `.eval-work/tool-upgrade/`；[smoke 脚本](scripts/test-skill-up-upgrade.py)
-已加入 CI。未推送，因此没有本 revision 的远端 GitHub Actions 通过声明。
+已加入CI。本报告初次封存时仅本地提交；后续已开放[Draft PR #5](https://github.com/imbajin/goal-prompt/pull/5)，当前远端检查以该PR为准，未因此重跑本页6.1批次。
 
 ## 精简与可控问题
 
@@ -88,7 +98,7 @@ skill-up 0.14.0 的 [Codex adapter](https://github.com/alibaba/skill-up/blob/v0.
 skill-up input_tokens 219580 → 226923；CLI input 123708 → 119275，cached 95872 → 107648，
 output 5255 → 5671。两样本的原生 input 字段小幅下降、output 上升，耗时一增一减。
 源文件变短并未证明普遍 token、成本或延迟收益。
-原生及派生字段、来源哈希见[归档 token-metrics.json](evidence/gpt61-refresh/token-metrics.json)。会话累计输入与初始 context 不同，Agent duration 与包含 Judge 的 case wall time 也不同。
+原生及派生字段、来源哈希见归档 token-metrics.json（本地归档：`evidence/gpt61-refresh/token-metrics.json`）。会话累计输入与初始 context 不同，Agent duration 与包含 Judge 的 case wall time 也不同。
 单样本不能证明稳定收益或退化；后续完整复测应分别采集质量、累计 token、延迟和重复读取。
 
 ## 测量修正
@@ -119,7 +129,7 @@ output 5255 → 5671。两样本的原生 input 字段小幅下降、output 上�
 不是精简退化的可靠证据，相关批次保留但不能用于隔离效果结论。
 新版运行器用显式 skills.config 禁用发现的 33 个宿主 Skill；零模型 prompt-input
 已确认 catalog 仅含工作区目标，实际20次受控执行均确认注入精确冻结主Skill全文，其中17次还有工具读取；runner catalog仅目标，语义Judge catalog为空。
-[完整审计](evidence/gpt61-refresh/controlled-audit-summary.json)记录了模型/high、原生注入、工具读取及无宿主读取异常线索。
+完整审计（本地归档：`evidence/gpt61-refresh/controlled-audit-summary.json`）记录了模型/high、原生注入、工具读取及无宿主读取异常线索。
 该配置仍不是OS读边界，不用于宣称干净的without-Skill对照。
 
 ## 真实定向结果
@@ -172,9 +182,9 @@ script被gate跳过；恢复和里程碑提交内容实际存在。该FAIL保留
 
 最终31例validate/dry-run、所有确定性正反样例、汇总器状态自测和安装文件比对通过。
 Codex与Claude Code项目内copy安装均为9个文件，逐字节匹配最终Skill；完整评测与报告不随Skill安装。
-[三名独立只读审查及修复复审](evidence/gpt61-refresh/reviews.md)完成，无未解决高严重度问题。
+三名独立只读审查及修复复审（本地归档：`evidence/gpt61-refresh/reviews.md`）完成，无未解决高严重度问题。
 原始输出中合法的Markdown行尾双空格逐字节保留，.gitattributes仅对归档response允许该硬换行，不放宽源码检查。
-本次仅本地提交，没有推送或本revision的远端CI结果。
+原定向批次初次封存时仅本地提交；后续代码和本报告已随Draft PR #5开放试用，原始模型结果未重跑或改写。
 
 ## 后续完整复测 TODO
 

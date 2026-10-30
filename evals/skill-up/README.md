@@ -47,6 +47,39 @@ cohort needs a separate config that replaces both the
 execution engine/model and every case-level Agent Judge model with compatible
 Claude values. Overriding only `--engine` and `--model` is insufficient.
 
+## Maintained tools and local archives
+
+Keep reusable evaluation source in this repository; keep generated outputs and
+machine state outside the source change. `/.goal-task/`, `.eval-work/`, and
+`evals/skill-up/evidence/` are ignored. The small, deliberately authored
+`fixtures/` and regression tests remain versioned. Ignoring a directory does not
+remove existing evidence from disk; preserve the original configs, outputs,
+grades, request ledger and source hashes when sharing a separate run archive.
+Do not report an unavailable archive or an unrun case as a pass.
+
+| Entry | Intended use and prerequisites |
+| --- | --- |
+| `scripts/run-targeted.py`, `summarize-targeted.py` | Start here for new targeted runs. Accept explicit Skill, cases, binary, run and output paths; distinguish natural routing from explicit invocation. |
+| `scripts/test-skill-up-upgrade.py` | Credential-free CLI compatibility checks used by CI. |
+| `scripts/baseline-container/`, `baseline-docker.py`, `without-only.patch` | Reusable, versioned Luna xhigh isolation profile. Build the image and configure the trusted broker/network explicitly; there is no portable one-command launcher. |
+| `scripts/audit-*-requests.py`, `audit-request-outcomes.py`, `test-request-outcomes.py` | Reconcile archived native requests and test missing/retry records; not a new model run. |
+| `scripts/run-baseline.py`, `run-with-skill.py`, `summarize-baseline.py`, `summarize-paired.py`, `test-audit-discovery.py` | Frozen 30-case Luna profile. Starting a cohort requires its original input revision, patched binary and valid `isolation.json`; with-Skill also requires the matching without archive. |
+| `scripts/run-failed-pairs.py`, `run-failed-pairs-resume.py`, `summarize-failed-pairs.py` | Experimental paired comparisons and recovery. Require the frozen before/current bundles, prefix, protocol and existing-run ledger. Recovery continues a verified prefix rather than regenerating successful work. |
+| `scripts/replay-paired-judges.py`, `run-script-replay-isolated.py`, `rejudge-business-state.py`, `summarize-luna-calibration.py` | Historical experiment replay. Some sample paths and dependency hashes are fixed; obtain the matching local archive first. In particular, business-state rejudging requires its archived repaired harness. These are not fresh-clone test commands. |
+
+The machine-specific `with-skill-isolation.py` launcher is local and ignored:
+its personal auth path, image ID and host proxy are not a supported installation
+interface. Future portable launchers need explicit configuration and a separate
+validation; do not copy a maintainer's credentials or silently substitute a
+model. The versioned container README documents the current profile boundaries.
+
+Result summaries remain public: [6.1 Sol high targeted results](gpt61-refresh.md)
+and [Luna xhigh results](../../docs/luna-xhigh-trial.md). They preserve original
+versus calibrated grades and the limits of each cohort. Raw JSON, transcripts,
+repeated snapshots, incident screenshots and task recovery notes are local
+archives rather than repository source. No temporary review-only artifacts are
+required by this PR; future exceptions must state their owner and removal gate.
+
 ## Frozen targeted runs
 
 The default configuration now runs **with Skill only** (`benchmark.enabled: false`),
@@ -251,6 +284,17 @@ assertion, or judge:
 The Sol high result measures with-Skill behavior across execution models. It is
 not part of the paired Luna delta. A former Sol without-Skill result was discarded
 after 23 of 30 transcripts accessed the host copy of `goal-prompt`.
+
+The separate [GPT-6 Luna xhigh without-Skill control](luna-xhigh-control.md)
+completed the original 30 cases with raw results of 6 PASS, 24 FAIL, and 0 ERROR.
+Its report retains the original grades and all excluded infrastructure attempts.
+The subsequent [GPT-6 Luna xhigh paired run](luna-with-skill-paired.md) completed
+the same 30 with-Skill cases: raw 22 PASS / 8 FAIL, or 25 / 5 after deterministic
+replay of confirmed judge errors. The existing without outputs calibrate to 7 / 23;
+the without model group was not rerun. Both execution and semantic judges used
+GPT-6 Luna xhigh. Different judges, effort, tooling, and isolation prevent pooling
+these results with the historical 5.6 cohort. The report also separates natural
+Skill availability from explicit-invocation before/current failure diagnosis.
 
 ## Limitations
 

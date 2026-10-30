@@ -1,9 +1,0 @@
-{
-  "eval_id": 0,
-  "eval_name": "宿主恢复能力未知时保存入口且不承诺自动恢复",
-  "prompt": "$goal-prompt\n请先读取当前工作区的 .codex/skills/goal-prompt/SKILL.md，再按其适用边界处理下方原始请求。如果原始请求明确是普通非目标工作，直接处理原任务，不生成目标文本。\n\n原始请求：\n我已确认深度模式、范围和初始化方案，请直接生成最终 /goal。\n目标是分阶段整理 api、worker 两模块的兼容性证据，不修改业务代码。\nworker 的真实外部验证正等待额度，api 的静态证据和报告可独立完成。\n当前宿主是否有自动唤醒工具、额度重置时间都尚未核实，也不要假设存在状态 API。\n用 .goal-task/compat-evidence/state.md 保存状态；明确如何继续 api、在压缩或交接前检查点，\n自动恢复能力未证实时保留人工恢复入口，不实现或承诺未经验证的自动恢复。\n没有明确分母就不报百分比；默认仅本地提交。目标控制在 4000 字符以内。\n",
-  "assertions": [
-    "judge rendered-length (script)",
-    "judge host-and-recovery (agent_judge)"
-  ]
-}

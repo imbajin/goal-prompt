@@ -9,3 +9,12 @@
 
 # Bytecode from evaluation tooling.
 evals/skill-up/scripts/__pycache__/
+evals/skill-up/scripts/baseline-container/__pycache__/
+
+# Local execution state and generated evaluation archives (not source fixtures).
+/.goal-task/
+/evals/skill-up/evidence/
+
+# Local incident evidence and machine-specific isolation launcher.
+/docs/capacity-goal-stall-evidence.md
+/evals/skill-up/scripts/with-skill-isolation.py

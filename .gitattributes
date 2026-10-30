@@ -1,2 +1,2 @@
-# Preserve Markdown hard breaks in verbatim model responses.
-evals/skill-up/evidence/**/outputs/response.md whitespace=-blank-at-eol
+# Preserve upstream unified patch syntax.
+evals/skill-up/scripts/without-only.patch -whitespace
