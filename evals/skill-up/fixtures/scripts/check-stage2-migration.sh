@@ -85,7 +85,9 @@ stop = re.compile(r"停止|暂停|搁置|放弃|\bstop(?:s|ped|ping)?\b|\bpause(
 negative_prefix = re.compile(negative + r"\s*(?:再\s*)?$", re.IGNORECASE)
 coordination = re.compile(
     r"\b(?:and|then)\s+(?=" + negative + r"|" + continuation + r"|" + stop.pattern + r")"
-    r"|(?:并且?|而|然后)(?=" + negative + r"|" + continuation + r"|" + stop.pattern + r")",
+    r"|(?:并且?|而|然后)(?=" + negative + r"|" + continuation + r"|" + stop.pattern + r")"
+    r"|\bwhile\s+(?=" + scope.pattern + r")"
+    r"|(?:而|同时)(?=" + scope.pattern + r")",
     re.IGNORECASE,
 )
 

@@ -296,8 +296,11 @@ def invalid_progress_percentages(text: str) -> bool:
             # An explicit estimated denominator remains a progress qualifier,
             # even when coordinated after the numeric progress phrase.
             denominator_estimate = re.match(
-                r"(?:and|并且?|同时)\s*(?:(?:an?|the)\s+)?"
-                r"(?:estimated\s+(?:denominator|total)|(?:估计|未知)(?:的)?(?:分母|总数))",
+                r"(?:and|but|并且?|同时|而)\s*(?:(?:an?|the)\s+)?"
+                r"(?:estimated\s+(?:denominator|total)\b"
+                r"|(?:denominator|total)\s+is\s+(?:an?\s+)?estimat(?:e|ed)\b"
+                r"|(?:估计|未知)(?:的)?(?:分母|总数)"
+                r"|(?:分母|总数)(?:为|是)(?:估计|未知))",
                 clause[end:], re.IGNORECASE,
             )
             if prefix_estimate or qualifier.search(progress) or denominator_estimate:

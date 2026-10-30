@@ -921,3 +921,21 @@ for separator in ';' '.' '；' '。'; do
   expect_contract_fail long "$r1_long 进度50%（2/4项$separator 粗粒度估计）。"
   expect_contract_pass long "$r1_long Progress 50% (2/4 verified gates)$separator performance improvement estimate 50%."
 done
+
+# R2 repair review: an explicit denominator/total estimate also qualifies
+# progress when written as a subject and predicate after a conjunction.
+for wording in 'and the denominator is estimated' 'but the denominator is estimated' 'and the total is estimated'; do
+  expect_contract_fail long "$r1_long Progress20%(2/10 items) $wording."
+done
+expect_contract_fail long "$r1_long 进度20%（2/10项）并且分母是估计的。"
+expect_contract_fail long "$r1_long 进度20%（2/10项）而总数为估计值。"
+expect_contract_pass long "$r1_long Progress20%(2/10 items) and the performance gain is estimated."
+expect_contract_pass long "$r1_long Progress20%(2/10 items) but the performance gain is estimated."
+expect_contract_pass long "$r1_long 进度20%（2/10项）而性能增益为估计值。"
+# A while-clause can introduce independent work as its own subject.
+for wording in 'Defer the blocked item while independent work continues.' '将受阻项搁置而其余独立工作继续。' '将受阻项搁置同时其余独立工作继续。'; do
+  expect_pass check-stage2-migration.sh "$migration_contract $wording $migration_stop_gate"
+done
+for wording in 'Defer independent work while the blocked item continues.' '将其余独立工作搁置而受阻项继续。' 'Defer the blocked item while independent work stops.'; do
+  expect_fail check-stage2-migration.sh "$migration_contract $wording $migration_stop_gate"
+done
