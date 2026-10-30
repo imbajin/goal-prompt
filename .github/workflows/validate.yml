@@ -56,6 +56,7 @@ jobs:
           bash -n evals/skill-up/fixtures/scripts/*.sh
           evals/skill-up/fixtures/scripts/test-judges.sh
           python3 evals/skill-up/fixtures/capacity-recovery/test-native-host-cleanup.py
+          python3 evals/skill-up/scripts/test-targeted-snapshot.py
 
       - name: Validate skill-up definitions without model credentials
         run: |

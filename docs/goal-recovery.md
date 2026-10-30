@@ -1,6 +1,6 @@
 # Capacity 与 Goal 恢复边界
 
-1.3没有实现capacity自动恢复。Skill能保存检查点和恢复证据；请求重试、Goal状态迁移和重新激活由宿主控制。本文不依赖某个用户聊天或私有日志。
+1.3仅引入恢复边界说明、检查点要求和可复跑故障注入测试；正式Skill包未提供或启用capacity自动恢复脚本。Skill能保存检查点和恢复证据；请求重试、Goal状态迁移和重新激活由宿主控制。本文不依赖某个用户聊天或私有日志。
 
 2026-10-30核对Codex公开main的固定快照；下列关键文件与此前核对版本一致。源码可解释机制，但不证明所有已安装二进制都有相同行为。
 
@@ -29,10 +29,10 @@ Skill目前能做的是在重要派发前记录已验证结果、未完成门槛
 | 等待期用户暂停 | 真实Goal保持paused，恢复写入0次。 |
 | 非capacity额度错误 | 真实Goal为usageLimited，恢复写入0次。 |
 
-0.25秒是加速验证计时与控制流，不表示实测过5分钟线上中断。策略原型支持初始退避、最大退避、抖动、次数和总时限配置；默认5→10→20分钟、最多3次。它必须在active阶段预先armed，核对对应的终态失败、配置、排队输入及等待期变更；既有blocked原因不明时不自动恢复。
+0.25秒是加速验证计时与控制流，不表示实测过5分钟线上中断。策略原型支持初始退避、最大退避、抖动、次数和总时限配置；按本次用户要求，新原型默认三次重试分别等待5→15→30分钟，最多3次、总时限60分钟，默认不加抖动但可配置启用。新默认值已通过零模型虚拟时钟验证，三档为300/900/1800秒、合计3000秒；没有据此重跑或改写上面的0.25秒原生记录。它必须在active阶段预先armed，核对对应的终态失败、配置、排队输入及等待期变更；既有blocked原因不明时不自动恢复。
 
 离线策略检查另覆盖暂停、模型配置变化、丢回执、重复恢复和预算上限，并故意复现最终GET→SET暂停竞态。该反例未算作安全通过；原子条件恢复仍需宿主支持。当前终态RPC没有结构化Retry-After，原型只按配置或显式可信等待下限退避，不能宣称自动读到服务端等待提示。
 
-可复跑入口见[原生故障注入fixture](../evals/skill-up/fixtures/capacity-recovery/README.md)。源码留仓库，原型、逐条RPC、原始失败和运行配置保存在本地忽略目录`.eval-work/capacity-native-probe/`及`.eval-work/capacity-retry-prototype/`。
+可复跑入口见[原生故障注入fixture](../evals/skill-up/fixtures/capacity-recovery/README.md)。源码留仓库，原型、逐条RPC、原始失败和运行配置保存在本地忽略目录`.eval-work/capacity-native-probe/`及`.eval-work/capacity-retry-prototype/`；新默认原型另存于`.eval-work/capacity-retry-prototype-5-15-30/`，旧冻结源保留。
 
 **仍未验证：**正式独立脚本的Desktop接入、从Skill执行阶段启动后的完整生命周期、线上capacity恢复和原子并发保护。已证明`app-server proxy --sock`只是原始字节relay，不能直接替代Unix socket的WebSocket握手；stdio策略集成不等于socket命令行端到端成功。本次没有把原型安装进Skill，也没有改变默认生成流程或操作现有业务聊天。

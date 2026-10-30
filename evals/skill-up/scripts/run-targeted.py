@@ -13,8 +13,6 @@ import shutil
 import subprocess
 import sys
 
-import yaml
-
 INVOCATION_PREFIX = (
     "$goal-prompt\n"
     "请先读取当前工作区的 .codex/skills/goal-prompt/SKILL.md，再按其适用边界处理下方原始请求。"
@@ -39,6 +37,27 @@ def write_json(path: Path, value: object) -> None:
 
 def captured(command: list[str]) -> str:
     return subprocess.check_output(command, text=True, stderr=subprocess.STDOUT).strip()
+
+
+def reject_skill_symlinks(skill: Path) -> None:
+    """拒绝 Skill 树内所有符号链接，包括失效链接；不读取链接目标。"""
+    if skill.is_symlink() or any(path.is_symlink() for path in skill.rglob("*")):
+        raise ValueError("Skill 源码树不能包含符号链接；请提供独立的普通目录")
+
+
+def copy_skill_tree(skill: Path, destination: Path) -> None:
+    """复制前后检查，并保留复制中出现的链接以避免默认解引用。非 OS 隔离。"""
+    reject_skill_symlinks(skill)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    # Exclusive ownership: never remove a pre-existing output on failure.
+    destination.mkdir()
+    try:
+        shutil.copytree(skill, destination, symlinks=True, dirs_exist_ok=True)
+        reject_skill_symlinks(skill)
+        reject_skill_symlinks(destination)
+    except BaseException:
+        shutil.rmtree(destination)
+        raise
 
 
 def discover_host_skills() -> list[str]:
@@ -113,7 +132,7 @@ def verify_catalog_evidence(output: Path, manifest: dict) -> None:
 
 def catalog_preflight(output: Path, binary: str, flags: list[str], skill: Path) -> dict:
     workspace = output / "catalog-probe"
-    shutil.copytree(skill, workspace / ".codex/skills/goal-prompt")
+    copy_skill_tree(skill, workspace / ".codex/skills/goal-prompt")
     debug_flags = [flag for flag in flags if flag not in ("--ignore-user-config", "--ignore-rules")]
     command = [binary, *debug_flags, "debug", "prompt-input", "检查本地目标 Skill 元数据。"]
     result = subprocess.run(command, cwd=workspace, capture_output=True, text=True)
@@ -252,11 +271,19 @@ def main() -> int:
             parser.error(str(error))
     if not args.skill or not args.cases:
         parser.error("冻结新运行需要 --skill 与 --cases")
+    try:
+        # Check the supplied root before resolve() hides a root symlink.
+        reject_skill_symlinks(args.skill)
+    except ValueError as error:
+        parser.error(str(error))
     skill = args.skill.resolve()
     if output.exists():
         parser.error("输出目录必须不存在；不得覆盖冻结证据或复用旧运行产物")
     if not (skill / "SKILL.md").is_file():
         parser.error("--skill 必须指向包含 SKILL.md 的目录")
+    # Only preparing eval configuration needs the optional PyYAML dependency.
+    import yaml
+
     codex = shutil.which("codex")
     if not codex:
         parser.error("未安装 codex")
@@ -267,8 +294,8 @@ def main() -> int:
     snapshot = output / "snapshot"
     snapshot.mkdir()
     (snapshot / "evals").mkdir()
-    shutil.copytree(skill, snapshot / "target/goal-prompt")
-    shutil.copy2(skill / "SKILL.md", snapshot / "SKILL.md")
+    copy_skill_tree(skill, snapshot / "target/goal-prompt")
+    shutil.copy2(snapshot / "target/goal-prompt/SKILL.md", snapshot / "SKILL.md")
     shutil.copytree(repo / "evals/skill-up/cases", snapshot / "skill-up/cases")
     shutil.copytree(repo / "evals/skill-up/fixtures", snapshot / "skill-up/fixtures")
     config = yaml.safe_load((repo / "evals/skill-up/eval.yaml").read_text())

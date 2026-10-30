@@ -2,7 +2,7 @@
 
 原始输出、冻结快照和运行回执保留在本地`evals/skill-up/evidence/`，已加入ignore，不随源码PR合入。下文以代码路径标注本地证据，获取档案后才能重放；不是可点击的公开下载。
 
-2026-10-30。原30例with-Skill及五个定向案例的精简前后对照均已真实执行完毕。生成模型和语义Judge统一为`gpt-6-luna / xhigh`；没有重跑without生成组，没有新增其他模型实测。[Draft PR #5](https://github.com/imbajin/goal-prompt/pull/5)已先开放已验收的Skill/工具升级快照供试用；最新判分器边界修复已完成三名独立修后复审、原12输出同镜像零模型回放及完整Linux测试；原始与各版校准档案分别保留。
+2026-10-30。原30例with-Skill及五个定向案例的精简前后对照均已真实执行完毕。生成模型和语义Judge统一为`gpt-6-luna / xhigh`；没有重跑without生成组，没有新增其他模型实测。[PR #5](https://github.com/imbajin/goal-prompt/pull/5)已先开放已验收的Skill/工具升级快照供试用；最新判分器边界修复已完成三名独立修后复审、原12输出同镜像零模型回放及完整Linux测试；原始与各版校准档案分别保留。
 
 ## 主30例：原始与校准分别保留
 

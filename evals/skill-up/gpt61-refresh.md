@@ -35,7 +35,7 @@
 - 新版修复 expect 失败时的评分分母；不能把新汇总直接拼接到历史成绩。
 
 本地工具证据在 `.eval-work/tool-upgrade/`；[smoke 脚本](scripts/test-skill-up-upgrade.py)
-已加入CI。本报告初次封存时仅本地提交；后续已开放[Draft PR #5](https://github.com/imbajin/goal-prompt/pull/5)，当前远端检查以该PR为准，未因此重跑本页6.1批次。
+已加入CI。本报告初次封存时仅本地提交；后续已开放[PR #5](https://github.com/imbajin/goal-prompt/pull/5)，当前远端检查以该PR为准，未因此重跑本页6.1批次。
 
 ## 精简与可控问题
 
@@ -184,7 +184,7 @@ script被gate跳过；恢复和里程碑提交内容实际存在。该FAIL保留
 Codex与Claude Code项目内copy安装均为9个文件，逐字节匹配最终Skill；完整评测与报告不随Skill安装。
 三名独立只读审查及修复复审（本地归档：`evidence/gpt61-refresh/reviews.md`）完成，无未解决高严重度问题。
 原始输出中合法的Markdown行尾双空格逐字节保留，.gitattributes仅对归档response允许该硬换行，不放宽源码检查。
-原定向批次初次封存时仅本地提交；后续代码和本报告已随Draft PR #5开放试用，原始模型结果未重跑或改写。
+原定向批次初次封存时仅本地提交；后续代码和本报告已随PR #5开放试用，原始模型结果未重跑或改写。
 
 ## 后续完整复测 TODO
 

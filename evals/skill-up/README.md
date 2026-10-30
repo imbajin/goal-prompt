@@ -113,6 +113,10 @@ automatic-routing run; never attribute changes in invocation to Skill quality.
 For a future with/without comparison, use identical original task inputs in both
 cohorts, rather than the explicit target-path prefix used for this behavior trial.
 
+The Skill source must be a self-contained ordinary directory: symbolic links
+inside the payload, including internal and broken links, are rejected before
+catalog probing or use of the snapshot. This copy policy is not OS isolation.
+
 The output must not already exist. `--prepare-only` freezes and validates without
 calling a model. The runner snapshots the Skill, cases, fixtures and effective
 config; records hashes, versions, model/reasoning settings and command; and keeps

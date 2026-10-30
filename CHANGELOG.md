@@ -12,6 +12,7 @@ All notable changes to this project are documented in this file.
   expect-gate semantics without model credentials.
 - Add reusable frozen-run, Docker isolation, request-audit and replay tooling;
   fix deterministic Judge errors while preserving original outputs and grades.
+  Reject symbolic links in targeted Skill payloads and guard snapshot copies.
 - Document GPT-6.1 Sol high targeted results and GPT-6 Luna xhigh comparisons
   separately. Keep generated archives and machine-specific state local.
 - Add a reproducible, credential-free native capacity-injection fixture;
