@@ -27,6 +27,12 @@ def write_json(path: Path, value: object) -> None:
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n")
 
 
+def reject_snapshot_symlinks(snapshot: Path) -> None:
+    """拒绝快照中的所有链接，不能把同字节或失效链接当作已核实文件。"""
+    if snapshot.is_symlink() or any(path.is_symlink() for path in snapshot.rglob("*")):
+        raise ValueError("冻结 snapshot 不能包含符号链接")
+
+
 def archive(source: Path, destination: Path, output: Path, run: Path) -> dict:
     source = source.resolve()
     if not source.is_relative_to(run):
@@ -117,6 +123,7 @@ def case_events(run: Path) -> tuple[dict, dict]:
 
 
 def summarize_run(run: Path, output: Path, replay_scripts: dict[str, Path]) -> dict:
+    reject_snapshot_symlinks(run / "snapshot")
     manifest = json.loads((run / "manifest.json").read_text())
     target = output / run.name
     target.mkdir()

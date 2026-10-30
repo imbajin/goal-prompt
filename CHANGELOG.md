@@ -5,18 +5,22 @@ All notable changes to this project are documented in this file.
 ## 1.3 · 📅 2026-10-30
 
 - Consolidate the core Skill and load long-work references by need while
-  preserving confirmation, authorization, safety and completion contracts.
+  preserving confirmation, authorization, safety and completion contracts,
+  including execution gates for material unknowns and per-loop reflection.
 - Honor already-approved goal materials without another confirmation round;
   distinguish model-initiated blocking from host capacity and lifecycle stops.
 - Upgrade CI to checked skill-up 0.14.0 and verify independent Judge and
   expect-gate semantics without model credentials.
 - Add reusable frozen-run, Docker isolation, request-audit and replay tooling;
   fix deterministic Judge errors while preserving original outputs and grades.
-  Reject symbolic links in targeted Skill payloads and guard snapshot copies.
+  Reject symbolic links in targeted Skill payloads, prepared-run validation and
+  archive checks; run the audit regressions in CI.
+- Remove mandatory progress-bar formatting; report completed/remaining work and
+  require a verified fixed denominator before reporting percentages.
 - Document GPT-6.1 Sol high targeted results and GPT-6 Luna xhigh comparisons
   separately. Keep generated archives and machine-specific state local.
 - Add a reproducible, credential-free native capacity-injection fixture;
-  keep experimental recovery prototypes and raw RPC logs local.
+  keep the test-only retry policy reproducible in fixtures and raw RPC logs local.
 - Skip Claude Code live evaluation for this release; installation/static
   checks do not certify runtime behavior. Document checkpoint and manual
   recovery boundaries without promising automatic capacity recovery.

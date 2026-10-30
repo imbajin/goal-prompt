@@ -202,6 +202,9 @@ def audit_outputs(output: Path) -> None:
 
 
 def run_frozen(output: Path, skill_up: Path, manifest: dict) -> int:
+    # Recheck prepared payloads before hashing: identical-byte and dangling
+    # links are otherwise invisible to the file/hash map.
+    reject_skill_symlinks(output / "snapshot")
     verify_catalog_evidence(output, manifest)
     if "execution_started_utc" in manifest or "completed_utc" in manifest or (output / "reports").exists() or (output / "events.jsonl").exists():
         raise ValueError("冻结运行已经执行或留有部分证据；请新建输出目录，不得覆盖")
@@ -257,6 +260,9 @@ def main() -> int:
         if args.prepare_only or args.skill or args.cases or args.invoke_skill:
             parser.error("--run-prepared 仅接受 --output、--repo 和 --skill-up")
         try:
+            # Check before delegating to a historical archived runner, which
+            # may predate the symlink policy.
+            reject_skill_symlinks(output / "snapshot")
             manifest = json.loads((output / "manifest.json").read_text())
             verify_catalog_evidence(output, manifest)
             archived_runner = output / "run-targeted.py"

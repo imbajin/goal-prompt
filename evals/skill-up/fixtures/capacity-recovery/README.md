@@ -13,19 +13,44 @@ python3 evals/skill-up/fixtures/capacity-recovery/test-native-host.py \
   --image YOUR_IMAGE_ID --output .eval-work/native-capacity-new
 ```
 
-An optional `--recovery-script path/to/prototype.py` loads the prototype's
-`run(options, rpc, ledger)` function through a serialized **real native stdio
-RPC adapter**. The watcher runs in a controller thread outside the Codex host.
-It is armed before releasing the injected error. This is not a CLI socket
-end-to-end test. No WebSocket or daemon compatibility is implied.
+The command above is self-contained: it verifies host capacity/block/reactivate
+transitions through the fixture client and needs no private prototype. To test
+the experimental automatic policy, this repository also includes
+`retry_policy.py`; it has no socket client, daemon, credentials or standalone
+Desktop entrypoint and is not installed with the Skill.
 
-With a recovery prototype, use `--scenario recovery`, `--scenario pause`, or
-`--scenario quota`. The positive case checks the same generated Goal ID through
-read-only access to the disposable fixture DB, preserves objective/budget,
-waits for a new native turn, and then pauses that fixture Goal to prevent a
-synthetic uncompleted objective from looping. The negatives verify that user
-pause during backoff and non-capacity quota termination produce no recovery
-write. The quota host state is `usageLimited`, distinct from `blocked`.
+```sh
+python3 evals/skill-up/fixtures/capacity-recovery/test-native-host.py \
+  --image YOUR_IMAGE_ID --output .eval-work/native-policy-new \
+  --recovery-script evals/skill-up/fixtures/capacity-recovery/retry_policy.py \
+  --scenario recovery
+```
+
+Use a new output directory with `--scenario pause` or `--scenario quota` for the
+negative controls. `--recovery-script` imports `run(options, rpc, ledger)` through
+a serialized **real native stdio RPC adapter**. The watcher is a controller
+thread outside the Codex host and is armed before the injected terminal error.
+This is not a CLI socket end-to-end test or online capacity test.
+
+The positive checks the same native Goal ID through read-only access to the
+disposable fixture DB, preserves objective/budget, waits for a new native turn,
+then pauses that fixture Goal to prevent an uncompleted synthetic objective from
+looping. The negatives verify pause and quota produce no recovery write;
+quota state is `usageLimited`, distinct from `blocked`.
+
+The policy's test defaults are 5/15/30 minutes, at most three attempts, with no
+jitter unless configured. Native tests use a scaled 0.25-second wait. Run the
+virtual-clock and cleanup tests without Docker or model credentials:
+
+```sh
+python3 evals/skill-up/fixtures/capacity-recovery/test_retry_policy.py
+python3 evals/skill-up/fixtures/capacity-recovery/test-native-host-cleanup.py
+```
+
+One policy test deliberately demonstrates the remaining final GET-to-SET race.
+It is a known limitation, not a safety pass. Do not use the laboratory module as
+a Desktop recovery service; atomic conditions and supported connection/lifecycle
+handling are still required before that capability can be released.
 
 Every output path must be new. Config, native JSON-RPC events, image policy,
 script hashes, generated rollouts and failures remain under the local ignored
@@ -38,7 +63,7 @@ removal failure can still require manual cleanup: use the output's
 or model calls; it does not establish that Docker can remove a container during
 an engine outage.
 
-The recorded native observations refer to each run's archived fixture SHA.
-After those runs, only failure-path cleanup was changed and checked by the
-zero-Docker fault tests; the original native results were not overwritten or
-presented as another run of the revised fixture.
+The recorded native observations refer to each run's archived fixture and policy
+SHA. Earlier native runs and the cleanup-only revision remain archived. The R1
+follow-up reran the three scenarios with the repository policy module; it did
+not overwrite earlier results or run an online provider.

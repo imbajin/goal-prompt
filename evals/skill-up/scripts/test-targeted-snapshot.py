@@ -3,6 +3,7 @@
 import importlib.util
 import contextlib
 import io
+import json
 from pathlib import Path
 import subprocess
 import sys
@@ -13,6 +14,10 @@ from unittest.mock import patch
 SPEC = importlib.util.spec_from_file_location("targeted_runner", Path(__file__).with_name("run-targeted.py"))
 RUNNER = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(RUNNER)
+
+SUMMARY_SPEC = importlib.util.spec_from_file_location("targeted_summary", Path(__file__).with_name("summarize-targeted.py"))
+SUMMARY = importlib.util.module_from_spec(SUMMARY_SPEC)
+SUMMARY_SPEC.loader.exec_module(SUMMARY)
 
 
 class SkillCopyPolicy(unittest.TestCase):
@@ -155,6 +160,121 @@ class SkillCopyPolicy(unittest.TestCase):
         with self.assertRaises(FileExistsError):
             RUNNER.copy_skill_tree(self.skill, self.destination)
         self.assertEqual(marker.read_text(), "existing output")
+
+
+class PreparedSnapshotPolicy(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.root = Path(self.temp.name).resolve()
+        self.run = self.root / "frozen-run"
+        self.snapshot = self.run / "snapshot"
+        self.snapshot.mkdir(parents=True)
+        self.skill_file = self.snapshot / "SKILL.md"
+        self.skill_file.write_bytes(b"harmless fixed snapshot bytes\n")
+        self.outside = self.root / "outside-marker.txt"
+        self.outside.write_bytes(self.skill_file.read_bytes())
+        (self.run / "bin").mkdir()
+        (self.run / "bin/codex").write_text("wrapper fixture")
+        self.binary = self.root / "binary"
+        self.binary.write_text("binary fixture")
+        self.manifest = {
+            "cases": [], "snapshot_sha256": {"SKILL.md": RUNNER.digest(self.skill_file)},
+            "wrapper": {"sha256": RUNNER.digest(self.run / "bin/codex")},
+            "skill_up_sha256": RUNNER.digest(self.binary),
+            "codex_binary": str(self.binary), "codex": "fixture-version",
+        }
+        RUNNER.write_json(self.run / "manifest.json", self.manifest)
+
+    def tearDown(self):
+        self.temp.cleanup()
+
+    def tamper(self, variant):
+        if variant == "same-bytes":
+            self.skill_file.unlink()
+            self.skill_file.symlink_to(self.outside)
+        else:
+            (self.snapshot / "dangling.txt").symlink_to(self.root / "missing.txt")
+        # This is the old bypass: both mutations preserve the previous hash map.
+        actual = {str(path.relative_to(self.snapshot)): RUNNER.digest(path)
+                  for path in self.snapshot.rglob("*") if path.is_file()}
+        self.assertEqual(actual, self.manifest["snapshot_sha256"])
+
+    def test_run_frozen_rejects_links_before_checks_or_dispatch(self):
+        for variant in ("same-bytes", "dangling"):
+            with self.subTest(variant=variant):
+                self.tamper(variant)
+                with patch.object(RUNNER, "verify_catalog_evidence") as catalog, \
+                        patch.object(RUNNER.subprocess, "run") as launch:
+                    with self.assertRaisesRegex(ValueError, "符号链接"):
+                        RUNNER.run_frozen(self.run, self.binary, self.manifest)
+                    catalog.assert_not_called()
+                    launch.assert_not_called()
+                self.assertNotIn("execution_started_utc", self.manifest)
+                self.assertFalse((self.run / "run.log").exists())
+                if variant == "same-bytes":
+                    self.skill_file.unlink()
+                    self.skill_file.write_bytes(self.outside.read_bytes())
+
+    def test_prepared_main_rejects_before_delegating_old_runner(self):
+        self.tamper("same-bytes")
+        archived = self.run / "run-targeted.py"
+        archived.write_text("old archived runner fixture")
+        self.manifest["runner_sha256"] = RUNNER.digest(archived)
+        RUNNER.write_json(self.run / "manifest.json", self.manifest)
+        stderr = io.StringIO()
+        arguments = ["run-targeted.py", "--run-prepared", "--output", str(self.run)]
+        with patch.object(sys, "argv", arguments), contextlib.redirect_stderr(stderr), \
+                patch.object(RUNNER, "verify_catalog_evidence") as catalog, \
+                patch.object(RUNNER.os, "execv") as delegate, \
+                patch.object(RUNNER, "run_frozen") as execute:
+            with self.assertRaises(SystemExit) as stopped:
+                RUNNER.main()
+            self.assertEqual(stopped.exception.code, 2)
+            catalog.assert_not_called()
+            delegate.assert_not_called()
+            execute.assert_not_called()
+        self.assertIn("符号链接", stderr.getvalue())
+        self.assertEqual(archived.read_text(), "old archived runner fixture")
+
+    def test_cli_prepared_rejects_dangling_without_dependencies(self):
+        self.tamper("dangling")
+        before = (self.run / "manifest.json").read_bytes()
+        result = subprocess.run([sys.executable, "-S", RUNNER.__file__, "--run-prepared",
+                                 "--output", str(self.run)], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("符号链接", result.stderr)
+        self.assertEqual((self.run / "manifest.json").read_bytes(), before)
+        self.assertFalse((self.run / "run.log").exists())
+
+    def test_regular_prepared_snapshot_still_dispatches_stub_once(self):
+        with patch.object(RUNNER, "verify_catalog_evidence"), \
+                patch.object(RUNNER, "captured", return_value="fixture-version"), \
+                patch.object(RUNNER.subprocess, "run", return_value=subprocess.CompletedProcess([], 0)) as launch, \
+                patch.object(RUNNER, "audit_outputs"):
+            self.assertEqual(RUNNER.run_frozen(self.run, self.binary, self.manifest), 0)
+            self.assertEqual(launch.call_count, 1)
+        self.assertIn("completed_utc", self.manifest)
+
+    def test_summary_rejects_same_bytes_and_dangling_links_before_archiving(self):
+        for variant in ("same-bytes", "dangling"):
+            with self.subTest(variant=variant):
+                self.tamper(variant)
+                output = self.root / ("summary-" + variant)
+                output.mkdir()
+                with self.assertRaisesRegex(ValueError, "符号链接"):
+                    SUMMARY.summarize_run(self.run, output, {})
+                self.assertFalse((output / self.run.name).exists())
+                if variant == "same-bytes":
+                    self.skill_file.unlink()
+                    self.skill_file.write_bytes(self.outside.read_bytes())
+
+    def test_regular_summary_keeps_verified_status(self):
+        output = self.root / "summary"
+        output.mkdir()
+        info = SUMMARY.summarize_run(self.run, output, {})
+        self.assertTrue(info["snapshot_verified"])
+        self.assertEqual(info["state"], "pending")
+        self.assertEqual(info["cases"], [])
 
 
 if __name__ == "__main__":

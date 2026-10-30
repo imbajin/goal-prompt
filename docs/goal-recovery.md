@@ -1,6 +1,6 @@
 # Capacity 与 Goal 恢复边界
 
-1.3仅引入恢复边界说明、检查点要求和可复跑故障注入测试；正式Skill包未提供或启用capacity自动恢复脚本。Skill能保存检查点和恢复证据；请求重试、Goal状态迁移和重新激活由宿主控制。本文不依赖某个用户聊天或私有日志。
+1.3仅引入恢复边界说明、检查点要求和可复跑故障注入测试；正式Skill包未提供或启用capacity自动恢复脚本。实验策略核心仅作为仓库测试fixture维护，不能直接连接Desktop。Skill能保存检查点和恢复证据；请求重试、Goal状态迁移和重新激活由宿主控制。本文不依赖某个用户聊天或私有日志。
 
 2026-10-30核对Codex公开main的固定快照；下列关键文件与此前核对版本一致。源码可解释机制，但不证明所有已安装二进制都有相同行为。
 
@@ -33,6 +33,6 @@ Skill目前能做的是在重要派发前记录已验证结果、未完成门槛
 
 离线策略检查另覆盖暂停、模型配置变化、丢回执、重复恢复和预算上限，并故意复现最终GET→SET暂停竞态。该反例未算作安全通过；原子条件恢复仍需宿主支持。当前终态RPC没有结构化Retry-After，原型只按配置或显式可信等待下限退避，不能宣称自动读到服务端等待提示。
 
-可复跑入口见[原生故障注入fixture](../evals/skill-up/fixtures/capacity-recovery/README.md)。源码留仓库，原型、逐条RPC、原始失败和运行配置保存在本地忽略目录`.eval-work/capacity-native-probe/`及`.eval-work/capacity-retry-prototype/`；新默认原型另存于`.eval-work/capacity-retry-prototype-5-15-30/`，旧冻结源保留。
+可复跑入口见[原生故障注入fixture](../evals/skill-up/fixtures/capacity-recovery/README.md)。R1后将已测策略核心整理为[实验测试模块](../evals/skill-up/fixtures/capacity-recovery/retry_policy.py)，移除不可用的socket CLI；正例、暂停和额度三场景现在均可直接使用仓库源码复跑，R1已在同一隔离profile下再次通过（零外部模型调用）。新模块默认5/15/30分钟经18项离线检查，其中一项刻意暴露未解决竞态，不作为安全证明。逐条RPC、原始失败和运行配置仍在本地忽略目录，新运行位于`.eval-work/pr-review-r1-20261031/native-*`，旧冻结源与旧结果保留。
 
 **仍未验证：**正式独立脚本的Desktop接入、从Skill执行阶段启动后的完整生命周期、线上capacity恢复和原子并发保护。已证明`app-server proxy --sock`只是原始字节relay，不能直接替代Unix socket的WebSocket握手；stdio策略集成不等于socket命令行端到端成功。本次没有把原型安装进Skill，也没有改变默认生成流程或操作现有业务聊天。

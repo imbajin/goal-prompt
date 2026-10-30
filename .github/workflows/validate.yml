@@ -51,12 +51,20 @@ jobs:
           test -f skills/goal-prompt/references/long-goal-learning.md
           test -f docs/fusion-notes.md
 
+      - name: Install evaluation audit test dependency
+        run: |
+          python3 -m venv .eval-work/ci-venv
+          .eval-work/ci-venv/bin/python -m pip install --disable-pip-version-check -r evals/skill-up/requirements.txt
+
       - name: Check deterministic eval judges
         run: |
           bash -n evals/skill-up/fixtures/scripts/*.sh
           evals/skill-up/fixtures/scripts/test-judges.sh
           python3 evals/skill-up/fixtures/capacity-recovery/test-native-host-cleanup.py
+          python3 evals/skill-up/fixtures/capacity-recovery/test_retry_policy.py
           python3 evals/skill-up/scripts/test-targeted-snapshot.py
+          .eval-work/ci-venv/bin/python evals/skill-up/scripts/test-audit-discovery.py
+          python3 evals/skill-up/scripts/test-request-outcomes.py
 
       - name: Validate skill-up definitions without model credentials
         run: |
