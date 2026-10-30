@@ -256,6 +256,12 @@ def outside_qualification(action, previous_end):
     if required_operation.search(qualifier) and not different_target.search(qualifier):
         print("不得把任务内已授权操作重新划为范围外", file=sys.stderr)
         sys.exit(1)
+    # The target may follow the approval noun ("approval before Chrome
+    # upload"). Check the complete local request, not only its scope prefix.
+    # Return to normal polarity handling so "do not ask" remains permitted.
+    request = local + text[action.start():tail_end]
+    if required_operation.search(request) and not different_target.search(request):
+        return False, end
     return True, end
 
 # "Do not push without approval" requires approval: the outer prohibition

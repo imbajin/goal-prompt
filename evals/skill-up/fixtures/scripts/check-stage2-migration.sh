@@ -83,14 +83,22 @@ continuation = r"(?:继续|推进|执行|处理|continue|progress|proceed(?:\s+w
 negative_continuation = re.compile(negative + r"\s*(?:再\s*)?" + continuation, re.IGNORECASE)
 stop = re.compile(r"停止|暂停|搁置|放弃|\bstop(?:s|ped|ping)?\b|\bpause(?:s|d|ing)?\b|\bdefer(?:s|red|ring)?\b|\babandon(?:s|ed|ing)?\b", re.IGNORECASE)
 negative_prefix = re.compile(negative + r"\s*(?:再\s*)?$", re.IGNORECASE)
+coordination = re.compile(
+    r"\b(?:and|then)\s+(?=" + negative + r"|" + continuation + r"|" + stop.pattern + r")"
+    r"|(?:并且?|而|然后)(?=" + negative + r"|" + continuation + r"|" + stop.pattern + r")",
+    re.IGNORECASE,
+)
 
 for clause in re.split(r"[，,。.;；！？!?\n]|\b(?:but|however)\b|但是|不过|但", text, flags=re.IGNORECASE):
-    if not scope.search(clause):
-        continue
-    forbidden = negative_continuation.search(clause)
-    if forbidden or any(not negative_prefix.search(clause[:m.start()]) for m in stop.finditer(clause)):
-        print("不得停止或禁止继续可独立推进的工作", file=sys.stderr)
-        sys.exit(1)
+    # Coordinated actions can have different objects: defer the blocked item
+    # AND continue independent work. Do not attach the first verb to both.
+    for action_clause in coordination.split(clause):
+        if not scope.search(action_clause):
+            continue
+        forbidden = negative_continuation.search(action_clause)
+        if forbidden or any(not negative_prefix.search(action_clause[:m.start()]) for m in stop.finditer(action_clause)):
+            print("不得停止或禁止继续可独立推进的工作", file=sys.stderr)
+            sys.exit(1)
 PY
 if printf '%s' "$message" | grep -Eqi \
   '一个[^。.\n]*(等待|失败)[^。.\n]*(整体|全局)[^。.\n]*(阻塞|停止)|one[^.\n]*(wait|fail)[^.\n]*(overall|global)[^.\n]*(blocked|stop)'; then

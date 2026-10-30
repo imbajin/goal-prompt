@@ -235,44 +235,73 @@ def invalid_progress_percentages(text: str) -> bool:
     inspect clauses containing a progress label, not performance/coverage goals.
     This checks structure, not whether the underlying evidence is truthful.
     """
-    # A top-level comma separates independent statements, but commas inside a
-    # progress denominator's parentheses still belong to that progress claim.
+    # Split all punctuation in one depth-aware pass. A semicolon or period
+    # inside the denominator's parentheses still qualifies that progress claim.
     clauses = []
-    for sentence in re.split(r"[。；;\n]|(?<!\d)\.(?!\d)", text):
-        start = depth = 0
-        for index, char in enumerate(sentence):
-            if char in "(（":
-                depth += 1
-            elif char in ")）":
-                depth = max(0, depth - 1)
-            elif char in ",，" and depth == 0:
-                clauses.append(sentence[start:index])
-                start = index + 1
-        clauses.append(sentence[start:])
+    start = depth = 0
+    for index, char in enumerate(text):
+        if char in "(（[【":
+            depth += 1
+        elif char in ")）]】":
+            depth = max(0, depth - 1)
+        elif depth == 0 and (
+            char in ",，。；;\n"
+            or (char == "." and not (
+                index > 0 and index + 1 < len(text)
+                and text[index - 1].isdigit() and text[index + 1].isdigit()
+            ))
+        ):
+            clauses.append(text[start:index])
+            start = index + 1
+    clauses.append(text[start:])
+    qualifier = re.compile(r"\bestimat(?:e|ed|ion)\b|coarse|估计|粗粒度|未知分母", re.IGNORECASE)
+    coordination = re.compile(r"\b(?:and|but|while|whereas)\b|并且?|同时|而", re.IGNORECASE)
     for clause in clauses:
-        displayed = re.search(
+        for displayed in re.finditer(
             r"(?:\bprogress(?![a-z_])|进度)(?:条|百分比)?\s*(?:\[[^\]\n]*\]\s*)?"
             r"(?:(?:当前|约|为|估计|粗粒度|is|estimated|about|approximately)\s*)*"
             r"[:：]?\s*(?P<percentage>\d+(?:\.\d+)?)\s*%", clause, re.IGNORECASE,
-        )
-        if not displayed:
-            continue
-        progress = clause[displayed.start():]
-        ratio = re.search(r"(\d+)\s*/\s*(\d+)", progress)
-        if not ratio or not 0 <= int(ratio[1]) <= int(ratio[2]) or int(ratio[2]) == 0:
-            return True
-        percentage_text = displayed['percentage']
-        percentage = Fraction(percentage_text)
-        numerator, denominator = int(ratio[1]), int(ratio[2])
-        rounding_tolerance = Fraction(1, 2 * 10 ** len(percentage_text.partition('.')[2]))
-        if not 0 <= percentage <= 100 or abs(percentage - Fraction(100 * numerator, denominator)) > rounding_tolerance:
-            return True
-        if percentage == 100 and numerator != denominator:
-            return True
-        # Qualifiers can precede the label ("Estimated progress is ...").
-        # Sentence splitting above keeps an independent prohibition separate.
-        if re.search(r"\bestimat(?:e|ed|ion)\b|coarse|估计|粗粒度|未知分母", clause, re.IGNORECASE):
-            return True
+        ):
+            # A coordinated performance estimate is a separate claim. Keep
+            # conjunctions inside the progress denominator's brackets intact.
+            end = len(clause)
+            depth = 0
+            for index in range(displayed.end(), len(clause)):
+                char = clause[index]
+                if char in "(（[【":
+                    depth += 1
+                elif char in ")）]】":
+                    depth = max(0, depth - 1)
+                elif depth == 0 and coordination.match(clause, index):
+                    end = index
+                    break
+            progress = clause[displayed.start():end]
+            ratio = re.search(r"(\d+)\s*/\s*(\d+)", progress)
+            if not ratio or not 0 <= int(ratio[1]) <= int(ratio[2]) or int(ratio[2]) == 0:
+                return True
+            percentage_text = displayed['percentage']
+            percentage = Fraction(percentage_text)
+            numerator, denominator = int(ratio[1]), int(ratio[2])
+            rounding_tolerance = Fraction(1, 2 * 10 ** len(percentage_text.partition('.')[2]))
+            if not 0 <= percentage <= 100 or abs(percentage - Fraction(100 * numerator, denominator)) > rounding_tolerance:
+                return True
+            if percentage == 100 and numerator != denominator:
+                return True
+            # Only an adjacent prefix modifies this label; an earlier
+            # performance estimate in the clause must not contaminate it.
+            prefix_estimate = re.search(
+                r"(?:\bestimat(?:e|ed|ion)\b|coarse|估计|粗粒度)\s*$",
+                clause[:displayed.start()], re.IGNORECASE,
+            )
+            # An explicit estimated denominator remains a progress qualifier,
+            # even when coordinated after the numeric progress phrase.
+            denominator_estimate = re.match(
+                r"(?:and|并且?|同时)\s*(?:(?:an?|the)\s+)?"
+                r"(?:estimated\s+(?:denominator|total)|(?:估计|未知)(?:的)?(?:分母|总数))",
+                clause[end:], re.IGNORECASE,
+            )
+            if prefix_estimate or qualifier.search(progress) or denominator_estimate:
+                return True
     return False
 
 

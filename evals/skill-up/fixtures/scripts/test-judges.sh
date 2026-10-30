@@ -894,3 +894,30 @@ for auxiliary in "doesn't" 'doesn’t' "don't" 'don’t' "didn't" "mustn't" "sho
   expect_pass check-stage2-migration.sh "$migration_contract 继续独立工作；Independent work $auxiliary stop while CI waits. $migration_stop_gate"
   expect_fail check-stage2-migration.sh "$migration_contract 继续独立工作；Independent work $auxiliary continue while CI waits. $migration_stop_gate"
 done
+
+# R2: outside-scope labels cannot conceal a required operation after approval.
+expect_fail check-preauthorized-permissions.sh "$r1_preauth For out-of-scope changes, obtain approval before Chrome upload."
+expect_fail check-preauthorized-permissions.sh "$r1_preauth 对于范围外工作，必须请求批准才能进行Chrome上传。"
+expect_pass check-preauthorized-permissions.sh "$r1_preauth For out-of-scope changes, do not ask for approval before Chrome upload."
+expect_pass check-preauthorized-permissions.sh "$r1_preauth For out-of-scope changes, obtain approval before Chrome upload to production."
+expect_pass check-preauthorized-permissions.sh "$r1_preauth 对于范围外工作，必须请求批准才能进行生产环境的Chrome上传。"
+# One blocked item may be deferred while other work continues; directly
+# deferring independent work is still a contract violation.
+for wording in 'While waiting, defer the blocked item and continue independent work.' '遇到等待时将受阻项搁置并继续其余独立工作。' 'Defer the blocked item and do not stop independent work.'; do
+  expect_pass check-stage2-migration.sh "$migration_contract $wording $migration_stop_gate"
+done
+for wording in 'While waiting, defer independent work and continue the blocked item.' '遇到等待时将其余独立工作搁置并继续受阻项。' 'Defer the blocked item and do not continue independent work.'; do
+  expect_fail check-stage2-migration.sh "$migration_contract $wording $migration_stop_gate"
+done
+# Estimate qualification follows the progress claim, including parentheses
+# containing punctuation. Coordinated performance estimates are independent.
+expect_contract_pass long "$r1_long Progress 20% (2/10 verified items) and an estimated performance gain of 50%."
+expect_contract_pass long "$r1_long An estimated performance gain of 50% and Progress 20% (2/10 verified items)."
+expect_contract_pass long "$r1_long 进度20%（2/10项）并估计性能提升50%。"
+expect_contract_fail long "$r1_long Progress 20% (2/10 items) and an estimated denominator."
+expect_contract_fail long "$r1_long Progress 20% (2/10 items) and Estimated progress 50% (2/4 items)."
+for separator in ';' '.' '；' '。'; do
+  expect_contract_fail long "$r1_long Progress 50% (2/4 gates$separator coarse estimate)."
+  expect_contract_fail long "$r1_long 进度50%（2/4项$separator 粗粒度估计）。"
+  expect_contract_pass long "$r1_long Progress 50% (2/4 verified gates)$separator performance improvement estimate 50%."
+done
