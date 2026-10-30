@@ -324,7 +324,14 @@ def invalid_progress_percentages(text: str) -> bool:
                 r"|(?:分母|总数)(?:为|是)(?:估计|未知))",
                 clause[end:], re.IGNORECASE,
             )
-            approximate = re.search(r"[~≈]|大?约|\b(?:about|approximately)\b", displayed['qualifier'], re.IGNORECASE)
+            approximate = (
+                re.search(r"[~≈]|大?约|\b(?:about|approximately)\b", displayed['qualifier'], re.IGNORECASE)
+                # A count qualifier can occur before or after the ratio in
+                # the same bounded claim. Do not cross its conjunction into
+                # an independent performance estimate; compact about2/4 also
+                # needs a letter boundary rather than a digit word boundary.
+                or re.search(r"[~≈]|大约|\b(?:about|approximat(?:e|ely))(?![a-z_])", progress, re.IGNORECASE)
+            )
             if approximate or prefix_estimate or qualifier.search(progress) or denominator_estimate:
                 return True
     return False

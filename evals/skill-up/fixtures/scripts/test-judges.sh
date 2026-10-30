@@ -972,3 +972,13 @@ for wording in 'Never report progress 100% before all gates pass.' 'Do not repor
   expect_contract_pass long "$r1_long $wording"
 done
 expect_contract_fail long "$r1_long Never report progress 100% before all gates pass. Progress 100% (2/4 gates)."
+
+
+# R3 repair review: approximation can qualify the denominator locally, before
+# or after its ratio; an independent performance approximation stays unrelated.
+for wording in 'Progress50%(about2/4gates)' 'Progress50%(approximately2/4gates)' 'Progress50%(2/4gates,approximately)' '进度50％（大约2/4项）' '进度50％（2/4项，大约）' 'Progress50%(2/4gates;approximate)'; do
+  expect_contract_fail long "$r1_long $wording"
+done
+expect_contract_pass long "$r1_long Progress50%(2/4 verified gates) and approximately50% performance gain."
+expect_contract_pass long "$r1_long Progress50%(2/4 verified gates), about50% performance gain."
+expect_contract_pass long "$r1_long 进度50％（2/4验证项）并且性能增益大约50%。"
