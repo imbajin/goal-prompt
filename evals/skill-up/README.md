@@ -61,6 +61,7 @@ Do not report an unavailable archive or an unrun case as a pass.
 | --- | --- |
 | `scripts/run-targeted.py`, `summarize-targeted.py` | Start here for new targeted runs. Accept explicit Skill, cases, binary, run and output paths; distinguish natural routing from explicit invocation. |
 | `scripts/test-skill-up-upgrade.py` | Credential-free CLI compatibility checks used by CI. |
+| `scripts/test-api-broker.py`, `test-business-redaction.py` | Credential-free broker failure and source-label blinding regressions used by CI; loopback HTTP uses synthetic auth and a fake upstream. |
 | `scripts/baseline-container/`, `baseline-docker.py`, `without-only.patch` | Reusable, versioned Luna xhigh isolation profile. Build the image and configure the trusted broker/network explicitly; there is no portable one-command launcher. |
 | `scripts/audit-*-requests.py`, `audit-request-outcomes.py`, `test-request-outcomes.py` | Reconcile archived native requests and test missing/retry records; not a new model run. |
 | `scripts/run-baseline.py`, `run-with-skill.py`, `summarize-baseline.py`, `summarize-paired.py`, `test-audit-discovery.py` | Frozen 30-case Luna profile. Starting a cohort requires its original input revision, patched binary and valid `isolation.json`; with-Skill also requires the matching without archive. |
