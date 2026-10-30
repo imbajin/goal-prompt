@@ -14,6 +14,8 @@ All notable changes to this project are documented in this file.
   fix deterministic Judge errors while preserving original outputs and grades.
 - Document GPT-6.1 Sol high targeted results and GPT-6 Luna xhigh comparisons
   separately. Keep generated archives and machine-specific state local.
+- Add a reproducible, credential-free native capacity-injection fixture;
+  keep experimental recovery prototypes and raw RPC logs local.
 - Skip Claude Code live evaluation for this release; installation/static
   checks do not certify runtime behavior. Document checkpoint and manual
   recovery boundaries without promising automatic capacity recovery.

@@ -73,6 +73,11 @@ interface. Future portable launchers need explicit configuration and a separate
 validation; do not copy a maintainer's credentials or silently substitute a
 model. The versioned container README documents the current profile boundaries.
 
+The optional [native capacity fixture](fixtures/capacity-recovery/README.md)
+uses a real disposable Codex host with a scripted local provider and no external
+model calls. It checks host transitions and can import an experimental policy
+module; it does not certify a Desktop socket client or production auto-recovery.
+
 Result summaries remain public: [6.1 Sol high targeted results](gpt61-refresh.md)
 and [Luna xhigh results](../../docs/luna-xhigh-trial.md). They preserve original
 versus calibrated grades and the limits of each cohort. Raw JSON, transcripts,
