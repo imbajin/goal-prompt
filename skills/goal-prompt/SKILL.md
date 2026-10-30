@@ -187,13 +187,16 @@ short explanation of mode, initialization files and grounded tradeoffs. Include:
 
 1. The confirmed observable outcome, scope/exclusions and minimum active-truth paths.
 2. Explicit inline pre-authorization, credential/capability/safety boundaries and
-   continuation of independent work as defined above.
+   continuation of independent work; resolve material unknowns before dependent actions.
 3. Conjunctive completion gates covering actual behavior, real validators,
-   compatibility/invariants, documentation and applicable independent review/re-review.
+   compatibility/invariants, documentation and applicable independent review/re-review,
+   with no unresolved high-severity findings.
 4. Persistence/reordering and exceptional stop conditions: all meaningful remaining
    work jointly blocked after recovery, with the current host's status rules satisfied.
 5. For deep mode, the verified state.md entrypoint holding detailed execution,
    checkpoints, retries, review and commit rules.
+6. The user's explicit reporting format, without inventing percentages when a
+   verified fixed denominator is unavailable.
 
 For UI goals require real Chrome `browser_use` or its available equivalent,
 functional success/failure interactions and UI/UX/accessibility evidence; follow
@@ -214,6 +217,7 @@ budget only when the user requested it.
 
 Active truth: <verified paths; deep mode: state.md execution/recovery entrypoint>.
 Scope: <included work and exclusions>.
+Resolve material unknowns before dependent actions; continue independent work.
 
 All user-authorizable actions required within the confirmed task scope are
 pre-authorized, including Chrome uploads, entering available credentials,
@@ -224,11 +228,13 @@ higher-priority safety boundaries, or authorize out-of-scope work. Never expose
 or persist credential values. Use safe alternatives and continue independent work
 when a real capability is unavailable, keeping its unmet gate active.
 
-Execution: <fast inline rules, or deep state.md contract reference>.
+Execution: <fast inline rules, or deep state.md contract reference; preserve the
+user's reporting format, with percentages only for a verified fixed denominator>.
 Complete only when all apply:
 1. <observable result and material invariants>.
 2. <real validators and evidence for the full scope>.
-3. <documentation, independent review count and re-review after fixes as applicable>.
+3. <documentation, independent review count and re-review after fixes as applicable>;
+   no unresolved high-severity findings.
 
 Overall blocked requires all meaningful remaining work to share a verified
 blocker after recovery/reordering and the current host's status rules to be met.
