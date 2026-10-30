@@ -13,6 +13,7 @@ import os
 import re
 import sys
 from pathlib import Path
+from fractions import Fraction
 
 
 def read_source(args: argparse.Namespace) -> tuple[str, str]:
@@ -121,15 +122,6 @@ def checks_for(profile: str) -> list[tuple[str, tuple[str, ...]]]:
     if profile == "long":
         return [
             (
-                "progress bar and gate-based percentage",
-                (
-                    r"progress\s*\[[^\n\]]*\]\s*\d+%",
-                    r"进度条.{0,100}\d+%",
-                    r"进度.{0,100}\d+%.{0,40}(?:\d+\s*/\s*\d+|gates?/总|estimate|估计|粗粒度)",
-                    r"进度.{0,100}(百分比|百分数|gates?/总)",
-                ),
-            ),
-            (
                 "milestone commit",
                 (
                     r"(?:milestone|里程碑).{0,160}(?:commit|提交)",
@@ -236,6 +228,54 @@ def checks_for(profile: str) -> list[tuple[str, tuple[str, ...]]]:
     raise SystemExit(f"unknown profile: {profile!r}; expected long, parallel, or ui")
 
 
+def invalid_progress_percentages(text: str) -> bool:
+    """A displayed progress percentage needs an explicit, non-estimated denominator.
+
+    Progress prose is sufficient; do not require a bar or a percentage. Only
+    inspect clauses containing a progress label, not performance/coverage goals.
+    This checks structure, not whether the underlying evidence is truthful.
+    """
+    # A top-level comma separates independent statements, but commas inside a
+    # progress denominator's parentheses still belong to that progress claim.
+    clauses = []
+    for sentence in re.split(r"[。；;\n]|(?<!\d)\.(?!\d)", text):
+        start = depth = 0
+        for index, char in enumerate(sentence):
+            if char in "(（":
+                depth += 1
+            elif char in ")）":
+                depth = max(0, depth - 1)
+            elif char in ",，" and depth == 0:
+                clauses.append(sentence[start:index])
+                start = index + 1
+        clauses.append(sentence[start:])
+    for clause in clauses:
+        displayed = re.search(
+            r"(?:\bprogress(?![a-z_])|进度)(?:条|百分比)?\s*(?:\[[^\]\n]*\]\s*)?"
+            r"(?:(?:当前|约|为|估计|粗粒度|is|estimated|about|approximately)\s*)*"
+            r"[:：]?\s*(?P<percentage>\d+(?:\.\d+)?)\s*%", clause, re.IGNORECASE,
+        )
+        if not displayed:
+            continue
+        progress = clause[displayed.start():]
+        ratio = re.search(r"(\d+)\s*/\s*(\d+)", progress)
+        if not ratio or not 0 <= int(ratio[1]) <= int(ratio[2]) or int(ratio[2]) == 0:
+            return True
+        percentage_text = displayed['percentage']
+        percentage = Fraction(percentage_text)
+        numerator, denominator = int(ratio[1]), int(ratio[2])
+        rounding_tolerance = Fraction(1, 2 * 10 ** len(percentage_text.partition('.')[2]))
+        if not 0 <= percentage <= 100 or abs(percentage - Fraction(100 * numerator, denominator)) > rounding_tolerance:
+            return True
+        if percentage == 100 and numerator != denominator:
+            return True
+        # Qualifiers can precede the label ("Estimated progress is ...").
+        # Sentence splitting above keeps an independent prohibition separate.
+        if re.search(r"\bestimat(?:e|ed|ion)\b|coarse|估计|粗粒度|未知分母", clause, re.IGNORECASE):
+            return True
+    return False
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--profile", required=True, choices=("long", "parallel", "ui"))
@@ -251,6 +291,9 @@ def main() -> int:
         except ValueError as error:
             print(str(error), file=sys.stderr)
             return 1
+    if args.profile == "long" and invalid_progress_percentages(text):
+        print("FAIL progress percentage needs a defined denominator; do not estimate unknown totals", file=sys.stderr)
+        return 1
     negated = negated_requirements(args.profile, text)
     if negated:
         print(f"FAIL goal contract ({args.profile}; source: {source})", file=sys.stderr)

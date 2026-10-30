@@ -281,7 +281,7 @@ expect_contract_pass "long" \
   "/goal 当前进度 50%（2/4 gates）。本轮完成事项；剩余两项；下一步继续验证。每个里程碑提交 commit；压缩前把完成事项和下一步写入 state.md。"
 expect_contract_fail "long" \
   "/goal 当前进度 50%。本轮完成事项；剩余两项；下一步继续验证。每个里程碑提交 commit；压缩前把完成事项和下一步写入 state.md。"
-expect_contract_pass "long" \
+expect_contract_fail "long" \
   "/goal Progress [░░░░] 0%。This loop: 已创建并验证 state.md；Remaining: 核实仓库；Next: 执行 baseline。里程碑 commit。compaction 前将完成项写入 state.md。"
 expect_contract_pass "long" \
   "/goal Progress [██░░] 50%（2/4 gates）。This loop: 完成本轮事项，当前完成内容已记录；Remaining: 两项；Next: 继续验证。Do not skip the milestone commit; do not omit an independent reviewer; do not omit the state.md checkpoint；compaction 前写入 state.md。"
@@ -822,3 +822,75 @@ expect_fail "check-preauthorized-permissions.sh" \
   "$preauth_english Ask for approval for out-of-scope changes and in-scope work before upload."
 expect_pass "check-preauthorized-permissions.sh" \
   "$preauth_english Ask for approval for out-of-scope changes. Continue in-scope work."
+
+# R1: comma-separated credential objects stay attached to their action; a new
+# explicit permission after a comma cannot borrow the preceding prohibition.
+r1_preauth='/goal 任务内操作默认已授权，包括 Chrome 文件上传和输入已有测试密码；无需再次询问确认，权限不得导致等待或 blocked。真实能力缺失时继续所有独立工作。预授权不得虚构密码、会话或工具，也不能覆盖更高优先级安全边界。不得记录、截图或保存密码。'
+expect_fail check-preauthorized-permissions.sh "$r1_preauth 允许记录用户名, 密码。"
+expect_fail check-preauthorized-permissions.sh "$r1_preauth 允许记录用户名，密码。"
+expect_pass check-preauthorized-permissions.sh "$r1_preauth 不得记录用户名, 密码。"
+expect_fail check-preauthorized-permissions.sh "$r1_preauth 不得记录用户名, 允许记录密码。"
+expect_pass check-preauthorized-permissions.sh "$r1_preauth 范围内预授权覆盖输入已有密码,代码修改,创建PR。"
+# Absence of approval is allowed; prohibiting an authorized action in its
+# absence requires renewed approval. Outside-scope approval remains applicable.
+expect_fail check-preauthorized-permissions.sh "$r1_preauth 不要在没有征求用户同意的情况下推送。"
+expect_fail check-preauthorized-permissions.sh "$r1_preauth 不得在未申请批准的情况下上传。"
+expect_fail check-preauthorized-permissions.sh "$r1_preauth Do not push without obtaining approval."
+expect_fail check-preauthorized-permissions.sh "$r1_preauth Never upload without first asking for permission."
+expect_fail check-preauthorized-permissions.sh "$r1_preauth Do not proceed without approval."
+expect_pass check-preauthorized-permissions.sh "$r1_preauth Push without obtaining approval."
+expect_pass check-preauthorized-permissions.sh "$r1_preauth Proceed without approval."
+expect_pass check-preauthorized-permissions.sh "$r1_preauth Do not ask again. Push without obtaining approval."
+expect_pass check-preauthorized-permissions.sh "$r1_preauth For out-of-scope changes in another repository, do not proceed without obtaining approval."
+expect_fail check-preauthorized-permissions.sh "$r1_preauth For out-of-scope changes in another repository, do not proceed without approval; for in-scope work do not push without obtaining approval."
+# R1: directly negated stopping is continuation, not a stop instruction.
+for wording in '其余工作不需要停止。' 'Independent work does not stop while CI waits.' "Independent work won't stop while CI waits." 'Independent work will not stop while CI waits.'; do
+  expect_pass check-stage2-migration.sh "$migration_contract 继续独立工作；$wording $migration_stop_gate"
+done
+for wording in '其余工作需要停止。' 'Independent work stops while CI waits.' 'Independent work does not continue while CI waits.'; do
+  expect_fail check-stage2-migration.sh "$migration_contract 继续独立工作；$wording $migration_stop_gate"
+done
+# R1: honest progress does not require a bar or percentage. Numeric progress
+# needs a defined denominator and cannot use a coarse/estimated unknown total.
+r1_long='/goal 每轮报告当前完成事项、剩余工作和下一步。每个里程碑验证后commit；compaction前将已完成、剩余与下一步写入state.md。'
+expect_contract_pass long "$r1_long"
+expect_contract_pass long "$r1_long 分母未知时不报告百分比，仅列已验证完成与待验证项。"
+expect_contract_pass long "$r1_long 当前进度50%（2/4 gates）。"
+expect_contract_fail long "$r1_long 当前进度估计50%。"
+expect_contract_fail long "$r1_long Progress [██░░] 50% (2/4 gates, coarse estimate)."
+expect_contract_fail long "$r1_long 当前进度50%（2/0 gates）。"
+expect_contract_fail long "$r1_long 当前进度50%（5/4 gates）。"
+expect_contract_fail long '/goal 每轮报告进度；每个里程碑commit；compaction前写入state.md。'
+expect_contract_pass long "$r1_long 报告进度及完成与剩余事项，性能改进目标50%。"
+# Estimate qualifiers belong to the same progress clause on either side of its
+# label; an independent sentence prohibiting estimates does not qualify it.
+expect_contract_fail long "$r1_long Estimated progress is 20% (2/10 items)."
+expect_contract_fail long "$r1_long 估计进度为20%（2/10项）。"
+expect_contract_fail long "$r1_long Progress is estimated 20% (2/10 items)."
+expect_contract_fail long "$r1_long 进度为估计20%（2/10项）。"
+expect_contract_pass long "$r1_long Progress 20% (2/10 verified items)."
+expect_contract_pass long "$r1_long Progress20%(2/10 verified items)."
+expect_contract_pass long "$r1_long performance improvement target50%."
+expect_contract_pass long "$r1_long 禁止估计。Progress20%(2/10 verified)."
+expect_contract_pass long "$r1_long Never estimate. Progress 20% (2/10 verified)."
+# Displayed progress must agree with its completed/total ratio at the shown
+# precision; rounding an incomplete task to 100% is never completion evidence.
+expect_contract_fail long "$r1_long Progress100%(2/4 gates)."
+expect_contract_fail long "$r1_long Progress 100% (996/1000 gates)."
+expect_contract_fail long "$r1_long Progress 20% (2/4 gates)."
+expect_contract_fail long "$r1_long Progress 33.4% (1/3 gates)."
+expect_contract_pass long "$r1_long Progress 33% (1/3 gates)."
+expect_contract_pass long "$r1_long Progress 33.3% (1/3 gates)."
+expect_contract_pass long "$r1_long Progress100%(4/4 verified gates)."
+expect_contract_pass long "$r1_long Progress 99.6% (996/1000 verified gates)."
+expect_contract_pass long "$r1_long Progress:20%(2/10 verified gates), performance improvement estimate50%."
+expect_contract_pass long "$r1_long performance improvement estimate50%, Progress:20%(2/10 verified gates)."
+expect_contract_pass long "$r1_long Progress:20%(2/10 verified gates), performance improvement estimate 50%."
+expect_contract_pass long "$r1_long performance improvement estimate 50%, Progress:20%(2/10 verified gates)."
+expect_contract_fail long "$r1_long Progress20%(2/10 gates, coarse estimate)."
+# Common auxiliary contractions share polarity, including straight and curly
+# apostrophes. Negating continuation must still fail for the same family.
+for auxiliary in "doesn't" 'doesn’t' "don't" 'don’t' "didn't" "mustn't" "shouldn't" 'shouldn’t' "wouldn't" "couldn't" "can't" 'can’t' "won't" 'won’t'; do
+  expect_pass check-stage2-migration.sh "$migration_contract 继续独立工作；Independent work $auxiliary stop while CI waits. $migration_stop_gate"
+  expect_fail check-stage2-migration.sh "$migration_contract 继续独立工作；Independent work $auxiliary continue while CI waits. $migration_stop_gate"
+done

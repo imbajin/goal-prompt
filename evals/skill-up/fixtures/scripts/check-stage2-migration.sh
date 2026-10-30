@@ -75,12 +75,13 @@ scope = re.compile(
     re.IGNORECASE,
 )
 negative = (
-    r"(?:不(?:应(?:该)?|要|得|能|会|可(?:以)?|必|再)?|无需|禁止|严禁"
-    r"|never|do\s+not|must\s+not|should\s+not|cannot|avoid)"
+    r"(?:不(?:应(?:该)?|要|得|能|会|可(?:以)?|必|再)?|不需要|不用|无需|禁止|严禁"
+    r"|never|(?:do(?:es)?|did|must|should|will|would|could|can)\s+not"
+    r"|(?:do(?:es)?|did|must|should|would|could|ca|wo)n['’]t|cannot|avoid)"
 )
 continuation = r"(?:继续|推进|执行|处理|continue|progress|proceed(?:\s+with)?|execute|work\s+on)"
 negative_continuation = re.compile(negative + r"\s*(?:再\s*)?" + continuation, re.IGNORECASE)
-stop = re.compile(r"停止|暂停|搁置|放弃|\bstop\b|\bpause\b|\bdefer\b|\babandon\b", re.IGNORECASE)
+stop = re.compile(r"停止|暂停|搁置|放弃|\bstop(?:s|ped|ping)?\b|\bpause(?:s|d|ing)?\b|\bdefer(?:s|red|ring)?\b|\babandon(?:s|ed|ing)?\b", re.IGNORECASE)
 negative_prefix = re.compile(negative + r"\s*(?:再\s*)?$", re.IGNORECASE)
 
 for clause in re.split(r"[，,。.;；！？!?\n]|\b(?:but|however)\b|但是|不过|但", text, flags=re.IGNORECASE):
