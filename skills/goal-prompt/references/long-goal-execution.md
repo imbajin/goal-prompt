@@ -65,9 +65,12 @@ pause is handled under the host pause rule, never inferred from a quota wait.
 ## Progress, review and commits
 
 After each productive loop report completed work with evidence, remaining gates
-and one primary next action. Give a percentage only when the denominator is
-clear, never 100% before all gates pass. After a milestone commit include the
-commit and what is now complete. Keep item-level status in todo.md when present.
+and one primary next action. Briefly reflect on what worked, failed or should
+change next, even without lessons.md; write there only when evidence-backed
+reusable lessons warrant a learning record. Give a percentage only when the
+denominator is clear, never 100% before all gates pass. After a milestone commit
+include the commit and what is now complete. Keep item-level status in todo.md
+when present.
 
 For deep/major behavior-change milestones use 3 independent read-only reviewers
 by default; preserve the user's explicit count. All scan the integrated diff and

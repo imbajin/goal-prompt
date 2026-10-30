@@ -36,6 +36,10 @@ and continue without another preference question. If both investigation and
 confirmation are explicitly skipped, render immediately, keep unavailable facts
 unknown, and omit unverified paths and commands.
 
+In every final goal, make resolution of material unknowns an execution gate before
+dependent actions. Continue independent work; ask only when the missing fact
+changes the objective or makes a safe goal impossible.
+
 ### In-scope operations
 
 All user-authorizable actions needed inside the confirmed scope are
@@ -168,6 +172,9 @@ per item before deferring/reordering behind independent work; visible completed
 and remaining work plus one next action after productive loops; one independent
 reviewer for focused low-risk behavior changes and re-review after fixes;
 validation/review before local commits, no empty commits and no push by default.
+Fast goals must also carry the current host's cross-turn blocked audit (the same
+blocker for three consecutive goal turns when required, distinct from per-item
+retries), and require no unresolved high-severity finding before completion.
 Preserve a user's explicit reviewer count. Deep behavior/migration goals and their
 state must require independent review at major behavior-change milestones as
 well as final integration; final-only review is insufficient.
