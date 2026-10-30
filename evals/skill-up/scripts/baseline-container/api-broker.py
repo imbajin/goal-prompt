@@ -141,6 +141,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
         except ValueError as error:
             self.reject(403, str(error), MODEL, EFFORT, rhash)
             return
+        # Connection-close is a transport choice, not evidence that headers were sent.
+        response_started = False
         # 仅在通过模型/effort/route验证的真实请求内读取原认证；不复制到 Agent 或日志。
         try:
             auth = json.loads(AUTH_PATH.read_text())
@@ -171,6 +173,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                    "session_sha256": digest(session.encode()), "thread_sha256": digest(thread.encode()),
                    "identity_source": identity_source})
             with opener.open(request, timeout=450) as response:
+                response_started = True
                 self.send_response(response.status)
                 self.send_header("Content-Type", "text/event-stream")
                 self.send_header("Cache-Control", "no-cache")
@@ -192,11 +195,13 @@ class Handler(http.server.BaseHTTPRequestHandler):
             # 上游错误正文/headers可能带身份信息，一律不返回或记录。
             event({"event": "upstream_error", "source_ip": self.client_address[0], "model": MODEL,
                    "effort": EFFORT, "status": error.code, "request_sha256": rhash})
-            self.reject(502, "upstream_request_failed", MODEL, EFFORT, rhash)
+            if not response_started:
+                self.reject(502, "upstream_request_failed", MODEL, EFFORT, rhash)
+            self.close_connection = True
         except Exception as error:
             event({"event": "broker_error", "source_ip": self.client_address[0],
                    "error_type": type(error).__name__, "request_sha256": rhash})
-            if not self.close_connection:
+            if not response_started:
                 self.reject(502, "broker_request_failed", MODEL, EFFORT, rhash)
             self.close_connection = True
     def do_GET(self):

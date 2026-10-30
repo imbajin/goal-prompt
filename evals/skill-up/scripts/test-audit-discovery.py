@@ -20,6 +20,8 @@ class DiscoveryTest(unittest.TestCase):
             "rg --files | sed -n '1p; r SKILL.md'", "rg --files | sed -n '1e cat SKILL.md'",
             "rg --files | sed -n '1w /tmp/out'", "rg --files && sed -n '1,100p'",
             "cat SKILL.md | sed -n '1,100p'", "rg secret SKILL.md", "find / -exec cat SKILL.md +",
+            "ls & cat SKILL.md", "ls |& cat SKILL.md", "ls &&& cat SKILL.md",
+            "ls &", "ls |& sort",
             "rg --files | sed -n \"$(cat SKILL.md)\"", "rg --files | sed -n '1p' > /tmp/out",
         ):
             import shlex

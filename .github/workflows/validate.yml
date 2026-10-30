@@ -65,6 +65,8 @@ jobs:
           python3 evals/skill-up/scripts/test-targeted-snapshot.py
           .eval-work/ci-venv/bin/python evals/skill-up/scripts/test-audit-discovery.py
           python3 evals/skill-up/scripts/test-request-outcomes.py
+          python3 evals/skill-up/scripts/test-api-broker.py
+          .eval-work/ci-venv/bin/python evals/skill-up/scripts/test-business-redaction.py
 
       - name: Validate skill-up definitions without model credentials
         run: |

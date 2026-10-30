@@ -39,19 +39,25 @@ def phase_for_case(root,configuration):
 def redact(text):
     # Remove only instruction-source identity. Business quantities, relative
     # references, requirements and uncertainty remain verbatim.
+    # ASCII identifiers next to Chinese text still reveal the source. Unicode
+    # word boundaries treat those scripts as a single word and miss the label.
+    left=r'(?<![A-Za-z0-9_])';right=r'(?![A-Za-z0-9_])'
+    instruction=left+r'(?:goal-prompt|SKILL\.md|skills?)'+right
+    model=left+r'(?:gpt[- ]?6[A-Za-z0-9_.-]*|6-(?:luna|sol|terra|astra))'+right
+    arm=left+r'(?:with_skill|without_skill)'+right
     rules=[('host_source_path',r'/Users/[^\s`\"\'<>，。；]+','[本地源路径已隐藏]'),
            ('temporary_host_path',r'/var/folders/[^\s`\"\'<>，。；]+','[临时源路径已隐藏]'),
            ('instruction_source_path',r'/workspace/\.codex/skills/[^\s`\"\'<>，。；]+','[控制资料来源]'),
-           ('instruction_identity',r'(?i)\b(?:goal-prompt|skills?|SKILL\.md)\b|技能','[控制规则]'),
-           ('model_identity',r'(?i)\bgpt[- ]?6(?:[.\w-]*)?\b|\b6-(?:luna|sol|terra|astra)\b','[模型标识已隐藏]'),
-           ('arm_identity',r'(?i)(?:\barm\b|实验臂|版本臂)\s*[:=]\s*(?:before|current|candidate|with_skill|without_skill)','[实验标识已隐藏]')]
+           ('instruction_identity',r'(?i)'+instruction+r'|技能','[控制规则]'),
+           ('model_identity',r'(?i)'+model,'[模型标识已隐藏]'),
+           ('arm_identity',r'(?i)(?:'+left+r'arm'+right+r'|实验臂|版本臂)\s*[:=]\s*(?:before|current|candidate|with_skill|without_skill)'+right+r'|'+arm,'[实验标识已隐藏]')]
     changes=[];out=text
     for name,pattern,replacement in rules:
         matches=list(re.finditer(pattern,out))
         if matches:
             changes.append({'rule':name,'input_sha256':digest(out),'matches':[{'start':m.start(),'end':m.end(),'original':m.group()} for m in matches],'replacement':replacement})
             out=re.sub(pattern,replacement,out)
-    require(not re.search(r'(?i)goal-prompt|SKILL\.md|\b(?:with_skill|without_skill|gpt[- ]?6)\b|/Users/|/var/folders/',out),'脱敏后仍有来源身份')
+    require(not re.search(r'(?i)'+instruction+'|'+model+'|'+arm+r'|/Users/|/var/folders/',out),'脱敏后仍有来源身份')
     return out,changes
 
 def collect_sources(stage2,main_with,main_without,recovered,receipt):

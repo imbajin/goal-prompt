@@ -14,9 +14,12 @@ All notable changes to this project are documented in this file.
 - Add reusable frozen-run, Docker isolation, request-audit and replay tooling;
   fix deterministic Judge errors while preserving original outputs and grades.
   Reject symbolic links in targeted Skill payloads, prepared-run validation and
-  archive checks; run the audit regressions in CI.
-- Remove mandatory progress-bar formatting; report completed/remaining work and
-  require a verified fixed denominator before reporting percentages.
+  archive checks; run the audit regressions in CI. Preserve broker error
+  responses for closing clients, reject compound commands as filename discovery,
+  and de-bias adjacent Chinese/English model labels in archive rejudging.
+- Honor explicit user reporting formats without imposing a default progress bar;
+  report completed/remaining work and require a verified fixed denominator
+  before reporting percentages.
 - Document GPT-6.1 Sol high targeted results and GPT-6 Luna xhigh comparisons
   separately. Keep generated archives and machine-specific state local.
 - Add a reproducible, credential-free native capacity-injection fixture;

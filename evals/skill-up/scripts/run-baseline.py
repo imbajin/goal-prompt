@@ -57,6 +57,7 @@ def filename_discovery(command):
         pieces=[[]]; separators=[]
         for token in lexer:
             if token in ('&&','||','|',';'):separators.append(token);pieces.append([])
+            elif token and all(c in '|&;' for c in token):return False
             else:pieces[-1].append(token)
         for index,part in enumerate(pieces):
             if not part:return False
