@@ -14,9 +14,12 @@ class BusinessRedaction(unittest.TestCase):
             ('skill', '[控制规则]'), ('skills', '[控制规则]'),
             ('SKILL.md', '[控制规则]'), ('goal-prompt', '[控制规则]'),
             ('gpt-6-luna', '[模型标识已隐藏]'), ('GPT-6.1-sol', '[模型标识已隐藏]'),
+            ('GPT-6.1 Sol', '[模型标识已隐藏]'), ('6.1-sol', '[模型标识已隐藏]'),
             ('6-luna', '[模型标识已隐藏]'), ('6-terra', '[模型标识已隐藏]'),
             ('with_skill', '[实验标识已隐藏]'), ('without_skill', '[实验标识已隐藏]'),
+            ('with-skill', '[实验标识已隐藏]'), ('without-skill', '[实验标识已隐藏]'),
             ('arm: current', '[实验标识已隐藏]'),
+            ('arm: with-skill', '[实验标识已隐藏]'),
         ):
             with self.subTest(label=label):
                 value, changes = business.redact('来源' + label + '已确认；完成2/10，等待审批。')

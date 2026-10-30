@@ -11,6 +11,7 @@ class DiscoveryTest(unittest.TestCase):
         for command in (
             "/bin/bash -lc \"pwd && rg --files -g 'SKILL.md' | sed -n '1,100p'\"",
             "/bin/bash -lc \"rg --files | sort | head -n 10\"",
+            "/bin/bash -lc \"rg --files -g '#metadata*'\"",
         ):
             with self.subTest(command=command):self.assertTrue(audit.filename_discovery(command))
 
@@ -22,6 +23,7 @@ class DiscoveryTest(unittest.TestCase):
             "cat SKILL.md | sed -n '1,100p'", "rg secret SKILL.md", "find / -exec cat SKILL.md +",
             "ls & cat SKILL.md", "ls |& cat SKILL.md", "ls &&& cat SKILL.md",
             "ls &", "ls |& sort",
+            "ls # metadata only\ncat SKILL.md", "ls # comment\nrg secret SKILL.md",
             "rg --files | sed -n \"$(cat SKILL.md)\"", "rg --files | sed -n '1p' > /tmp/out",
         ):
             import shlex

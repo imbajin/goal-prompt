@@ -54,6 +54,9 @@ def filename_discovery(command):
         body=outer[2]
         if any(c in body for c in ('$','`','<','>')):return False
         lexer=shlex.shlex(body.replace('\n',';'),posix=True,punctuation_chars='|&;');lexer.whitespace_split=True
+        # Do not let a shell comment swallow a later command after newline
+        # normalization. Keeping comment text is conservative for this exemption.
+        lexer.commenters=''
         pieces=[[]]; separators=[]
         for token in lexer:
             if token in ('&&','||','|',';'):separators.append(token);pieces.append([])

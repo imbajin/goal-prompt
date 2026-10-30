@@ -63,6 +63,12 @@ class Host:
                 self.goal['status'] = 'blocked'
                 self.turn = {'id': 'failure-' + str(len(self.sets)), 'status': 'failed',
                              'completedAt': 2, 'error': {'codexErrorInfo': 'serverOverloaded'}}
+            if self.behavior == 'immediate_other_failure':
+                self.goal['status'] = 'blocked'
+                self.turn = {'id': 'failure-' + str(len(self.sets)), 'status': 'failed',
+                             'completedAt': 2, 'error': {'codexErrorInfo': 'usageLimitExceeded'}}
+            if self.behavior == 'completed_but_blocked':
+                self.goal['status'] = 'blocked'
             if self.behavior == 'lost_reply': raise TimeoutError('ack lost')
             return {'goal': copy.deepcopy(self.goal)}
         raise AssertionError(method)
@@ -135,6 +141,35 @@ class PolicyTests(unittest.TestCase):
         self.assertEqual(code, 3)
         self.assertEqual(len(self.host.sets), 3)
         self.assertEqual([e['delay_seconds'] for e in events if e['event'] == 'planned'], [1, 3, 9])
+        self.assertFalse(any(e['event'] == 'recovery_observed' for e in events))
+    def test_immediate_capacity_failure_does_not_satisfy_one_recovery(self):
+        self.host.behavior = 'repeated_capacity'
+        code, events = self.run_policy()
+        self.assertEqual(code, 3)
+        self.assertEqual(len(self.host.sets), 3)
+        self.assertEqual([e['new_turn'] for e in events if e['event'] == 'capacity_repeated'],
+                         ['failure-1', 'failure-2', 'failure-3'])
+        self.assertFalse(any(e['event'] == 'recovery_observed' for e in events))
+    def test_noncapacity_followup_failure_is_not_recovery(self):
+        self.host.behavior = 'immediate_other_failure'
+        code, events = self.run_policy()
+        self.assertEqual(code, 2)
+        self.assertEqual(len(self.host.sets), 1)
+        self.assertFalse(any(e['event'] == 'recovery_observed' for e in events))
+    def test_completed_turn_with_blocked_goal_is_not_recovery(self):
+        self.host.behavior = 'completed_but_blocked'
+        code, events = self.run_policy()
+        self.assertEqual(code, 2)
+        self.assertFalse(any(e['event'] == 'recovery_observed' for e in events))
+    def test_nonzero_jitter_respects_cap(self):
+        self.args.one_recovery = False
+        self.args.jitter = 1
+        self.args.max_delay_seconds = 10
+        self.host.behavior = 'repeated_capacity'
+        with patch.object(retry.random, 'uniform', side_effect=lambda low, high: high):
+            code, events = self.run_policy()
+        self.assertEqual(code, 3)
+        self.assertEqual([e['delay_seconds'] for e in events if e['event'] == 'planned'], [2, 6, 10])
     def test_deadline_does_not_shorten_configured_retry_hint(self):
         self.args.retry_after_seconds = 120
         code, _ = self.run_policy()

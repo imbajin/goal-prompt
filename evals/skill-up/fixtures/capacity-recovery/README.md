@@ -39,7 +39,12 @@ looping. The negatives verify pause and quota produce no recovery write;
 quota state is `usageLimited`, distinct from `blocked`.
 
 The policy's test defaults are 5/15/30 minutes, at most three attempts, with no
-jitter unless configured. Native tests use a scaled 0.25-second wait. Run the
+jitter unless configured. Jitter is capped with the backoff; a longer explicit
+retry hint remains a minimum wait and is never shortened by that cap.
+A new failed turn is not recovery: immediate repeated capacity failures consume
+the remaining backoff attempts even if polling never sampled them in progress.
+Recovery requires an in-progress or completed new turn and a non-blocked,
+non-paused Goal. Native tests use a scaled 0.25-second wait. Run the
 virtual-clock and cleanup tests without Docker or model credentials:
 
 ```sh

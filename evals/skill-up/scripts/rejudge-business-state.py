@@ -43,14 +43,16 @@ def redact(text):
     # word boundaries treat those scripts as a single word and miss the label.
     left=r'(?<![A-Za-z0-9_])';right=r'(?![A-Za-z0-9_])'
     instruction=left+r'(?:goal-prompt|SKILL\.md|skills?)'+right
-    model=left+r'(?:gpt[- ]?6[A-Za-z0-9_.-]*|6-(?:luna|sol|terra|astra))'+right
-    arm=left+r'(?:with_skill|without_skill)'+right
+    model=left+r'(?:gpt[- ]?6[A-Za-z0-9_.-]*(?:\s+(?:luna|sol|terra|astra))?|6(?:\.\d+)?[- ](?:luna|sol|terra|astra))'+right
+    arm=left+r'(?:with|without)[_-]skills?'+right
     rules=[('host_source_path',r'/Users/[^\s`\"\'<>，。；]+','[本地源路径已隐藏]'),
            ('temporary_host_path',r'/var/folders/[^\s`\"\'<>，。；]+','[临时源路径已隐藏]'),
            ('instruction_source_path',r'/workspace/\.codex/skills/[^\s`\"\'<>，。；]+','[控制资料来源]'),
+           # Arm names must be removed before their "skill" component; otherwise
+           # a hyphenated label leaves an identifying with-/without- prefix.
+           ('arm_identity',r'(?i)(?:'+left+r'arm'+right+r'|实验臂|版本臂)\s*[:=]\s*(?:before|current|candidate|(?:with|without)[_-]skills?)'+right+r'|'+arm,'[实验标识已隐藏]'),
            ('instruction_identity',r'(?i)'+instruction+r'|技能','[控制规则]'),
-           ('model_identity',r'(?i)'+model,'[模型标识已隐藏]'),
-           ('arm_identity',r'(?i)(?:'+left+r'arm'+right+r'|实验臂|版本臂)\s*[:=]\s*(?:before|current|candidate|with_skill|without_skill)'+right+r'|'+arm,'[实验标识已隐藏]')]
+           ('model_identity',r'(?i)'+model,'[模型标识已隐藏]')]
     changes=[];out=text
     for name,pattern,replacement in rules:
         matches=list(re.finditer(pattern,out))

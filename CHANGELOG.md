@@ -17,11 +17,15 @@ All notable changes to this project are documented in this file.
   archive checks; run the audit regressions in CI. Preserve broker error
   responses for closing clients, reject compound commands as filename discovery,
   and de-bias adjacent Chinese/English model labels in archive rejudging.
+  Preserve shared action objects and natural denominators; keep prohibitive
+  progress rules distinct from actual claims.
 - Honor explicit user reporting formats without imposing a default progress bar;
   report completed/remaining work and require a verified fixed denominator
   before reporting percentages.
 - Document GPT-6.1 Sol high targeted results and GPT-6 Luna xhigh comparisons
   separately. Keep generated archives and machine-specific state local.
+- Bound experimental retry jitter and distinguish immediate repeat failures
+  from recovery; retain the 5/15/30-minute defaults.
 - Add a reproducible, credential-free native capacity-injection fixture;
   keep the test-only retry policy reproducible in fixtures and raw RPC logs local.
 - Skip Claude Code live evaluation for this release; installation/static

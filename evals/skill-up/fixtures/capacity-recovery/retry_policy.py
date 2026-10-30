@@ -145,9 +145,10 @@ def run(args, rpc, ledger):
         if count >= args.max_attempts:
             emit('exhausted', attempts=count)
             return 3
+        backoff = min(args.max_delay_seconds, args.delay_seconds * (3 ** count))
         delay = max(args.retry_after_seconds,
-                    min(args.max_delay_seconds, args.delay_seconds * (3 ** count)))
-        delay += random.uniform(0, delay * args.jitter)
+                    min(args.max_delay_seconds,
+                        backoff + random.uniform(0, backoff * args.jitter)))
         emit('planned', failed_turn=failed_turn, delay_seconds=delay,
              mode='best_effort' if args.execute else 'observe')
         if not args.execute:
@@ -178,9 +179,28 @@ def run(args, rpc, ledger):
                     raise RuntimeError('goal identity changed after dispatch')
                 turn = updated['turn']
                 if turn and turn['id'] != failed_turn:
+                    record['attempts'][-1]['new_turn'] = turn['id']
+                    if failure(updated):
+                        # A turn caused by this acknowledged activation may fail
+                        # between polls. It is a new failure to back off, not a
+                        # recovery, and need not have been sampled in progress.
+                        seen_active_turns.add(turn['id'])
+                        record['status'] = 'observed_capacity_failure'
+                        save(ledger, record)
+                        emit('capacity_repeated', failed_turn=failed_turn,
+                             new_turn=turn['id'])
+                        break
+                    if (updated['goal']['status'] == 'blocked'
+                            or turn['status'] not in ('inProgress', 'completed')
+                            or updated['goal']['status'] == 'paused'):
+                        record['status'] = 'observed_nonrecovery'
+                        save(ledger, record)
+                        emit('stopped', reason='new turn did not recover',
+                             turn_status=turn['status'],
+                             goal_status=updated['goal']['status'])
+                        return 2
                     seen_active_turns.add(turn['id'])
                     record['status'] = 'observed_new_turn'
-                    record['attempts'][-1]['new_turn'] = turn['id']
                     save(ledger, record)
                     emit('recovery_observed', failed_turn=failed_turn, new_turn=turn['id'],
                          goal_status=updated['goal']['status'])

@@ -36,3 +36,5 @@ Skill目前能做的是在重要派发前记录已验证结果、未完成门槛
 可复跑入口见[原生故障注入fixture](../evals/skill-up/fixtures/capacity-recovery/README.md)。R1后将已测策略核心整理为[实验测试模块](../evals/skill-up/fixtures/capacity-recovery/retry_policy.py)，移除不可用的socket CLI；正例、暂停和额度三场景现在均可直接使用仓库源码复跑，R1已在同一隔离profile下再次通过（零外部模型调用）。新模块默认5/15/30分钟经18项离线检查，其中一项刻意暴露未解决竞态，不作为安全证明。逐条RPC、原始失败和运行配置仍在本地忽略目录，新运行位于`.eval-work/pr-review-r1-20261031/native-*`，旧冻结源与旧结果保留。
 
 **仍未验证：**正式独立脚本的Desktop接入、从Skill执行阶段启动后的完整生命周期、线上capacity恢复和原子并发保护。已证明`app-server proxy --sock`只是原始字节relay，不能直接替代Unix socket的WebSocket握手；stdio策略集成不等于socket命令行端到端成功。本次没有把原型安装进Skill，也没有改变默认生成流程或操作现有业务聊天。
+
+PR复审进一步修正实验策略：jitter受退避上限约束；宿主给出的更长retry hint仍作为最小等待。新turn立即再次capacity失败会进入下一次有界退避，不能算恢复成功。当前22项离线策略检查包含默认5/15/30、重复失败、暂停、额度和已知竞态；不替代真实Desktop恢复验收。
