@@ -191,6 +191,6 @@ Codex与Claude Code项目内copy安装均为9个文件，逐字节匹配最终Sk
 - [ ] 按[完整复测命令](README.md#full-run-follow-up-command-not-run-in-this-refresh)在最终冻结 revision 上运行全部 31 个 with-Skill 用例。固定 skill-up、Codex、执行/Judge 模型、high、420 秒、重试策略、并发和所有断言；保留 case 级配置/输入/输出/判分/模型来源。
 - [ ] 单独建立 without-Skill 全量对照：必须先验证 OS 隔离或等价读边界，隐藏全局 Skill、源码、历史结果和状态。两组用相同原始任务输入及模型/effort/Judge/策略；此次显式目标路径前缀不能直接用于自然 A/B 并宣称单变量收益。逐 transcript 审计；污染 cohort 必须剔除并记录。
 - [ ] 对其余 14 例补实际验证：audit-goal、deep-existing-docs、delegated-goal、existing-spec-plan、fast-small-task、frontend-ui-acceptance、parallel-agents-goal、research-brief-boundary、reviewer-stop-condition、stage1-grounded-feature、stage1-long-running、stage1-vague-draft、stage2-doc、stage2-migration。不能从历史 5.6 通过推断 6.1 通过。
-- [ ] 单独固定 Claude Code execution 与兼容 Judge 配置，运行代表边界和必要完整 cohort；安装成功不等于行为兼容。
+- Claude Code实机：按用户要求在1.3跳过，不作为本次交付门槛。安装/静态检查已完成，运行行为未验证；若以后恢复该项，须独立固定execution与兼容Judge配置。
 
 本轮六个历史失败与选定边界已经真实定向执行；上述全量与其他引擎TODO不作为此次完成门槛。

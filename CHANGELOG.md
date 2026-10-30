@@ -2,12 +2,21 @@
 
 All notable changes to this project are documented in this file.
 
-## Unreleased
+## 1.3 · 📅 2026-10-30
 
-- Upgrade CI to checked skill-up 0.14.0 and verify independent Judge and expect-gate semantics.
-- Freeze targeted with-Skill runs with configuration, transcripts, grading and generated state artifacts.
-- Consolidate the Skill contract and make recovery follow verified host capabilities; keep explicit user authorization and completion gates.
-- Add a host recovery boundary case and repair path/synonym misclassification in deterministic Judges without discarding the original results.
+- Consolidate the core Skill and load long-work references by need while
+  preserving confirmation, authorization, safety and completion contracts.
+- Honor already-approved goal materials without another confirmation round;
+  distinguish model-initiated blocking from host capacity and lifecycle stops.
+- Upgrade CI to checked skill-up 0.14.0 and verify independent Judge and
+  expect-gate semantics without model credentials.
+- Add reusable frozen-run, Docker isolation, request-audit and replay tooling;
+  fix deterministic Judge errors while preserving original outputs and grades.
+- Document GPT-6.1 Sol high targeted results and GPT-6 Luna xhigh comparisons
+  separately. Keep generated archives and machine-specific state local.
+- Skip Claude Code live evaluation for this release; installation/static
+  checks do not certify runtime behavior. Document checkpoint and manual
+  recovery boundaries without promising automatic capacity recovery.
 
 ## 1.2 · 📅 2026-09-02
 

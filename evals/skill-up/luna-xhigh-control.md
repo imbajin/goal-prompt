@@ -83,4 +83,4 @@ session/thread是审计关联，不是抵御容器内恶意root伪造记录的�
 
 后续TODO：修复confirmation-brief的否定提及误报并replay冻结输出；
 如需当前Skill收益，再另行冻结同环境的with-Skill配对组。
-完整6.1全量及其without对照、Claude Code实测仍保留为独立TODO，本次没有执行。
+完整6.1全量及其without对照仍为独立TODO，本次没有执行；Claude Code实测按用户要求在1.3跳过，不作为交付门槛，运行行为未验证。

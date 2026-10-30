@@ -1,6 +1,6 @@
 # goal-prompt [![EN](https://img.shields.io/badge/-EN-555)](../README.md)
 
-[![Version](https://img.shields.io/badge/version-1.2-1684C7)](../CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.3-1684C7)](../CHANGELOG.md)
 [![Validate](https://github.com/imbajin/goal-prompt/actions/workflows/validate.yml/badge.svg)](https://github.com/imbajin/goal-prompt/actions/workflows/validate.yml)
 [![License](https://img.shields.io/badge/license-Apache%202.0-D96C2C)](../LICENSE)
 [![Agent Skills](https://img.shields.io/badge/Agent%20Skills-compatible-2E8B57)](https://agentskills.io/)
@@ -77,6 +77,8 @@ npx skills update goal-prompt
 ![goal-prompt 的 30-case 同输入对照实测](../assets/eval-comparison-zh.png)
 
 同一模型的 Luna 对照中，启用 Skill 后从 6/30 提升到 24/30；Sol high with Skill 为 28/30。更严格的基线分数来自对冻结响应重新执行修正后的确定性 Judge，排除了 3 个假绿。完整的隔离方法、逐项结果、失败分类和评测边界见 [skill-up 评测说明](../evals/skill-up/README.md)。
+
+按用户要求，1.3本次跳过Claude Code实机测试，不作为交付门槛；已有安装和静态兼容检查，运行行为仍未验证。capacity与恢复边界见[Goal恢复说明](goal-recovery.md)。
 
 ## 核心设计
 

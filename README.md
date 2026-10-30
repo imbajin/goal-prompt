@@ -1,6 +1,6 @@
 # goal-prompt [![中文](https://img.shields.io/badge/-%E4%B8%AD%E6%96%87-555)](docs/README.zh-CN.md)
 
-[![Version](https://img.shields.io/badge/version-1.2-1684C7)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.3-1684C7)](CHANGELOG.md)
 [![Validate](https://github.com/imbajin/goal-prompt/actions/workflows/validate.yml/badge.svg)](https://github.com/imbajin/goal-prompt/actions/workflows/validate.yml)
 [![License](https://img.shields.io/badge/license-Apache%202.0-D96C2C)](LICENSE)
 [![Agent Skills](https://img.shields.io/badge/Agent%20Skills-compatible-2E8B57)](https://agentskills.io/)
@@ -78,6 +78,8 @@ The recorded evaluation used 30 isolated cases with `skill-up 0.9.1`. The paired
 ![goal-prompt before and after evaluation](assets/eval-comparison-en.png)
 
 With the same Luna model, the pass count rose from 6/30 to 24/30 after enabling the Skill; Sol high with Skill reached 28/30. The stricter baseline score comes from replaying the frozen responses after closing three deterministic Judge false positives. See the [skill-up evaluation guide](evals/skill-up/README.md) for the isolation protocol, case results, failure analysis, and evaluation limits.
+
+Claude Code live evaluation is intentionally skipped for 1.3 at the user's request. Installation and static compatibility checks remain; runtime behavior is unverified. Capacity recovery boundaries are documented in [Goal recovery](docs/goal-recovery.md).
 
 ## Core design
 

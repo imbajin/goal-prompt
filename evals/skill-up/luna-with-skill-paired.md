@@ -56,4 +56,4 @@
 - preauth确定性检查器只覆盖已回归的有限语法，不保证任意自然语言判定。旧版失败与各版校准记录均保留，最终结果见calibrated-final；没有通过反复生成挑分。
 - 自然30中仍有long-running、research、no-fabrication、preauth未通过；显式小样本成功不表示自动触发或随机遗漏已普遍解决。research/no-fab原自然输入没有观测到完整Skill读取，不为过例扩大普通brief的触发范围。
 - 本次没有实施或验证capacity自动恢复。本地宿主边界记录`docs/capacity-goal-stall-evidence.md`把真实错误、当前源码、用户手动继续和可控checkpoint减损分开。
-- 完整6.1全量及without全量对照、Claude Code实机、更多重复/随机化盲评、原30全部必要产物统一重判是明确后续TODO。本轮没有启动这些测试。
+- 完整6.1全量及without全量对照、更多重复/随机化盲评、原30全部必要产物统一重判是明确后续TODO。本轮没有启动这些测试；Claude Code实机按用户要求在1.3跳过，不作为交付门槛，未标为通过。

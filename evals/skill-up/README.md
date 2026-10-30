@@ -43,7 +43,7 @@ tree. A `--model` override changes the execution model only; semantic judges
 use the global judge model unless a case overrides it. Record the actual models
 and reasoning effort for the new cohort; the historical scores below do not
 measure this configuration. A Claude Code
-cohort needs a separate config that replaces both the
+cohort is explicitly skipped for 1.3; only installation/static compatibility has been checked. A future live cohort needs a separate config that replaces both the
 execution engine/model and every case-level Agent Judge model with compatible
 Claude values. Overriding only `--engine` and `--model` is insufficient.
 

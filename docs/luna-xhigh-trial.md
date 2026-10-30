@@ -28,4 +28,4 @@ Batch两个before没有输出已授权的goal，原expect FAIL、语义项SKIP�
 
 每次生成和语义评分用fresh Docker；无宿主源码/Memory/凭据/socket挂载，只有独立broker持真实认证。原配置、原输出、评分依据、请求及容器审计已在本地按批次封存；本试用PR先发布实现和这份摘要，没有公开全部本地原始档案或其它聊天资料。详细口径见[配对报告](../evals/skill-up/luna-with-skill-paired.md)；原始档案目录已加入ignore，不随源码合入。
 
-自然30仍有long/research/no-fabrication/preauth未通过；显式小样本成功不代表自然触发或随机遗漏已解决。没有实现capacity自动恢复。完整6.1全量、without全量、Claude Code实机及更多重复/随机化盲评仍是后续TODO，本轮没有启动。
+自然30仍有long/research/no-fabrication/preauth未通过；显式小样本成功不代表自然触发或随机遗漏已解决。没有实现capacity自动恢复。完整6.1全量、without全量及更多重复/随机化盲评仍是后续TODO，本轮没有启动。Claude Code实机按用户要求在1.3跳过，不作为交付门槛，运行行为未验证。
