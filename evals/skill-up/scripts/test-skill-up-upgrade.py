@@ -17,6 +17,11 @@ def contract_judge_smoke(binary, root):
     """
     import yaml
     source = Path(__file__).resolve().parents[1]
+    # Parse the reusable fixture in CI; this validates data, not semantic labels.
+    samples = yaml.safe_load((source/'fixtures/semantic-calibration.yaml').read_text())['samples']
+    assert samples and len({s['id'] for s in samples}) == len(samples)
+    assert all(s['expected'] in ('PASS', 'FAIL') and isinstance(s['response'], str)
+               and s['files'] and all(isinstance(v, str) for v in s['files'].values()) for s in samples)
     for case_id in ('preauthorized-permissions', 'stage2-migration', 'compaction-checkpoint'):
         case = yaml.safe_load((source/'cases'/f'{case_id}.yaml').read_text())
         folder = root / case_id

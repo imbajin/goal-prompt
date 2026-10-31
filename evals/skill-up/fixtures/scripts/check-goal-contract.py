@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-"""Deterministically check that a generated goal names required execution gates.
+"""Legacy phrase heuristics retained for offline historical tests only.
 
-This is intentionally a structural gate, not a quality or correctness judge. It
-checks that the output makes the relevant contract visible; the execution goal
-and its normal tests still need separate semantic and runtime verification.
+No current case uses this script. Its known false positives and false negatives
+do not certify contract meaning; use the declared semantic Judges instead.
 """
 
 from __future__ import annotations
