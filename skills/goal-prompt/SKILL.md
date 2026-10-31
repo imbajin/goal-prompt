@@ -194,7 +194,9 @@ short explanation of mode, initialization files and grounded tradeoffs. Include:
 4. Persistence/reordering and exceptional stop conditions: all meaningful remaining
    work jointly blocked after recovery, with the current host's status rules satisfied.
 5. For deep mode, the verified state.md entrypoint holding detailed execution,
-   checkpoints, retries, review and commit rules.
+   checkpoints, retries, review and commit rules. Its loop contract must briefly
+   assess each productive loop's results and use that assessment to retain or
+   adjust the next action; this feedback does not require a learning file.
 6. The user's explicit reporting format, without inventing percentages when a
    verified fixed denominator is unavailable.
 

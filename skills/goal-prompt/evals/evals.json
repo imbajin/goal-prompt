@@ -56,6 +56,7 @@
                 "Completion requires implementation evidence, all applicable validation gates, independent review, and re-review after fixes.",
                 "Recoverable CI or external waits are marked waiting or deferred and cause reprioritization rather than setting the overall goal to blocked.",
                 "After each milestone the prompt requires completed and remaining work with evidence and one next primary action; it preserves an explicitly requested format.",
+                "深度执行约定要求每个有效循环依据结果作简短评价，并据此保留或调整下一步；不要求固定栏目、每轮必须改变计划或创建 lessons.md。",
                 "A progress percentage is used only for a verified fixed denominator; otherwise the prompt reports completed work and remaining evidence without an estimated percentage, reserving 100% for all completion gates passing."
             ]
         },
