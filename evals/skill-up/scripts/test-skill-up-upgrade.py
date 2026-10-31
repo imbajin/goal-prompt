@@ -2,11 +2,47 @@
 """用确定性引擎验证 skill-up CLI；不调用模型，不代表 Skill 行为通过。"""
 
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path
 import subprocess
 import tempfile
+
+
+CALIBRATION_CASES = ('preauthorized-permissions', 'stage2-migration', 'compaction-checkpoint')
+
+
+def verify_calibration_receipt(source, samples):
+    """Bind the saved live calibration to its inputs; do not infer accuracy."""
+    import yaml
+    digest = lambda value: hashlib.sha256(json.dumps(value, ensure_ascii=False,
+        sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+    receipt = json.loads((source/'semantic-calibration-receipt.json').read_text())
+    if {s['case_id'] for s in samples} != set(CALIBRATION_CASES) or set(receipt['cases']) != set(CALIBRATION_CASES):
+        raise ValueError('calibration case coverage changed; update the explicit calibration plan')
+    for case_id in CALIBRATION_CASES:
+        case = yaml.safe_load((source/'cases'/f'{case_id}.yaml').read_text())
+        judges = [j for j in case['judges'] if j['type'] == 'agent_judge']
+        if len(judges) != 1:
+            raise ValueError(f'{case_id}: update calibration for the new Judge plan')
+        subset = sorted(({k: s[k] for k in ('id', 'expected', 'response', 'files')}
+                         for s in samples if s['case_id'] == case_id), key=lambda s: s['id'])
+        saved = receipt['cases'][case_id]
+        if (saved['case_definition_sha256'] != digest(case) or saved['judge_config_sha256'] != digest(judges[0])
+                or saved['fixture_subset_sha256'] != digest(subset)):
+            raise ValueError(f'{case_id}: calibration is stale; recalibrate changed inputs')
+        if len(subset) != 4:
+            raise ValueError(f'{case_id}: calibration requires all four planned samples')
+        expected = {s['id']: s['expected'] for s in subset}
+        verdicts = saved['verdicts']
+        if (len(verdicts) != len(expected) or {v['sample_id'] for v in verdicts} != set(expected)
+                or any(v['status'] not in ('PASS', 'FAIL') or v['expected'] != expected[v['sample_id']] for v in verdicts)):
+            raise ValueError(f'{case_id}: saved calibration is incomplete or has changed labels')
+        agreement = all(v['status'] == v['expected'] for v in verdicts)
+        if (saved['all_labels_agree'] != agreement or saved['required_agreement'] != len(expected)
+                or saved['observed_agreement'] != sum(v['status'] == v['expected'] for v in verdicts)):
+            raise ValueError(f'{case_id}: calibration agreement is misreported')
 
 
 def contract_judge_smoke(binary, root):
@@ -22,7 +58,23 @@ def contract_judge_smoke(binary, root):
     assert samples and len({s['id'] for s in samples}) == len(samples)
     assert all(s['expected'] in ('PASS', 'FAIL') and isinstance(s['response'], str)
                and s['files'] and all(isinstance(v, str) for v in s['files'].values()) for s in samples)
-    for case_id in ('preauthorized-permissions', 'stage2-migration', 'compaction-checkpoint'):
+    verify_calibration_receipt(source, samples)
+    changed = json.loads(json.dumps(samples))
+    changed[0]['response'] += '\nchanged input'
+    try:
+        verify_calibration_receipt(source, changed)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError('changed fixture reused a stale calibration receipt')
+    reduced = [s for s in samples if s['case_id'] != CALIBRATION_CASES[0]]
+    try:
+        verify_calibration_receipt(source, reduced)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError('removed calibration case silently reduced coverage')
+    for case_id in CALIBRATION_CASES:
         case = yaml.safe_load((source/'cases'/f'{case_id}.yaml').read_text())
         folder = root / case_id
         folder.mkdir()

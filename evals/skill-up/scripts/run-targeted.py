@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import datetime as dt
 import hashlib
 import json
@@ -39,10 +40,69 @@ def captured(command: list[str]) -> str:
     return subprocess.check_output(command, text=True, stderr=subprocess.STDOUT).strip()
 
 
+def case_judge_plan(config: dict, case: dict, installed_codex_version: str | None = None) -> dict:
+    """记录 0.14 的有效配置选择；不是已观察到的模型或运行版本。"""
+    if "judges" in case:
+        members, selection, multi = case["judges"], "case.judges", True
+    elif "judge" in case:
+        local = copy.deepcopy(case["judge"])
+        if "judges" not in config:
+            global_judge = config.get("judge", {})
+            if not local.get("type"):
+                local = copy.deepcopy(global_judge)
+            else:
+                if not local.get("model") and local.get("engine") is None:
+                    local["model"] = global_judge.get("model")
+                    if local["type"] == "agent_judge" and global_judge.get("engine") is not None:
+                        local["engine"] = copy.deepcopy(global_judge["engine"])
+                for field in ("pass_threshold", "timeout_seconds"):
+                    if local.get(field) is None and field in global_judge:
+                        local[field] = global_judge[field]
+        members, selection, multi = [local], "case.judge", False
+    elif "judges" in config:
+        members, selection, multi = config["judges"], "eval.judges", True
+    else:
+        members, selection, multi = [config.get("judge", {})], "eval.judge", False
+    if not isinstance(members, list) or not members:
+        raise ValueError(f"case {case.get('id')} 的 judges 必须为非空列表")
+    result = []
+    for member in members:
+        identity = {"id": member.get("id"), "type": member.get("type"), "engine": None}
+        if member.get("type") == "agent_judge":
+            explicit = member.get("engine") is not None
+            engine = member["engine"] if explicit else config["engine"]
+            model = copy.deepcopy(engine.get("model", {}))
+            if not explicit and member.get("model"):
+                provider, separator, name = member["model"].partition("/")
+                model = {"provider": provider if separator else model.get("provider"),
+                         "name": name if separator else provider}
+            identity["engine"] = {"name": engine.get("name"), "version": engine.get("version"),
+                                  "model": {"provider": model.get("provider"), "name": model.get("name")}}
+            identity["engine_source"] = "judge.engine" if explicit else "runner_with_judge_model"
+            identity["version_policy"] = ("explicit_pin" if engine.get("version") else "explicit_unversioned") if explicit else "runner_host_version"
+            if (explicit and engine.get("name") == "codex" and engine.get("version") and installed_codex_version
+                    and config.get("environment", {}).get("type", "none") == "none"):
+                if str(engine["version"]) != installed_codex_version:
+                    raise ValueError(f"case {case.get('id')} 的 Judge 固定 Codex {engine['version']}，"
+                                     f"当前安装 {installed_codex_version}；请使用匹配版本，不能把配置版本当作实际版本")
+                identity["version_policy"] = "explicit_pin_matches_host_preflight"
+        elif member.get("script_path"):
+            identity["script_path"] = member["script_path"]
+        result.append(identity)
+    return {"selection": selection, "multi": multi, "members": result,
+            "evidence": "frozen_configuration_not_runtime_observation"}
+
+
 def reject_skill_symlinks(skill: Path) -> None:
     """拒绝 Skill 树内所有符号链接，包括失效链接；不读取链接目标。"""
     if skill.is_symlink() or any(path.is_symlink() for path in skill.rglob("*")):
         raise ValueError("Skill 源码树不能包含符号链接；请提供独立的普通目录")
+
+
+def file_inventory(root: Path) -> dict[str, str]:
+    """Use the same file/hash inventory for source stability and frozen evidence."""
+    reject_skill_symlinks(root)
+    return {str(path.relative_to(root)): digest(path) for path in sorted(root.rglob("*")) if path.is_file()}
 
 
 def copy_skill_tree(skill: Path, destination: Path) -> None:
@@ -211,7 +271,7 @@ def run_frozen(output: Path, skill_up: Path, manifest: dict) -> int:
     if manifest.get("host_skill_paths_disabled") is not None and discover_host_skills() != manifest["host_skill_paths_disabled"]:
         raise ValueError("宿主 Skill 目录清单已变化；需重新冻结并核查 catalog")
     snapshot = output / "snapshot"
-    actual = {str(p.relative_to(snapshot)): digest(p) for p in sorted(snapshot.rglob("*")) if p.is_file()}
+    actual = file_inventory(snapshot)
     if actual != manifest["snapshot_sha256"]:
         raise ValueError("冻结 snapshot 哈希不匹配")
     if digest(output / "bin/codex") != manifest["wrapper"]["sha256"]:
@@ -295,26 +355,28 @@ def main() -> int:
         parser.error("未安装 codex")
     if captured([str(skill_up), "--version"]) != "skill-up version 0.14.0":
         parser.error("本冻结协议要求 skill-up 0.14.0")
-    output.mkdir(parents=True)
-    shutil.copy2(Path(__file__), output / "run-targeted.py")
-    snapshot = output / "snapshot"
-    snapshot.mkdir()
-    (snapshot / "evals").mkdir()
-    copy_skill_tree(skill, snapshot / "target/goal-prompt")
-    shutil.copy2(snapshot / "target/goal-prompt/SKILL.md", snapshot / "SKILL.md")
-    shutil.copytree(repo / "evals/skill-up/cases", snapshot / "skill-up/cases")
-    shutil.copytree(repo / "evals/skill-up/fixtures", snapshot / "skill-up/fixtures")
-    config = yaml.safe_load((repo / "evals/skill-up/eval.yaml").read_text())
+    # Reject deterministic selection/version/input errors before owning an output directory.
+    config_source = repo / "evals/skill-up/eval.yaml"
+    config_bytes = config_source.read_bytes()
+    config = yaml.safe_load(config_bytes)
+    codex_version = captured([codex, "--version"])
+    config["engine"]["version"] = codex_version.removeprefix("codex-cli ")
     selected = []
     inputs = {}
+    source_cases = {}
+    prepared_cases = {}
     for case in args.cases:
-        path = snapshot / "skill-up/cases" / (case + ".yaml")
+        path = repo / "evals/skill-up/cases" / (case + ".yaml")
         if not path.is_file():
             parser.error(f"未知 case: {case}")
-        original = yaml.safe_load(path.read_text())
-        original_input = json.loads(json.dumps(original["input"]))
+        source_cases[case] = path.read_bytes()
+        original = yaml.safe_load(source_cases[case])
+        try:
+            case_judge_plan(config, original, config["engine"]["version"])
+        except ValueError as error:
+            parser.error(str(error))
+        original_input = copy.deepcopy(original["input"])
         if args.invoke_skill:
-            shutil.copy2(path, snapshot / "skill-up/cases" / (case + ".original.yaml"))
             if "prompt" in original["input"]:
                 original["input"]["prompt"] = INVOCATION_PREFIX + original["input"]["prompt"]
             else:
@@ -324,11 +386,45 @@ def main() -> int:
                         break
                 else:
                     parser.error(f"case {case} 缺少可显式调用的用户回合")
-            path.write_text(yaml.safe_dump(original, allow_unicode=True, sort_keys=False))
         inputs[case] = {"original": original_input, "dispatched": original["input"]}
+        prepared_cases[case] = original
         selected.append("skill-up/cases/" + path.name)
+    source_trees = {"target/goal-prompt": skill, "skill-up/fixtures": repo / "evals/skill-up/fixtures"}
+    try:
+        source_inventories = {relative: file_inventory(source) for relative, source in source_trees.items()}
+    except ValueError as error:
+        parser.error(str(error))
+    output.mkdir(parents=True)
+    shutil.copy2(Path(__file__), output / "run-targeted.py")
+    snapshot = output / "snapshot"
+    snapshot.mkdir()
+    (snapshot / "evals").mkdir()
+    copy_skill_tree(skill, snapshot / "target/goal-prompt")
+    shutil.copy2(snapshot / "target/goal-prompt/SKILL.md", snapshot / "SKILL.md")
+    shutil.copytree(repo / "evals/skill-up/cases", snapshot / "skill-up/cases")
+    shutil.copytree(repo / "evals/skill-up/fixtures", snapshot / "skill-up/fixtures")
+    # Fail visibly if preparation raced with a source edit; retain the partial evidence.
+    try:
+        for relative, source in source_trees.items():
+            if (file_inventory(source) != source_inventories[relative]
+                    or file_inventory(snapshot / relative) != source_inventories[relative]):
+                parser.error(f"准备期间 {relative} 已变化；请使用新的输出目录重新冻结，尚未派发模型")
+    except ValueError as error:
+        parser.error(str(error))
+    if config_source.read_bytes() != config_bytes:
+        parser.error("准备期间 eval.yaml 已变化；请使用新的输出目录重新冻结，尚未派发模型")
+    case_judges = {}
+    for case in args.cases:
+        path = snapshot / "skill-up/cases" / (case + ".yaml")
+        if (path.read_bytes() != source_cases[case]
+                or (repo / "evals/skill-up/cases" / path.name).read_bytes() != source_cases[case]):
+            parser.error(f"准备期间 case {case} 已变化；请使用新的输出目录重新冻结，尚未派发模型")
+        # Resolve the manifest identity from the actual copied case, before input decoration.
+        case_judges[case] = case_judge_plan(config, yaml.safe_load(path.read_bytes()), config["engine"]["version"])
+        if args.invoke_skill:
+            shutil.copy2(path, path.with_name(case + ".original.yaml"))
+            path.write_text(yaml.safe_dump(prepared_cases[case], allow_unicode=True, sort_keys=False))
     config["skills"] = [{"source": "local_path", "path": "target/goal-prompt"}]
-    config["engine"]["version"] = captured([codex, "--version"]).removeprefix("codex-cli ")
     config["cases"]["files"] = selected
     config["cases"]["parallelism"] = 1
     config["cases"]["defaults"]["collect_artifacts"] = [".goal-task/**/*.md"]
@@ -345,14 +441,15 @@ def main() -> int:
     # 防止从当前父会话串入 thread ID；保留原登录环境，不读取凭据文件。
     env.pop("CODEX_THREAD_ID", None)
     env.pop("CODEX_INTERNAL_ORIGINATOR_OVERRIDE", None)
-    files = {str(p.relative_to(snapshot)): digest(p) for p in sorted(snapshot.rglob("*")) if p.is_file()}
+    files = file_inventory(snapshot)
     manifest = {
         "created_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
         "python": sys.version, "pyyaml": yaml.__version__,
         "skill_up": captured([str(skill_up), "--version"]), "skill_up_sha256": digest(skill_up),
-        "codex": captured([codex, "--version"]), "codex_binary": codex, "codex_binary_sha256": digest(Path(codex)),
+        "codex": codex_version, "codex_binary": codex, "codex_binary_sha256": digest(Path(codex)),
         "login_status": captured([codex, "login", "status"]),
         "runner_sha256": digest(Path(__file__)), "engine": config["engine"], "judge": config.get("judge"),
+        "case_judges": case_judges, "judge_scope": "judge is global defaults; case_judges records effective configured identities, not runtime observations",
         "reasoning_effort": "high", "cases": args.cases,
         "invocation_mode": "explicit" if args.invoke_skill else "natural",
         "invocation_prefix": INVOCATION_PREFIX if args.invoke_skill else None,

@@ -1,65 +1,62 @@
 # 合成 Judge 校准数据，不代表 Skill 实测成绩；expected/rationale 仅留宿主，不送入 Judge。
-version: semantic-calibration-v2
+version: semantic-calibration-v3
 samples:
-- id: h01
+- id: m01
   case_id: stage2-migration
   expected: PASS
-  rationale: 保留实现、测试和CI迁移、公开兼容、指定状态入口及独立审查复审；等待项按依赖重排，只有恢复重排后全部剩余共同受阻且宿主条件满足时整体blocked。
+  rationale: 主要行为变更里程碑及最终集成各有独立审查，修复后复审；兼容性、全部测试CI及独立工作重排门槛完整。
   response: |
-    /goal 完成 auth 实现、测试和 CI 的兼容迁移，以 .goal-task/auth-migration/state.md 为执行状态及恢复入口。
-    核查当前公开输入输出、错误行为和真实验证命令，按兼容基线、分批迁移、集成验收推进。每批保存变更、验证证据、未满足门槛和下一步。所有范围内测试与 CI 通过、公开行为兼容得到验证，并完成独立审查，才可结束；审查发现修复后交回独立审查者复审。
-    将每项外部等待连同依赖和恢复条件登记，先完成不依赖它的实现、测试与证据整理。恢复或调整顺序仍无法推进时，核实是否全部有意义的剩余工作都共同受真实障碍限制；只有该条件及当前宿主的状态规则均满足，才将整体标记 blocked。恢复后先核对状态与当前工作树，不用旧证据替代本次验收。
+    /goal 完成 auth 实现、测试和 CI 的兼容迁移，以 .goal-task/auth-migration/state.md 为执行状态与恢复入口。
+    先核对公开行为和真实验证命令，按主要行为变更划分里程碑。每个这样的里程碑通过相关验证后交独立审查，最终集成另行独立审查；任一审查发现修复后都复审受影响变更。公开行为兼容得到验证、所有范围内测试和 CI 通过、这些审查门槛全部满足，才可结束。
+    状态记录完成证据、未满足条件、依赖及下一步。验证或审查不可用时保留该门槛，先做不依赖它的实现、测试和文档。尝试恢复并重排后，只有所有有意义的剩余工作仍共同受真实障碍阻断且满足当前宿主状态规则，才整体 blocked；恢复时先对照工作树和证据。
   files:
     .goal-task/auth-migration/state.md: |
-      # auth 迁移状态
-      当前未执行，尚待核查工作树、公开行为与实际测试及 CI 入口。
-      顺序：兼容基线、分批实现与测试迁移、CI 集成、最终验收。每批记录改动、当前证据、未满足条件和下一步；恢复时先对照工作树。
-      完成要求公开行为兼容、所有范围内测试和 CI 通过，以及独立审查完成；修复审查发现后必须复审。
-      等待项记录依赖和恢复条件，把可独立完成的实现、测试与证据工作排在前面。尝试恢复并重排后，只有全部有意义的剩余工作共同受真实障碍阻断且当前宿主的状态条件满足，才整体 blocked。
-- id: h02
+      # 合成校准材料，不代表真实模型成绩
+      当前未执行。入口核查工作树、公开兼容契约及实际测试与 CI 命令；持续记录完成证据、剩余门槛、依赖和下一步。
+      每个主要行为变更里程碑通过相关验证后须独立审查；最终集成再独立审查。修复任何审查发现后，复审受影响变更，不能把里程碑审查推迟到最后一次审查代替。
+      完成需公开行为兼容、所有范围内测试及 CI 通过、适用审查和复审满足。等待项不取消门槛，独立工作继续；恢复重排后所有有意义剩余工作共同受阻且当前宿主规则满足，才整体 blocked。恢复先核对工作树。
+- id: m02
   case_id: stage2-migration
   expected: FAIL
-  rationale: 将CI结果降为交付后的观察信息，允许本地验证和独立审查通过后完成，取消用户要求的所有范围内CI必须通过的门槛。
+  rationale: 里程碑由实现者自行验收，独立审查只留到最终集成；即使最终审查及修后复审完整，也缺少主要行为变更里程碑的独立审查。
   response: |
-    /goal Migrate auth implementation, tests and CI while preserving public behavior. Track execution and resumption in .goal-task/auth-migration/state.md.
-    Establish the current compatibility baseline and repository validators, migrate in small batches, and keep evidence, outstanding work and the next action in state. Local tests must pass and an independent reviewer must approve the integrated diff. Address review findings and obtain independent re-review before closing the migration.
-    Configure CI as a delivery observation channel: publish its run link and investigate later when execution is available. Local compatibility evidence, passing local tests and independent approval are sufficient to finish; CI results are follow-up information. Work around unavailable services by progressing independent implementation, tests and documentation. After recovery attempts and reordering, use overall blocked only if all meaningful remaining work shares a real blocker and current host rules permit it. Resume by reconciling state with the checkout.
+    /goal Migrate auth implementation, tests and CI without changing public behavior. Keep execution and recovery state in .goal-task/auth-migration/state.md.
+    Verify public contracts and repository validators, then migrate through bounded behavior milestones. The implementer accepts each milestone after its tests pass; reserve independent review for the fully integrated migration so an outside reviewer sees the complete change once. Fix that final review's findings and obtain independent re-review of affected changes. Completion requires compatible public behavior, every in-scope test and CI check passing, and final independent approval.
+    Record completed evidence, open gates, dependencies and the next action. When a validator or reviewer is unavailable, retain its gate and continue work with available prerequisites. Attempt recovery and reorder tasks before assessing an overall stop. Only a real obstacle jointly preventing all meaningful remaining work, with current host status rules satisfied, permits overall blocked. Reconcile saved state with the checkout before resumption.
   files:
     .goal-task/auth-migration/state.md: |
-      # Auth migration state
-      Not started. Verify checkout, public behavior and actual local test commands.
-      Work sequence: compatibility baseline, implementation and test migration, CI configuration, integrated review. Record evidence, open work and the next action; reconcile checkout on resumption.
-      Delivery gates: compatible public behavior, passing local tests and independent approval, with independent re-review after fixes. CI publishes observation links for later investigation; a CI result is not required to close delivery.
-      Keep independent implementation, tests and docs moving during service waits. Record recovery conditions. Overall blocked requires recovery and reordering to leave every meaningful remaining task under a shared real blocker, with host status rules satisfied.
-- id: h03
+      # Synthetic calibration material, not actual model results
+      Not started. Verify checkout, public compatibility contracts and actual test/CI commands. Record completed evidence, outstanding gates, dependencies and the next action.
+      Milestones use implementer acceptance after local validation. Independent review occurs only on the final integrated migration, followed by fixes and independent re-review. Do not schedule separate independent milestone reviews.
+      Finish only with public compatibility, all scoped tests and CI passing, and final independent approval. Retain gates during waits and continue independent work. Recovery and reordering must leave every meaningful remaining task jointly blocked by a real obstacle, with host rules satisfied, before overall blocked. Resume against the current checkout.
+- id: m03
   case_id: stage2-migration
   expected: PASS
-  rationale: 用依赖清单安排等待与可推进事项，保留所有测试CI、公开兼容及独立审查复审的合取完成条件，也明确宿主规则满足后的整体阻塞例外。
+  rationale: 每个主要行为里程碑与最终集成分别要求独立审查和修后复审，保留兼容性、所有测试CI以及等待重排和宿主整体阻塞边界。
   response: |
-    /goal Deliver the confirmed migration of auth implementation, tests and CI without changing public behavior. The recovery entrypoint is .goal-task/auth-migration/state.md.
-    Verify the checkout, public contracts and repository validators before changing dependent code. Migrate and validate bounded batches, then run integrated acceptance. Finish only after every in-scope test and CI check passes, public compatibility is evidenced, and independent review is complete. Fix findings and submit the affected changes for independent re-review.
-    Maintain a dependency list in state alongside completed evidence, open gates and the next action. When a validator, service or reviewer is unavailable, keep its gate open and select the next task whose prerequisites are available. Attempt applicable recovery and reorder work before assessing an overall stop. Mark the whole goal blocked only when every meaningful remaining task is jointly prevented by a real obstacle and the current host's status rules are satisfied. Reconcile saved state with the current checkout before resuming.
+    /goal Deliver the confirmed auth implementation, test and CI migration while preserving public behavior. Use .goal-task/auth-migration/state.md for live execution state and recovery.
+    Establish the compatibility baseline and real repository validators. At each major behavior-change milestone, require independent review of the integrated changes and evidence; final integration has its own independent review. Resolve findings and re-review affected fixes at either point. The goal is complete only when public compatibility is evidenced, every scoped test and CI gate passes, and all applicable reviews and re-reviews are satisfied.
+    Keep evidence, remaining gates, prerequisites and the next action in state. A waiting service or reviewer holds only dependent work: retain its gate and advance ready tasks. After relevant recovery and reordering, declare overall blocked only if all meaningful remaining work is jointly prevented by a real obstacle and the active host's status conditions are met. Check saved state against the checkout on resumption. These are execution obligations, not claims that migration or review has already occurred.
   files:
     .goal-task/auth-migration/state.md: |
-      # Auth execution and recovery
-      Status: not started; current checkout, public contracts and validator commands remain to be verified.
-      Phases: compatibility baseline, implementation/test migration, CI migration and integrated acceptance. Persist completed evidence, open gates, prerequisites and one next action.
-      All in-scope tests and CI must pass while public behavior remains compatible. Independent review is mandatory; fixes return for independent re-review before completion.
-      An unavailable prerequisite leaves its own gate open. Choose ready work from the dependency list, attempt relevant recovery and reorder tasks. Only a real obstacle jointly preventing all meaningful remaining work, with current host status requirements met, permits overall blocked. Resume by checking state against the checkout.
-- id: h04
+      # Synthetic calibration material, not actual model results
+      Status: not started. Verify checkout, public contracts and actual validators; track completed evidence, remaining gates, dependencies and the next action.
+      Every major behavior-change milestone requires independent review; final integrated acceptance requires another independent review. Fix findings and re-review the affected changes in both cases. Final-only review cannot replace milestone reviews.
+      Completion requires public compatibility and all in-scope tests and CI passing, plus applicable reviews and re-reviews. Keep waiting gates open and select ready work. Only after recovery and reordering leave all meaningful remaining work jointly prevented by a real obstacle, with host status rules satisfied, use overall blocked. Reconcile the checkout on resume.
+- id: m04
   case_id: stage2-migration
   expected: FAIL
-  rationale: 把外部审查预约设为全部本地工作的前置屏障，审查队列等待时连无依赖的兼容分析、测试和文档都冻结，违反继续独立工作与整体阻塞条件。
+  rationale: 虽保留里程碑与最终集成独立审查，却把审查预约设为全部活动前置；连不依赖审查服务的兼容分析、测试准备和文档都冻结。
   response: |
-    /goal 迁移 auth 的实现、测试和 CI，保持公开行为兼容，以 .goal-task/auth-migration/state.md 保存实时状态和恢复入口。
-    验收要求全部范围内测试及 CI 通过，并由独立审查者检查集成变更；发现问题修复后必须复审。状态持续记录完成证据、剩余门槛和下一步，恢复时核对当前工作树。
-    本次采用审查预约驱动的串行节奏：先取得下一次外部审查预约，再开启一轮迁移。审查队列尚未分配预约时，将整个迁移工作区置于冻结状态，兼容性比对、测试准备和文档整理也全部留待预约落实后开展；这些事项即使不需要审查服务也遵守同一屏障。预约到位后再完成本轮实现、测试和 CI，最后提交独立审查。
+    /goal 迁移 auth 的实现、测试和 CI，保持公开行为兼容，以 .goal-task/auth-migration/state.md 保存状态与恢复入口。
+    主要行为变更里程碑及最终集成都须独立审查，发现问题修复后复审受影响变更。只有兼容性有证据、全部范围内测试与 CI 通过、这些审查门槛满足，才可完成；状态记录完成证据、剩余门槛和下一步，恢复对照当前工作树。
+    采用审查预约驱动的节奏：每轮开始前先取得外部审查时段。队列尚未分配预约时，将整个迁移工作区冻结，兼容性比对、测试准备和文档整理也留待预约落实后开展；这些事项即使不需要审查服务也遵守同一屏障。预约到位后才开始本轮实现、验证和独立审查。
   files:
     .goal-task/auth-migration/state.md: |
-      # auth 串行迁移状态
-      当前未执行，待核查工作树和实际验证入口；范围为 auth 实现、测试与 CI，公开行为须兼容。
-      完成要求全部范围内测试及 CI 通过、独立审查完成，修复问题后复审。保存完成证据、剩余门槛和下一步；恢复对照工作树。
-      每轮工作以取得外部审查预约为起点。队列没有预约即冻结全部迁移活动，包括不依赖审查服务的兼容比对、测试准备和文档整理；预约落实后才恢复这些活动，再执行本轮迁移及审查。
+      # 合成校准材料，不代表真实模型成绩
+      尚未执行，待核查工作树、公开兼容契约与实际验证入口。记录完成证据、剩余门槛和下一步，恢复先对照工作树。
+      主要行为变更里程碑及最终集成都独立审查，修复发现后复审受影响变更。全部范围内测试及 CI、兼容性和适用审查满足才可完成。
+      每轮必须以取得外部审查预约为起点。没有预约就冻结全部迁移活动，包括不依赖审查服务的兼容比对、测试准备和文档整理；预约落实后才恢复这些活动并进行本轮迁移和审查。
 - id: h05
   case_id: preauthorized-permissions
   expected: PASS

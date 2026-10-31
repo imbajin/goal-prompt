@@ -8,6 +8,7 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+import types
 import unittest
 from unittest.mock import patch
 
@@ -160,6 +161,201 @@ class SkillCopyPolicy(unittest.TestCase):
         with self.assertRaises(FileExistsError):
             RUNNER.copy_skill_tree(self.skill, self.destination)
         self.assertEqual(marker.read_text(), "existing output")
+
+
+class CaseJudgeProvenance(unittest.TestCase):
+    def setUp(self):
+        self.config = {"engine": {"name": "codex", "version": "0.164.0",
+                                  "model": {"provider": "openai", "name": "student"}},
+                       "judge": {"model": "gpt-6.1-terra", "pass_threshold": 0.7}}
+
+    def test_legacy_single_inherits_global_model_and_runner_version(self):
+        case = {"id": "single", "judge": {"type": "agent_judge", "criteria": ["outcome"]}}
+        plan = RUNNER.case_judge_plan(self.config, case, "0.164.0")
+        self.assertEqual(plan["selection"], "case.judge")
+        self.assertFalse(plan["multi"])
+        self.assertEqual(plan["members"][0]["engine"], {
+            "name": "codex", "version": "0.164.0",
+            "model": {"provider": "openai", "name": "gpt-6.1-terra"}})
+        self.assertNotIn("model", case["judge"])
+
+    def test_case_list_does_not_inherit_global_judge(self):
+        case = {"id": "listed", "judges": [
+            {"id": "format", "type": "script", "script_path": "check.py"},
+            {"id": "meaning", "type": "agent_judge", "engine": {
+                "name": "codex", "version": "0.164.0",
+                "model": {"provider": "openai", "name": "gpt-6-luna"}}}]}
+        plan = RUNNER.case_judge_plan(self.config, case, "0.164.0")
+        self.assertEqual(plan["selection"], "case.judges")
+        self.assertIsNone(plan["members"][0]["engine"])
+        self.assertEqual(plan["members"][1]["engine"]["model"]["name"], "gpt-6-luna")
+        self.assertEqual(plan["members"][1]["version_policy"], "explicit_pin_matches_host_preflight")
+        self.assertNotIn("gpt-6.1-terra", json.dumps(plan))
+
+    def test_case_model_override_does_not_inherit_global_engine(self):
+        self.config["judge"]["engine"] = {"name": "claude-code", "version": "other",
+                                           "model": {"provider": "anthropic", "name": "global"}}
+        case = {"id": "override", "judge": {"type": "agent_judge", "model": "openai/local"}}
+        member = RUNNER.case_judge_plan(self.config, case)["members"][0]
+        self.assertEqual(member["engine"]["name"], "codex")
+        self.assertEqual(member["engine"]["model"], {"provider": "openai", "name": "local"})
+
+    def test_global_list_and_case_replacement_keep_their_own_members(self):
+        self.config.pop("judge")
+        self.config["judges"] = [{"id": "global", "type": "agent_judge", "model": "global-model"}]
+        inherited = RUNNER.case_judge_plan(self.config, {"id": "inherited"})
+        self.assertEqual(inherited["selection"], "eval.judges")
+        replaced = RUNNER.case_judge_plan(self.config, {"id": "replaced", "judges": [
+            {"id": "local", "type": "script", "script_path": "check.py"}]})
+        self.assertEqual([m["id"] for m in replaced["members"]], ["local"])
+        single = RUNNER.case_judge_plan(self.config, {"id": "single", "judge": {
+            "type": "agent_judge", "model": "single-model"}})
+        self.assertEqual(single["members"][0]["engine"]["model"]["name"], "single-model")
+
+    def test_pinned_codex_version_mismatch_is_rejected_without_rewriting_pin(self):
+        case = {"id": "pinned", "judge": {"type": "agent_judge", "engine": {
+            "name": "codex", "version": "0.164.0", "model": {"provider": "openai", "name": "local"}}}}
+        with self.assertRaisesRegex(ValueError, "固定 Codex 0.164.0"):
+            RUNNER.case_judge_plan(self.config, case, "0.165.0")
+        self.assertEqual(case["judge"]["engine"]["version"], "0.164.0")
+
+    def test_other_engine_pin_is_config_only_not_claimed_as_host_observation(self):
+        case = {"id": "other", "judge": {"type": "agent_judge", "engine": {
+            "name": "claude-code", "version": "1.2.3", "model": {"provider": "anthropic", "name": "judge"}}}}
+        plan = RUNNER.case_judge_plan(self.config, case, "0.164.0")
+        self.assertEqual(plan["members"][0]["version_policy"], "explicit_pin")
+        self.assertEqual(plan["evidence"], "frozen_configuration_not_runtime_observation")
+
+    def test_container_version_pin_does_not_claim_host_cli_matches(self):
+        self.config["environment"] = {"type": "docker"}
+        case = {"id": "container", "judge": {"type": "agent_judge", "engine": {
+            "name": "codex", "version": "0.164.0", "model": {"provider": "openai", "name": "judge"}}}}
+        member = RUNNER.case_judge_plan(self.config, case, "0.165.0")["members"][0]
+        self.assertEqual(member["engine"]["version"], "0.164.0")
+        self.assertEqual(member["version_policy"], "explicit_pin")
+
+    def test_summary_prefers_case_plan_and_marks_legacy_identity_unknown(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            run = root / "run"
+            run.mkdir()
+            plan = RUNNER.case_judge_plan(self.config, {"id": "current", "judge": {
+                "type": "agent_judge", "model": "gpt-6-luna"}})
+            RUNNER.write_json(run / "manifest.json", {"cases": ["current", "legacy"],
+                "snapshot_sha256": {}, "judge": self.config["judge"], "case_judges": {"current": plan}})
+            output = root / "output"
+            output.mkdir()
+            info = SUMMARY.summarize_run(run, output, {})
+            cases = {c["case_id"]: c for c in info["cases"]}
+            self.assertEqual(cases["current"]["judge_plan"], plan)
+            self.assertIsNone(cases["legacy"]["judge_plan"]["members"])
+            rendered = SUMMARY.render({"runs": [info]})
+            self.assertIn("gpt-6-luna", rendered)
+            self.assertIn("0.164.0", rendered)
+            self.assertIn("unknown（旧 manifest", rendered)
+            self.assertNotIn("gpt-6.1-terra", rendered)
+
+
+class PreparationPreflight(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name).resolve()
+        self.repo = self.root / "repo"
+        self.cases = self.repo / "evals/skill-up/cases"
+        self.cases.mkdir(parents=True)
+        (self.repo / "evals/skill-up/fixtures").mkdir()
+        self.fixture = self.repo / "evals/skill-up/fixtures/marker.txt"
+        self.fixture.write_text("unchanged fixture")
+        self.skill = self.root / "skill"
+        self.skill.mkdir()
+        (self.skill / "SKILL.md").write_text("temporary fixture")
+        self.output = self.root / "output"
+        self.config = self.repo / "evals/skill-up/eval.yaml"
+        self.config.write_text(json.dumps({"engine": {"name": "codex", "model": {"name": "student"}}}))
+        self.case = self.cases / "pinned.yaml"
+        self.case.write_text(json.dumps({"id": "pinned", "input": {"prompt": "fixture"}, "judge": {
+            "type": "agent_judge", "engine": {"name": "codex", "version": "0.164.0",
+                                               "model": {"name": "judge"}}}}))
+        self.arguments = ["run-targeted.py", "--repo", str(self.repo), "--skill", str(self.skill),
+                          "--output", str(self.output), "--cases", "pinned", "--prepare-only"]
+        # JSON is valid YAML; keep this offline test independent of optional PyYAML.
+        self.yaml = types.SimpleNamespace(safe_load=json.loads)
+
+    def test_host_version_mismatch_leaves_no_output_and_launches_no_model(self):
+        stderr = io.StringIO()
+        with patch.object(sys, "argv", self.arguments), patch.dict(sys.modules, {"yaml": self.yaml}), \
+                patch.object(RUNNER.shutil, "which", return_value="fixture-codex"), \
+                patch.object(RUNNER, "captured", side_effect=["skill-up version 0.14.0", "codex-cli 0.165.0"]), \
+                patch.object(RUNNER, "copy_skill_tree") as copy, \
+                patch.object(RUNNER, "catalog_preflight") as catalog, \
+                patch.object(RUNNER.subprocess, "run") as launch, contextlib.redirect_stderr(stderr):
+            with self.assertRaises(SystemExit) as stopped:
+                RUNNER.main()
+            self.assertEqual(stopped.exception.code, 2)
+            copy.assert_not_called()
+            catalog.assert_not_called()
+            launch.assert_not_called()
+        self.assertIn("固定 Codex 0.164.0", stderr.getvalue())
+        self.assertFalse(self.output.exists())
+
+    def test_source_change_during_copy_is_rejected_before_catalog_or_model(self):
+        for changed in (self.config, self.case, self.skill / "SKILL.md", self.fixture):
+            with self.subTest(source=changed.name):
+                original_bytes = changed.read_bytes()
+                self.arguments[self.arguments.index("--output") + 1] = str(self.root / ("changed-" + changed.stem))
+                copy_skill = RUNNER.copy_skill_tree
+                def copy_and_change(source, destination):
+                    copy_skill(source, destination)
+                    changed.write_bytes(original_bytes + b" ")
+                stderr = io.StringIO()
+                with patch.object(sys, "argv", self.arguments), patch.dict(sys.modules, {"yaml": self.yaml}), \
+                        patch.object(RUNNER.shutil, "which", return_value="fixture-codex"), \
+                        patch.object(RUNNER, "captured", side_effect=["skill-up version 0.14.0", "codex-cli 0.164.0"]), \
+                        patch.object(RUNNER, "copy_skill_tree", side_effect=copy_and_change), \
+                        patch.object(RUNNER, "catalog_preflight") as catalog, \
+                        patch.object(RUNNER.subprocess, "run") as launch, contextlib.redirect_stderr(stderr):
+                    with self.assertRaises(SystemExit) as stopped:
+                        RUNNER.main()
+                    self.assertEqual(stopped.exception.code, 2)
+                    catalog.assert_not_called()
+                    launch.assert_not_called()
+                self.assertIn("准备期间", stderr.getvalue())
+                self.assertTrue((self.root / ("changed-" + changed.stem) / "snapshot").is_dir())
+                self.assertFalse((self.root / ("changed-" + changed.stem) / "manifest.json").exists())
+                changed.write_bytes(original_bytes)
+
+
+    def test_stable_sources_prepare_with_matching_frozen_inventories(self):
+        config = json.loads(self.config.read_text())
+        config["cases"] = {"defaults": {}, "retry_policy": {}}
+        self.config.write_text(json.dumps(config))
+        self.yaml.safe_dump = lambda value, **kwargs: json.dumps(value)
+        self.yaml.__version__ = "offline-fixture"
+        codex = self.root / "codex"
+        codex.write_text("offline binary fixture")
+        skill_up = self.repo / ".eval-work/bin/skill-up"
+        skill_up.parent.mkdir(parents=True)
+        skill_up.write_text("offline skill-up fixture")
+        with patch.object(sys, "argv", self.arguments), patch.dict(sys.modules, {"yaml": self.yaml}), \
+                patch.object(RUNNER.shutil, "which", return_value=str(codex)), \
+                patch.object(RUNNER, "captured", side_effect=["skill-up version 0.14.0", "codex-cli 0.164.0",
+                                                              "skill-up version 0.14.0", "offline login fixture"]), \
+                patch.object(RUNNER, "discover_host_skills", return_value=[]), \
+                patch.object(RUNNER, "catalog_preflight", return_value={"model_called": False}), \
+                patch.object(RUNNER.subprocess, "run", return_value=types.SimpleNamespace(
+                    returncode=0, stdout="offline validation", stderr="")) as launch, \
+                patch.object(RUNNER, "run_frozen") as model, contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(RUNNER.main(), 0)
+            model.assert_not_called()
+            self.assertEqual(len(launch.call_args_list), 2)
+            self.assertIn("validate", launch.call_args_list[0].args[0])
+            self.assertIn("--dry-run", launch.call_args_list[1].args[0])
+        snapshot = self.output / "snapshot"
+        self.assertEqual(RUNNER.file_inventory(self.skill), RUNNER.file_inventory(snapshot / "target/goal-prompt"))
+        self.assertEqual(RUNNER.file_inventory(self.fixture.parent), RUNNER.file_inventory(snapshot / "skill-up/fixtures"))
+        manifest = json.loads((self.output / "manifest.json").read_text())
+        self.assertEqual(manifest["snapshot_sha256"], RUNNER.file_inventory(snapshot))
 
 
 class PreparedSnapshotPolicy(unittest.TestCase):

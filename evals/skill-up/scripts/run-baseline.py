@@ -70,7 +70,7 @@ def filename_discovery(command):
             if name=='rg' and args and args[0]=='--files':
                 rest=args[1:]
                 if len(rest)%2==0 and all(rest[i] in ('-g','--glob') for i in range(0,len(rest),2)):continue
-            if name=='find' and all(not a.startswith('-') or a in ('-name','-iname','-o','-a','-maxdepth','-mindepth','-type') for a in args):continue
+            if name=='find' and all(not a.startswith('-') or a in ('-name','-iname','-o','-a','-maxdepth','-mindepth','-type','-print') for a in args):continue
             if name=='head' and all(a.lstrip('-').isdigit() or a=='-n' for a in args):continue
             if name=='sort' and not args:continue
             # Only a numeric print range over metadata from the preceding pipe.

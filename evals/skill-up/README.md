@@ -210,6 +210,12 @@ prevent an Agent from reading known host paths.
 `fixtures/semantic-calibration.yaml` 是合成校准数据，预期标签和解释不得传给 Judge，
 校准通过不代表模型行为或长任务执行通过。
 
+CI 的格式、原生评分路由和回执哈希检查不运行真实语义 Judge，也不验证预标注是否正确。
+真实校准须另行执行并保留逐项判分。校准回执
+`semantic-calibration-receipt.json` 应绑定各案例 criteria、对应 fixture 子集的哈希、
+评分引擎及结果摘要，并注明原始证据的归档位置。哈希一致只证明回执仍对应当前判据，
+CI不访问本地原始档案，也不核验回执所列的原始结果/请求哈希；回执内部自洽不能代替重新校准，判据变更后不能继续沿用旧的通过结论。当前回执复用未变的授权/压缩各4份R4观测，迁移新4份只有3份与预标一致，未达4/4扩展门槛，后续重判未运行；详见[Luna专项记录](../../docs/luna-xhigh-trial.md#同批pr意见修复与停止点)。
+
 旧的三个案例脚本保留用于历史协议重放，`check-goal-contract.py` 保留为离线历史判分测试；
 它们**不作为上述案例的新语义判分依据**。后者没有被当前 case 引用；其进度解析问题
 不等于主 30 例被重新判错。
@@ -237,6 +243,9 @@ evals/skill-up/fixtures/scripts/check-goal-char-limit.py \
 
 The paired cohort used 30 frozen cases, `gpt-5.6-luna` with high reasoning,
 Sol semantic judges, `parallelism: 1`, and the isolation requirements above.
+The totals below retain that historical grading protocol, including deterministic
+checkers now marked legacy. They are not full-cohort results under the current
+semantic criteria; targeted semantic rejudges are recorded separately.
 
 | Cohort | PASS | FAIL | ERROR |
 | --- | ---: | ---: | ---: |

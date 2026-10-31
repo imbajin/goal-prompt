@@ -25,7 +25,7 @@ Writing `/goal` by hand makes prompt size hard to judge:
 | Use an older open-source workflow | Some predate current `/goal` behavior; others require several SPEC files and a long setup | Create no extra files by default and give complex work the smallest useful state |
 | Generate once and execute immediately | Wrong assumptions flow straight into a long-running task | Investigate, ask, and confirm before generating the final `/goal` |
 | Stop after a small failure | A CI wait, permission gap, or failed item can mark the whole goal `blocked` | Keep doing independent work and stop only when all meaningful remaining work is jointly blocked |
-| Depend on chat history | Lessons disappear with the conversation, so the next run repeats the same mistakes | Deep-work guidance calls for brief reflection and reusable lessons; [targeted trials](docs/luna-xhigh-trial.md) still show reflection omitted from generated contracts |
+| Depend on chat history | Lessons disappear with the conversation, so the next run repeats the same mistakes | Deep state explicitly carries result assessment into the next action; [small targeted pairs](docs/luna-xhigh-trial.md) improve contract retention from 2/6 to 6/6, without certifying later execution |
 | Tie the workflow to one agent | Commands, paths, or instructions break when moving to another agent | Keep the instructions portable and adapt only the platform entrypoint |
 
 ## Quick Start
@@ -73,13 +73,13 @@ The current development suite uses skill-up 0.14.0 and 31 cases. Results from di
 
 The later [GPT-6 Luna xhigh trial](docs/luna-xhigh-trial.md) used 30 cases per group: original with-Skill 22 PASS / 8 FAIL and without 6 / 24; deterministic replay yielded 25 / 5 versus 7 / 23. Supplying Batch's required business artifact for a local rejudge yielded 26 / 4 versus 7 / 23. Original grades are retained; the without generation group was not rerun. This separate Docker-isolated cohort is not a full blind rerating or a direct model ranking against the earlier 6.1 targeted run.
 
-Recorded scores refer to the frozen snapshots named in the reports. A separate targeted Luna run checks the restored contracts and records remaining failures; Judge fixes retain the original outputs and grades.
+These aggregate scores retain their frozen historical grading protocols, including deterministic checkers now marked legacy; they are not current semantic-judge totals. Targeted semantic rejudges and restored-contract checks are recorded separately, preserving original outputs, grades and remaining failures.
 
 The recorded evaluation used 30 isolated cases with `skill-up 0.9.1`. The paired run held the inputs and Codex `gpt-5.6-luna` high constant; the baseline also had one timeout ERROR. The final operation-target wording was added afterward and has focused contract coverage, not a new full A/B run. For new runs, see the [evaluation guide](evals/skill-up/README.md#run-the-evaluation); the historical scores describe the recorded configuration.
 
 ![goal-prompt before and after evaluation](assets/eval-comparison-en.png)
 
-With the same Luna model, the pass count rose from 6/30 to 24/30 after enabling the Skill; Sol high with Skill reached 28/30. The stricter baseline score comes from replaying the frozen responses after closing three deterministic Judge false positives. See the [skill-up evaluation guide](evals/skill-up/README.md) for the isolation protocol, case results, failure analysis, and evaluation limits.
+On the historical 5.6 grading scale, the same Luna model rose from 6/30 to 24/30 after enabling the Skill; Sol high with Skill reached 28/30. That run's calibrated baseline comes from replaying the frozen responses after closing three deterministic Judge false positives. See the [skill-up evaluation guide](evals/skill-up/README.md) for the isolation protocol, case results, failure analysis, and evaluation limits.
 
 Claude Code live evaluation is intentionally skipped for 1.3 at the user's request. Installation and static compatibility checks remain; runtime behavior is unverified. Capacity recovery boundaries are documented in [Goal recovery](docs/goal-recovery.md).
 

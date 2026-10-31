@@ -145,6 +145,8 @@ def summarize_run(run: Path, output: Path, replay_scripts: dict[str, Path]) -> d
             "created_utc": manifest.get("created_utc"), "completed_utc": manifest.get("completed_utc"),
             "exit_code": manifest.get("exit_code"), "skill_up": manifest.get("skill_up"),
             "codex": manifest.get("codex"), "engine": manifest.get("engine"), "judge": manifest.get("judge"),
+            "judge_scope": "judge is global defaults, not a case or observed-model identity",
+            "case_judges": manifest.get("case_judges"),
             "reasoning_effort": manifest.get("reasoning_effort"),
             "invocation_mode": manifest.get("invocation_mode"),
             "invocation_prefix": manifest.get("invocation_prefix"),
@@ -223,8 +225,29 @@ def summarize_run(run: Path, output: Path, replay_scripts: dict[str, Path]) -> d
         if not any(key[0] == case_id for key in seen):
             info["cases"].append({"case_id": case_id, "status": "NOT_RUN", "execution_state": "not_dispatched",
                                   "reason": "没有 case_started、case_completed 或最终 result；尚未派发，不计为通过"})
+    for case in info["cases"]:
+        case["judge_plan"] = (manifest.get("case_judges") or {}).get(case["case_id"], {
+            "selection": "unknown_legacy_manifest", "members": None,
+            "evidence": "not_recorded; global defaults do not prove the case judge"})
     info["case_counts"] = dict(Counter(case["status"] for case in info["cases"]))
     return info
+
+
+def describe_judges(plan: dict) -> str:
+    if plan.get("members") is None:
+        return "unknown（旧 manifest 未记录逐 case 判分计划；不以 global Judge 代替）"
+    labels = []
+    for member in plan["members"]:
+        label = member.get("id") or member.get("type") or "none"
+        engine = member.get("engine")
+        if engine:
+            model = engine.get("model") or {}
+            model_name = "/".join(str(v) for v in (model.get("provider"), model.get("name")) if v) or "unknown"
+            label += f" ({engine.get('name') or 'unknown'} {engine.get('version') or 'version未固定'}, {model_name})"
+        else:
+            label += f" ({member.get('type') or '未配置'})"
+        labels.append(label)
+    return "; ".join(labels)
 
 
 def render(summary: dict) -> str:
@@ -246,6 +269,7 @@ def render(summary: dict) -> str:
                       "目标读取、host catalog 与实际污染审计以 transcript-audit 和主报告为准；原声明不等于已证实隔离。", ""])
         for case in run["cases"]:
             lines.append(f"- `{case['case_id']}` 原始 verdict **{case['status']}**。")
+            lines.append(f"  - Judge 配置（非实际模型观测）：{describe_judges(case.get('judge_plan', {}))}。")
             if case.get("status_event_artifact"):
                 lines.append(f"  - [状态事件]({case['status_event_artifact']})；{case['reason']}。")
             for assertion in (case.get("grading") or {}).get("assertion_results", []):
