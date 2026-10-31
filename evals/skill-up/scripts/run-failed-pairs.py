@@ -515,6 +515,8 @@ def main():
         elif arm=='current':require(hashes==main_manifest['skill_sha256'],'current不等于主30冻结版本')
         arm_hashes[arm]=hashes
     cases={cid:yaml.safe_load((REPO/'evals/skill-up/cases'/f'{cid}.yaml').read_text()) for cid in selected}
+    require(all('judges' not in case for case in cases.values()),
+            '本入口仅供历史单Judge协议；当前语义多Judge案例请使用新协议或原冻结runner，不得改写旧成绩。')
     for cid,case in cases.items():require(set(case['input'])=={'prompt'} and sha(REPO/'evals/skill-up/cases'/f'{cid}.yaml')==main_manifest['original_case_sha256'][cid],'case输入/原rubric已变')
     root.mkdir(parents=True,mode=0o700)
     # Freeze every dependency before preparing the first arm. Later J phases must

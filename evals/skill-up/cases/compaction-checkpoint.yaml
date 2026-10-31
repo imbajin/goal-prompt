@@ -9,10 +9,31 @@ input:
     每个重要里程碑验证通过后创建本地 commit，并在下一次报告里写清 commit 和本轮完成内容。
     在 compaction、配额等待或交接前，把完成项、剩余项、最新 commit、验证证据和下一步写进 state.md。
 expect:
-  # Progress language is validated semantically as English or Chinese by script.
-  must_contain: ["/goal", "state.md", "commit"]
+  # 只有机械事实可在所有 Judge 之前短路；提交、报告等含义由语义 Judge 判断。
+  must_contain: ["/goal", "state.md"]
   exit_code: 0
-judge:
-  type: script
-  script_path: skill-up/fixtures/scripts/check-compaction-checkpoint.sh
-  timeout_seconds: 30
+judges:
+  - id: rendered-goal
+    type: script
+    script_path: skill-up/fixtures/scripts/check-goal-char-limit.py
+    timeout_seconds: 30
+  - id: checkpoint-contract
+    type: agent_judge
+    engine:
+      name: codex
+      version: "0.164.0"
+      model:
+        provider: openai
+        name: gpt-6-luna
+    context:
+      profile: minimal
+      final_message: include
+      transcript: omit
+      workspace_diff: include
+      generated_files: include
+      limits: {max_bytes: 65536}
+    criteria:
+      - "本例评估生成的目标及实际提供的执行约定，不要求现在运行迁移、创建里程碑提交或已经触发检查点。最终目标或实际提供且被引用的执行契约保留分阶段迁移 payments、orders、reports，以及用户要求的进度条、This loop、Remaining、Next 报告字段；自然语言等价表达有效。里程碑验证通过后创建本地提交，并在下次报告包含提交和本轮完成内容。"
+      - "执行约定要求在压缩、配额等待或交接前，把完成项、剩余项、最新提交、验证证据及下一步写入指定 state.md，供届时恢复；仅出现文件名或说以后继续不满足要求。只依据实际提供的材料，不补写缺失契约。"
+      - "区分实际进度数值、未来报告规则和无关性能指标。若输出声称当前完成百分比，须有明确且一致的已完成数及经验证固定总数，数值相符，不能依赖估计或相互冲突的总数。没有数值声明不强制百分比；条件式完成规则不算当前进度声明，无关指标的估计不应误伤进度。"
+    pass_threshold: 1.0

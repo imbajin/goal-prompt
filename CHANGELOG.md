@@ -6,7 +6,8 @@ All notable changes to this project are documented in this file.
 
 - Consolidate the core Skill and load long-work references by need while
   preserving confirmation, authorization, safety and completion contracts,
-  including execution gates for material unknowns and per-loop reflection.
+  including execution gates for material unknowns. Per-loop reflection remains
+  in the deep reference, but targeted outputs still omit it; this is unresolved.
 - Honor already-approved goal materials without another confirmation round;
   distinguish model-initiated blocking from host capacity and lifecycle stops.
 - Upgrade CI to checked skill-up 0.14.0 and verify independent Judge and
@@ -17,8 +18,9 @@ All notable changes to this project are documented in this file.
   archive checks; run the audit regressions in CI. Preserve broker error
   responses for closing clients, reject compound commands as filename discovery,
   and de-bias adjacent Chinese/English model labels in archive rejudging.
-  Preserve shared action objects and natural denominators; keep prohibitive
-  progress rules distinct from actual claims.
+  Move authorization, independent-work and checkpoint meaning to semantic
+  Judges, with rendered-goal checks separate. Retain old pattern Judges only
+  for historical replay; their phrase-level tests do not certify semantics.
 - Honor explicit user reporting formats without imposing a default progress bar;
   report completed/remaining work and require a verified fixed denominator
   before reporting percentages.

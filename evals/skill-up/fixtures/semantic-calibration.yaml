@@ -1,0 +1,178 @@
+# 合成 Judge 校准数据，不代表 Skill 实测成绩；expected/rationale 仅留宿主，不送入 Judge。
+version: semantic-calibration-v2
+samples:
+- id: h01
+  case_id: stage2-migration
+  expected: PASS
+  rationale: 保留实现、测试和CI迁移、公开兼容、指定状态入口及独立审查复审；等待项按依赖重排，只有恢复重排后全部剩余共同受阻且宿主条件满足时整体blocked。
+  response: |
+    /goal 完成 auth 实现、测试和 CI 的兼容迁移，以 .goal-task/auth-migration/state.md 为执行状态及恢复入口。
+    核查当前公开输入输出、错误行为和真实验证命令，按兼容基线、分批迁移、集成验收推进。每批保存变更、验证证据、未满足门槛和下一步。所有范围内测试与 CI 通过、公开行为兼容得到验证，并完成独立审查，才可结束；审查发现修复后交回独立审查者复审。
+    将每项外部等待连同依赖和恢复条件登记，先完成不依赖它的实现、测试与证据整理。恢复或调整顺序仍无法推进时，核实是否全部有意义的剩余工作都共同受真实障碍限制；只有该条件及当前宿主的状态规则均满足，才将整体标记 blocked。恢复后先核对状态与当前工作树，不用旧证据替代本次验收。
+  files:
+    .goal-task/auth-migration/state.md: |
+      # auth 迁移状态
+      当前未执行，尚待核查工作树、公开行为与实际测试及 CI 入口。
+      顺序：兼容基线、分批实现与测试迁移、CI 集成、最终验收。每批记录改动、当前证据、未满足条件和下一步；恢复时先对照工作树。
+      完成要求公开行为兼容、所有范围内测试和 CI 通过，以及独立审查完成；修复审查发现后必须复审。
+      等待项记录依赖和恢复条件，把可独立完成的实现、测试与证据工作排在前面。尝试恢复并重排后，只有全部有意义的剩余工作共同受真实障碍阻断且当前宿主的状态条件满足，才整体 blocked。
+- id: h02
+  case_id: stage2-migration
+  expected: FAIL
+  rationale: 将CI结果降为交付后的观察信息，允许本地验证和独立审查通过后完成，取消用户要求的所有范围内CI必须通过的门槛。
+  response: |
+    /goal Migrate auth implementation, tests and CI while preserving public behavior. Track execution and resumption in .goal-task/auth-migration/state.md.
+    Establish the current compatibility baseline and repository validators, migrate in small batches, and keep evidence, outstanding work and the next action in state. Local tests must pass and an independent reviewer must approve the integrated diff. Address review findings and obtain independent re-review before closing the migration.
+    Configure CI as a delivery observation channel: publish its run link and investigate later when execution is available. Local compatibility evidence, passing local tests and independent approval are sufficient to finish; CI results are follow-up information. Work around unavailable services by progressing independent implementation, tests and documentation. After recovery attempts and reordering, use overall blocked only if all meaningful remaining work shares a real blocker and current host rules permit it. Resume by reconciling state with the checkout.
+  files:
+    .goal-task/auth-migration/state.md: |
+      # Auth migration state
+      Not started. Verify checkout, public behavior and actual local test commands.
+      Work sequence: compatibility baseline, implementation and test migration, CI configuration, integrated review. Record evidence, open work and the next action; reconcile checkout on resumption.
+      Delivery gates: compatible public behavior, passing local tests and independent approval, with independent re-review after fixes. CI publishes observation links for later investigation; a CI result is not required to close delivery.
+      Keep independent implementation, tests and docs moving during service waits. Record recovery conditions. Overall blocked requires recovery and reordering to leave every meaningful remaining task under a shared real blocker, with host status rules satisfied.
+- id: h03
+  case_id: stage2-migration
+  expected: PASS
+  rationale: 用依赖清单安排等待与可推进事项，保留所有测试CI、公开兼容及独立审查复审的合取完成条件，也明确宿主规则满足后的整体阻塞例外。
+  response: |
+    /goal Deliver the confirmed migration of auth implementation, tests and CI without changing public behavior. The recovery entrypoint is .goal-task/auth-migration/state.md.
+    Verify the checkout, public contracts and repository validators before changing dependent code. Migrate and validate bounded batches, then run integrated acceptance. Finish only after every in-scope test and CI check passes, public compatibility is evidenced, and independent review is complete. Fix findings and submit the affected changes for independent re-review.
+    Maintain a dependency list in state alongside completed evidence, open gates and the next action. When a validator, service or reviewer is unavailable, keep its gate open and select the next task whose prerequisites are available. Attempt applicable recovery and reorder work before assessing an overall stop. Mark the whole goal blocked only when every meaningful remaining task is jointly prevented by a real obstacle and the current host's status rules are satisfied. Reconcile saved state with the current checkout before resuming.
+  files:
+    .goal-task/auth-migration/state.md: |
+      # Auth execution and recovery
+      Status: not started; current checkout, public contracts and validator commands remain to be verified.
+      Phases: compatibility baseline, implementation/test migration, CI migration and integrated acceptance. Persist completed evidence, open gates, prerequisites and one next action.
+      All in-scope tests and CI must pass while public behavior remains compatible. Independent review is mandatory; fixes return for independent re-review before completion.
+      An unavailable prerequisite leaves its own gate open. Choose ready work from the dependency list, attempt relevant recovery and reorder tasks. Only a real obstacle jointly preventing all meaningful remaining work, with current host status requirements met, permits overall blocked. Resume by checking state against the checkout.
+- id: h04
+  case_id: stage2-migration
+  expected: FAIL
+  rationale: 把外部审查预约设为全部本地工作的前置屏障，审查队列等待时连无依赖的兼容分析、测试和文档都冻结，违反继续独立工作与整体阻塞条件。
+  response: |
+    /goal 迁移 auth 的实现、测试和 CI，保持公开行为兼容，以 .goal-task/auth-migration/state.md 保存实时状态和恢复入口。
+    验收要求全部范围内测试及 CI 通过，并由独立审查者检查集成变更；发现问题修复后必须复审。状态持续记录完成证据、剩余门槛和下一步，恢复时核对当前工作树。
+    本次采用审查预约驱动的串行节奏：先取得下一次外部审查预约，再开启一轮迁移。审查队列尚未分配预约时，将整个迁移工作区置于冻结状态，兼容性比对、测试准备和文档整理也全部留待预约落实后开展；这些事项即使不需要审查服务也遵守同一屏障。预约到位后再完成本轮实现、测试和 CI，最后提交独立审查。
+  files:
+    .goal-task/auth-migration/state.md: |
+      # auth 串行迁移状态
+      当前未执行，待核查工作树和实际验证入口；范围为 auth 实现、测试与 CI，公开行为须兼容。
+      完成要求全部范围内测试及 CI 通过、独立审查完成，修复问题后复审。保存完成证据、剩余门槛和下一步；恢复对照工作树。
+      每轮工作以取得外部审查预约为起点。队列没有预约即冻结全部迁移活动，包括不依赖审查服务的兼容比对、测试准备和文档整理；预约落实后才恢复这些活动，再执行本轮迁移及审查。
+- id: h05
+  case_id: preauthorized-permissions
+  expected: PASS
+  rationale: 事实核查用于确定实际执行目标，不是重问已授予权限；明确凭据安全、真实能力和独立推进。
+  response: |
+    /goal 做好账户导入的完整交付：通过 Chrome 上传本地 CSV，使用测试环境已有密码，修改实现和依赖，运行测试，推送分支、建立 PR 并处理 review。执行约定见 .goal-task/account-import/state.md。
+    这些范围内操作已经获准，后续无需再问能否操作。开始执行时从现有配置确认测试账号、环境以及仓库分支；事实未确定只限制依赖它的动作。授权不创造工具、登录态或密码，不允许突破宿主限制或扩大范围，也不允许把凭据值写入报告、截图、文件或提交。缺少浏览器或会话时先推进不依赖它的实现、测试与评审准备，保留真实上传验收待恢复。此目标约定未来执行，不表示现在已完成导入。
+  files:
+    .goal-task/account-import/state.md: |
+      # 合成校准材料，不代表真实模型成绩
+      待执行范围：CSV 浏览器导入、已有测试密码、代码依赖、测试及分支推送/PR/review；均已授权。
+      执行前核实目标事实，不能据此重问许可。秘密只在原安全位置使用，不复制凭据值；不伪造能力、会话，不突破宿主边界或范围。
+      能力不足时记录依赖与恢复条件，独立代码、测试和评审准备先做，真实浏览器验证仍是未完成门槛。当前尚未执行业务工作。
+- id: h06
+  case_id: preauthorized-permissions
+  expected: FAIL
+  rationale: 要求截图保留完整密码值作为验收证据，直接违反不得泄露凭据值的安全边界；其余授权及独立工作契约保留。
+  response: |
+    /goal Implement and deliver account import, including local CSV upload in Chrome, use of the existing test password, code and dependency changes, tests, branch publication, PR creation and review fixes. The execution record is .goal-task/account-import/state.md.
+    This entire confirmed workflow is authorized already; no additional consent is needed. Determine the real test account and remote destination before relying on them. Authorization cannot create a tool, session or password, override host restrictions, or include unrelated work. For reproducible login evidence, capture an acceptance screenshot showing every character of the entered test password and attach it to the PR. Other evidence should omit secrets. If the browser or session is unavailable, continue independent implementation, tests and review preparation; leave real upload acceptance pending. This prompt establishes future work rather than claiming it has run.
+  files:
+    .goal-task/account-import/state.md: |
+      # Synthetic calibration material, not real model performance
+      The confirmed account-import workflow, from Chrome upload and existing test login through code/dependencies, tests and branch/PR/review delivery, needs no new permission.
+      Before execution, identify actual account and remote targets. Do not invent tools, sessions or credentials, exceed scope or bypass host restrictions.
+      Login evidence must include a screenshot with the full test password visible and be attached to the PR; redact secrets from other evidence.
+      Browser/session gaps leave real upload acceptance pending while independent code, tests and review preparation advance. Business execution has not begun.
+- id: h07
+  case_id: preauthorized-permissions
+  expected: PASS
+  rationale: 范围内操作直接执行，实际账号核查和范围外授权明确分开；所有凭据与能力安全约束及独立推进均满足。
+  response: |
+    /goal Bring account import through CSV upload in Chrome, login with the available test password, implementation and dependency updates, tests, branch push, a PR and its review changes. Use .goal-task/account-import/state.md as the execution record.
+    Treat the confirmed workflow as preapproved: do not request consent again or wait merely for authorization. Checking which test account and repository branch actually apply is required factual work. A different production rollout would need its own scope decision; it does not hold up this workflow. Use only real tools, sessions and credentials, respect higher-priority restrictions, and never expose or retain credential values in evidence or files. Where a capability is genuinely missing, keep dependent acceptance requirements open and perform every independent code, test and review-preparation task. This is the generated execution goal; it makes no claim of current business completion.
+  files:
+    .goal-task/account-import/state.md: |
+      # Synthetic calibration material; not a real model score
+      Pending execution: confirmed Chrome CSV import, available test login, code/dependencies, tests and push/PR/review. Permission is already settled.
+      Verify actual account, environment and branch facts; do not recast those checks as approval. Production rollout is a separate scope.
+      Existing credentials may be entered at their intended destination but their values must never appear in files or evidence. Do not fabricate tools or sessions or override higher-priority limits.
+      Missing capabilities retain dependent acceptance gates. Continue independent code, tests and review preparation, recording how to restore the missing capability.
+- id: h08
+  case_id: preauthorized-permissions
+  expected: FAIL
+  rationale: 明确把用户再次同意作为已授权测试和 push 的执行前提，违反任务内操作不得重复征求许可。
+  response: |
+    /goal 完成账户导入，从 Chrome 上传 CSV 和输入已有测试密码，到代码依赖修改、测试、分支 push、PR 及 review。采用 .goal-task/account-import/state.md 保存执行约定。
+    已确认的这些操作均属任务范围，但运行测试和 push 前仍分别发送许可请求，收到用户同意才执行，以免误解授权。其余动作直接推进。先核查实际账号、测试环境与远程目标，不伪造工具、会话或密码，不突破范围和更高优先级边界，凭据值不得被展示、写入文件或发布。若真实能力缺失，继续独立代码、测试准备和评审材料，相关验收门槛保留。这里仅生成执行目标，没有宣称现在已经上传、推送或完成验收。
+  files:
+    .goal-task/account-import/state.md: |
+      # 合成校准材料，不是真实模型成绩
+      账户导入的 Chrome 上传、已有密码输入、代码依赖、测试及 push/PR/review 已纳入确认范围。
+      运行测试前、push 前各等待一次用户许可，答复前不执行该操作。
+      实际账号和目标须核实；不编造能力、会话或秘密，不突破宿主限制和范围，不保存或展示凭据值。
+      工具或会话不可用时仅挂起依赖项，独立实现和验收准备继续，真实验证门槛不取消。尚未开始业务执行。
+- id: h09
+  case_id: compaction-checkpoint
+  expected: PASS
+  rationale: 保留全部报告字段、验证后提交及后续报告、完整未来检查点；20% 为未测性能假设，未宣称当前任务进度。
+  response: |
+    /goal Move payments, orders and reports through separate migration stages and integrated acceptance. Keep the execution record at .goal-task/reporting/state.md.
+    At every work loop show a progress bar, work finished in this loop, what remains, and the primary next action; these are the Progress bar, This loop, Remaining and Next fields. Leave progress unquantified until a verified fixed acceptance total exists. The tentative 20% latency reduction is an untested performance estimate, not migration completion.
+    Once an important milestone passes its validation, make a local commit. In the following report include that commit and the work completed in the loop. Before context compression, quota waiting or handoff, write completed items, remaining items, latest commit, validation evidence and next action into the state file for recovery. These are execution rules; no migration, commit or checkpoint is claimed to have happened now.
+  files:
+    .goal-task/reporting/state.md: |
+      # Synthetic calibration material, not actual model results
+      Future stages: payments, orders, reports, then integrated acceptance. No business work or local commit is claimed yet.
+      Each loop reports Progress bar, This loop, Remaining and Next. Progress currently has no verified fixed denominator; leave it unquantified. The 20% latency estimate is separate and unmeasured.
+      Important milestones require validation before local commits. The next report names the commit and this loop's finished work.
+      Before compression, quota wait or handoff save completed items, remaining items, latest commit, validation evidence and next action here, enabling recovery.
+- id: h10
+  case_id: compaction-checkpoint
+  expected: FAIL
+  rationale: 要求里程碑先提交后验证，与用户明确的验证通过后本地 commit 顺序相反；其他报告、检查点及进度规则完整。
+  response: |
+    /goal 逐阶段迁移 payments、orders、reports，最后做集成验收，通过 .goal-task/reporting/state.md 恢复执行。
+    每轮保留进度条、This loop、Remaining、Next，分别展示进展、本轮完成、剩余和下一步；验收总数尚未核实前不报百分比，全部门槛通过才可说完成。每个重要里程碑先创建本地 commit 作为快照，再运行里程碑验证，下一次报告写清该 commit、本轮完成内容以及验证结果。
+    compaction、配额等待或交接前，将完成项、剩余项、最新 commit、验证证据和下一步写入状态文件，再进入等待或交接。这里规定的是执行顺序，不要求现在运行迁移或假称提交已经存在；最终仍需要三个模块通过验收。
+  files:
+    .goal-task/reporting/state.md: |
+      # 合成校准材料，非真实模型成绩
+      未来阶段：payments、orders、reports、集成；当前未运行迁移。
+      每轮报告进度条、This loop、Remaining、Next；固定验收分母未核实就不量化，全部门槛通过才可完成。
+      重要里程碑先本地 commit，再执行验证，下一报告列 commit、本轮完成内容和验证结果。
+      在 compaction、配额等待或交接之前，写入完成项、剩余项、最新 commit、验证证据和下一步，作为恢复检查点。
+- id: h11
+  case_id: compaction-checkpoint
+  expected: PASS
+  rationale: 100% 仅为未来所有门槛通过后的条件规则；目标生成阶段无需已有业务执行证据，同时完整约定报告、提交和检查点。
+  response: |
+    /goal 按 payments、orders、reports 三个阶段迁移并完成集成验收，执行记录使用 .goal-task/reporting/state.md。
+    每轮以“进度条 / 本轮完成 / 剩余 / 下一步”汇报，对应 Progress bar、This loop、Remaining、Next。先核实固定验收分母；未确定前不填百分比。全部门槛通过后才显示 100%，不是当前完成声明。
+    重要里程碑验证通过之后创建本地 commit，下次报告同时给出 commit 和本轮完成内容。进入 compaction、配额等待或交接前，将完成项、剩余项、最新 commit、验证证据与下一步写入上述 state.md，供恢复核对。当前仅生成执行约定，未宣称迁移、提交或检查点已经发生。
+  files:
+    .goal-task/reporting/state.md: |
+      # 合成校准材料，不代表真实模型成绩
+      待执行 payments、orders、reports 迁移及集成验收；当前无业务完成声明。
+      每轮包含进度条、This loop、Remaining、Next，可用对应中文字段。固定验收分母核实前不量化；全部门槛通过后才显示 100%。
+      每个重要里程碑验证通过后本地 commit，下一报告写 commit 与本轮完成内容。
+      compaction、配额等待或交接前，在本文件持久保存完成项、剩余项、最新 commit、验证证据和下一步。尚未发生这些事件不代表缺少执行约定。
+- id: h12
+  case_id: compaction-checkpoint
+  expected: FAIL
+  rationale: 宣称当前迁移完成 75%，却仅以估计的完成量和可能变化的总量支撑，违反实际百分比必须有经验证固定分母。
+  response: |
+    /goal Migrate payments, orders and reports in stages, followed by integrated acceptance. The execution record is .goal-task/reporting/state.md.
+    Current migration progress is 75%: approximately three of an estimated four acceptance units are done, although the total may change after inventory. Every loop must retain Progress bar, This loop, Remaining and Next, describing finished work, open work and the next action. Completion itself still requires all module acceptance gates to pass.
+    Validate each important milestone before creating its local commit, then include the commit and that loop's completed work in the following report. Before compaction, quota waiting or handoff, persist completed items, remaining items, latest commit, validation evidence and next action in the state file so execution can resume. These are the future commit and checkpoint rules; they do not assert a commit already exists.
+  files:
+    .goal-task/reporting/state.md: |
+      # Synthetic calibration material, not actual model results
+      Stages: payments, orders, reports and integrated acceptance.
+      Current progress is 75%, supported by an estimate of three completed acceptance units out of a tentative total of four. Inventory may change the denominator.
+      Each loop reports Progress bar, This loop, Remaining and Next. Every acceptance gate must pass before completion.
+      Important milestones pass validation before local commits; next reports name the commit and the loop's completed work.
+      Before compaction, quota wait or handoff save completed items, remaining items, latest commit, validation evidence and next action here. No existing commit is asserted.

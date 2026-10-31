@@ -25,7 +25,7 @@ Writing `/goal` by hand makes prompt size hard to judge:
 | Use an older open-source workflow | Some predate current `/goal` behavior; others require several SPEC files and a long setup | Create no extra files by default and give complex work the smallest useful state |
 | Generate once and execute immediately | Wrong assumptions flow straight into a long-running task | Investigate, ask, and confirm before generating the final `/goal` |
 | Stop after a small failure | A CI wait, permission gap, or failed item can mark the whole goal `blocked` | Keep doing independent work and stop only when all meaningful remaining work is jointly blocked |
-| Depend on chat history | Lessons disappear with the conversation, so the next run repeats the same mistakes | Reflect briefly after each loop and keep only high-value, reusable lessons |
+| Depend on chat history | Lessons disappear with the conversation, so the next run repeats the same mistakes | Deep-work guidance calls for brief reflection and reusable lessons; [targeted trials](docs/luna-xhigh-trial.md) still show reflection omitted from generated contracts |
 | Tie the workflow to one agent | Commands, paths, or instructions break when moving to another agent | Keep the instructions portable and adapt only the platform entrypoint |
 
 ## Quick Start

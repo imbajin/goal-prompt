@@ -107,6 +107,10 @@ def inputs():
 
 def prepare(root, allow_preauth_refresh=False):
     require(not root.exists(), '拒绝覆盖已有replay')
+    for case in FOUR:
+        definition = yaml.safe_load((REPO/'evals/skill-up/cases'/(case+'.yaml')).read_text())
+        require('judges' not in definition and definition.get('judge', {}).get('type') == 'script',
+                '当前案例已迁移语义多 Judge；本入口仅供历史协议，请从原冻结归档使用原runner重放。')
     rows = inputs()
     original = load(STAGE2/'manifest.json')
     binary = STAGE2/'dependencies/skill-up'

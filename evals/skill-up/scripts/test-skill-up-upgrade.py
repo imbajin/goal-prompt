@@ -9,6 +9,60 @@ import subprocess
 import tempfile
 
 
+def contract_judge_smoke(binary, root):
+    """Check current production routing with a deliberately failing fake Judge.
+
+    This exercises the SDK plan, not semantic accuracy; the latter requires
+    the separately labelled calibration fixtures and a real Judge.
+    """
+    import yaml
+    source = Path(__file__).resolve().parents[1]
+    for case_id in ('preauthorized-permissions', 'stage2-migration', 'compaction-checkpoint'):
+        case = yaml.safe_load((source/'cases'/f'{case_id}.yaml').read_text())
+        folder = root / case_id
+        folder.mkdir()
+        (folder/'SKILL.md').write_text('---\nname: contract-routing-probe\ndescription: Zero-model routing fixture\n---\n')
+        # Use the actual case and mechanical checker. The only replacement is
+        # a zero-model semantic engine; every original criterion must run.
+        mechanical, semantic = case['judges']
+        checker = folder/'check-goal-char-limit.py'
+        checker.write_bytes((source/'fixtures/scripts/check-goal-char-limit.py').read_bytes())
+        checker.chmod(0o755)
+        mechanical['script_path'] = str(checker)
+        criteria = semantic['criteria']
+        verdict = {'results': [{'criterion_id': f'criterion-{i+1}', 'passed': False,
+                    'evidence': ['protocol only'], 'failures': ['controlled failure']}
+                   for i in range(len(criteria))]}
+        code = 'import json;print(json.dumps(' + repr({'final_message': json.dumps(verdict), 'exit_code': 0}) + '))'
+        semantic['engine'] = {'name': 'protocol-semantic-judge', 'model': semantic['engine']['model'], 'custom': {
+            'transport': 'local', 'response_format': 'session_result',
+            'local': {'command': 'python3', 'args': ['-c', code]}}}
+        (folder/'case.yaml').write_text(yaml.safe_dump(case, allow_unicode=True, sort_keys=False))
+        response = '/goal migrate auth payments orders reports; entry .goal-task/auth-migration/state.md'
+        payload = {'final_message': response, 'exit_code': 0}
+        config = {'schema_version': 'v1alpha1', 'environment': {'type': 'none'},
+            'engine': {'name': 'protocol-frozen-output', 'custom': {
+                'transport': 'local', 'response_format': 'session_result',
+                'local': {'command': 'python3', 'args': ['-c', 'import json;print(json.dumps(' + repr(payload) + '))']}}},
+            'cases': {'files': ['case.yaml'], 'parallelism': 1},
+            'benchmark': {'enabled': False}, 'report': {'formats': ['json']}}
+        (folder/'eval.yaml').write_text(yaml.safe_dump(config))
+        (folder/'empty-user.yaml').write_text('{}\n')
+        result = subprocess.run([binary, '--config', str(folder/'empty-user.yaml'), 'run',
+            str(folder/'eval.yaml'), '--output-dir', str(folder/'reports')], capture_output=True, text=True, timeout=90)
+        (folder/'run.log').write_text(result.stdout + result.stderr)
+        assert result.returncode == 1, result.stdout + result.stderr
+        paths = list((folder/'reports').rglob('evaluation.json'))
+        assert len(paths) == 1, paths
+        evaluation = json.loads(paths[0].read_text())
+        assert [m['status'] for m in evaluation['judge_results']] == ['PASS', 'FAIL'], evaluation
+        assert evaluation['aggregation']['status'] == 'FAIL', evaluation
+        grading = evaluation['judge_results'][1]['result']
+        assert all(any(c == a['text'] and not a['passed'] and not a.get('skipped')
+                       for a in grading['assertion_results']) for c in criteria), grading
+    print('PASS: current three cases execute mechanical and semantic members; format PASS cannot mask semantic FAIL; models=0')
+
+
 def real_judge_schema_smoke(binary, root):
     """Validate the real Judge adapter, which a custom mock can accidentally hide."""
     folder = root / 'real-judge-schema'
@@ -162,6 +216,7 @@ report:
         print(f"{out.name}: aggregation=FAIL judges={statuses} pass_rate={summary['pass_rate']}")
     print("PASS: 单次执行、顺序共享 runtime、失败归因和 expect gate 评分；无模型调用")
     real_judge_schema_smoke(binary, root)
+    contract_judge_smoke(binary, root)
 
 
 if __name__ == "__main__":

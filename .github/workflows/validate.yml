@@ -56,7 +56,7 @@ jobs:
           python3 -m venv .eval-work/ci-venv
           .eval-work/ci-venv/bin/python -m pip install --disable-pip-version-check -r evals/skill-up/requirements.txt
 
-      - name: Check deterministic eval judges
+      - name: Check mechanical gates and legacy replay fixtures
         run: |
           bash -n evals/skill-up/fixtures/scripts/*.sh
           evals/skill-up/fixtures/scripts/test-judges.sh
@@ -90,4 +90,4 @@ jobs:
 
       - name: Verify multi-judge and expect gate semantics without a model
         run: |
-          python3 evals/skill-up/scripts/test-skill-up-upgrade.py /tmp/skill-up-bin/skill-up
+          .eval-work/ci-venv/bin/python evals/skill-up/scripts/test-skill-up-upgrade.py /tmp/skill-up-bin/skill-up

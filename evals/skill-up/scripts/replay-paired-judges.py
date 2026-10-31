@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""离线重放四项确定性 Judge；保留原生判分，只添加独立校准字段。需 PyYAML。"""
+"""历史单脚本协议重放；保留原生判分，不支持当前语义多 Judge。需 PyYAML。"""
 from __future__ import annotations
 
 import argparse
@@ -218,6 +218,10 @@ def main():
         return
     roots = {'with': args.with_run.resolve(), 'without': args.without_run.resolve()}
     prior, current, out = args.prior_replay.resolve(), args.current_evals.resolve(), args.output.resolve()
+    for case in AFFECTED:
+        definition = yaml.safe_load((current/'cases'/f'{case}.yaml').read_text())
+        require('judges' not in definition and definition.get('judge', {}).get('type') == 'script',
+                '仅支持历史单脚本协议；--current-evals 请指向冻结旧版本。新语义评分须另建协议，不覆盖历史成绩。')
     supersedes = args.supersedes.resolve()
     require((supersedes/'summary.json').is_file(), '缺少上一版校准，禁止无来源替换')
     destination(out, [*roots.values(), prior, supersedes, current/'cases', current/'fixtures'])

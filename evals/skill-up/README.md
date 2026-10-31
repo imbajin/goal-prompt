@@ -21,8 +21,9 @@ skill-up validate evals/skill-up/eval.yaml
 The recorded release baseline used `skill-up 0.9.1`, Codex
 `gpt-5.6-luna` with high reasoning, and `gpt-5.6-sol` semantic judges.
 The execution model and default semantic judge model are specified in
-`eval.yaml`; individual cases can override the judge model. Deterministic
-`expect` and `script` checks remain the default. Reproducing the historical cohort requires its
+`eval.yaml`; individual cases can override the judge model. The three migrated
+cases below explicitly use Luna semantic Judges; list members do not inherit
+the singular global Judge defaults. Reproducing the historical cohort requires its
 original execution and judge models and the isolation protocol below.
 
 For a new development run, start with no existing target directory so stale
@@ -194,32 +195,43 @@ conditions:
 An operating-system sandbox is preferred because a clean `HOME` alone does not
 prevent an Agent from reading known host paths.
 
-## Deterministic contracts
+## 判分职责与历史重放
 
-The reusable structural checker accepts a generated response or a directory of
-generated documents:
+`preauthorized-permissions`、`stage2-migration` 和 `compaction-checkpoint`
+采用原生多 Judge：已有字符检查器只验证单个非空 `/goal` 及字符上限；
+语义 Judge 按原任务要求判断授权、独立工作和报告/检查点含义。所有成员都通过
+才算通过。`expect` 只保留必要的命令/入口标识与退出码，避免词面错误让语义评分
+整体 SKIP；中文“提交”不再被英文 `commit` 门槛拦截。
+
+语义评分必须检查实际 goal 和必要执行契约，不能根据文件名推断内容。严格对照继续
+使用两阶段隔离：原 final 和真实业务 state 进入 fresh、无 Skill 的 J，检查材料完整且
+未截断，缺少必要引用产物标为 UNSCORABLE。原生多 Judge 共享运行环境，本身不证明
+盲评或 G/J 隔离。语义 Judge 也会误判，须用独立正反例校准并保留逐项证据；
+`fixtures/semantic-calibration.yaml` 是合成校准数据，预期标签和解释不得传给 Judge，
+校准通过不代表模型行为或长任务执行通过。
+
+旧的三个案例脚本保留用于历史协议重放，`check-goal-contract.py` 保留为离线历史判分测试；
+它们**不作为上述案例的新语义判分依据**。后者没有被当前 case 引用；其进度解析问题
+不等于主 30 例被重新判错。
+这些正则仍有已知误受/误拒，离线 `test-judges.sh` 只证明已有词面样例回归。
+其他尚未迁移的脚本不在本轮验证范围内，不能推断它们已获得语义可靠性证明。
+
+机械字符检查：
 
 ```bash
-EVAL_FINAL_MESSAGE="$(cat generated-goal.md)" \
-  evals/skill-up/fixtures/scripts/check-goal-contract.py --profile long
-
-evals/skill-up/fixtures/scripts/check-goal-contract.py \
-  --profile long --root .goal-task/example
-
 evals/skill-up/fixtures/scripts/check-goal-char-limit.py \
   --source generated-response.md
 ```
 
-| Profile | Required evidence |
+| 历史检查器 profile | 原词面检查范围（不是语义证明） |
 | --- | --- |
 | `long` | Visible progress, milestone commits, completed and remaining work, the next action, and a `state.md` checkpoint before compaction or handoff |
 | `parallel` | Lane ownership, one writer for shared schema and lockfiles, integration reruns, and an independent reviewer |
 | `ui` | Chrome `browser_use`, successful and failed interactions, browser evidence, UI/UX review, and accessibility review |
 | character limit | A rendered goal body shorter than 4000 Unicode characters |
 
-The fixture suite includes passing and intentionally incomplete samples. It
-also proves that 3999 characters pass, 4001 fail, and a response without a goal
-is rejected.
+历史重放使用冻结的 case 和 checker，不将新 rubric 套入旧汇总。新语义评分另列协议版本，
+保留原始 PASS/FAIL/SKIP/ERROR、输出和必要产物。迁移不会追改历史成绩，也不证明 Skill 提升。
 
 ## Recorded results
 
