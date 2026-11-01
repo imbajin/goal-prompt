@@ -5,13 +5,18 @@
 [![License](https://img.shields.io/badge/license-Apache%202.0-D96C2C)](../LICENSE)
 [![Agent Skills](https://img.shields.io/badge/Agent%20Skills-compatible-2E8B57)](https://agentskills.io/)
 
-`goal-prompt` 用来快速生成长度合适、边界清楚、可以验证结果的 `/goal`。它会先了解任务和仓库，只问会改变目标的问题，确认后输出可直接复制的 prompt。你也可以明确跳过调查或确认，或者把剩余判断交给 Agent
-
-它尽可能自适应任务复杂度，找到效率和质量的平衡点
+`goal-prompt` 将任务整理成边界清楚、可验证的 `/goal`。它先了解仓库、澄清关键问题，再经确认生成目标；你也可以明确跳过调查、跳过确认或委托判断。Skill 只生成 prompt，执行由后续 Agent 承担。
 
 ![goal-prompt 如何解决常见的 /goal 问题](../assets/overview-zh.png)
 
-## Why need it？
+## 1.3 更新
+
+- 精简主 Skill，明确授权、循环反馈与里程碑审查等关键契约。
+- 提供可复用的 skill-up 0.14 评测工具和 capacity 退避测试 fixture；不提供或启用 Desktop 自动恢复。
+
+详见[更新说明](../CHANGELOG.md#13)。
+
+## 为什么用它？
 
 自己写 `/goal` 时，最难拿捏的是尺度：
 - 写短了，Agent 很快就做完 or 做到一半就提前标记完成
@@ -24,7 +29,7 @@
 | 使用较早的开源方案 | 有的没有跟上 `/goal` 的变化；有的依赖多 SPEC 文档，准备时间很长 | 默认不创建额外文件，复杂任务也从一份最小状态开始 |
 | 一次生成后直接执行 | 错误假设会原样进入长任务 | 先规划、提问和确认，再生成最终 `/goal` |
 | 小失败，提前终止 | CI 等待、权限缺口或单项失败就让整体 `blocked` | 只要还有独立工作就继续，只有全部剩余工作共同受阻才停止 |
-| 只依赖历史 context  | 踩坑/经验没有沉淀，下一轮重复试错 | 深度state明确保留结果评价与下一步的联系；[小规模对照](luna-xhigh-trial.md)的契约保留由2/6至6/6，尚未验证后续执行 |
+| 只依赖历史 context  | 踩坑/经验没有沉淀，下一轮重复试错 | 在深度 state 中连接结果评价与下一步；仅在值得复用时记录经验 |
 | 写法绑定单一 Agent | 换到其他 Agent 后，调用方式/目录或指令对不上 | 指令/保持通用，只对平台入口做少量适配 |
 
 ## 快速开始
@@ -66,21 +71,18 @@ npx skills update goal-prompt
 
 ## 实测结果
 
-当前开发评测已升级到 skill-up 0.14.0，共31个用例；下方5.6成绩保留为历史事实。
+当前开发评测使用 skill-up 0.14.0，共 31 个用例。结果按模型、冻结 Skill 和判分协议分别记录。
 
-**GPT-6.1 Sol high 已有真实定向实测。** 执行用 `gpt-6.1-sol / high`，语义评分用 `gpt-6.1-terra / high`。主要16例原始14 PASS / 2 FAIL / 0 ERROR，两项词面误报用原输出重判PASS；最终bundle另补测2次均PASS，其中1例重叠，合计覆盖17个唯一案例。不能合并成单一最终版17/17。完整31例及without全量对照仍待执行，详见[6.1实测报告](../evals/skill-up/gpt61-refresh.md)。
+| 模型 | 验证依据 |
+| --- | --- |
+| GPT-6.1 Sol / high | [with-Skill 定向实测](../evals/skill-up/gpt61-refresh.md)跨快照覆盖 17 个唯一案例；判分误报使用原输出重判，不是最终版本的一次 17/17 全通过。 |
+| GPT-6 Luna / xhigh | [隔离对照与小规模版本比较](luna-xhigh-trial.md)保留原始失败和局部重判。选定案例的循环反馈契约保留改善，后续执行仍未验证。 |
 
-后续[GPT-6 Luna xhigh对照](luna-xhigh-trial.md)原始with为22/8、without为6/24；确定性脚本校准为25/5对7/23，另补Batch必要真实业务产物的局部口径为26/4对7/23。原始成绩保留，without生成组没有重跑。这与此前6.1批次的模型、深度及隔离协议不同，不能直接作模型排名。
+迁移语义 Judge 仍标为 `uncalibrated`，CI 只检查评分路由及回执一致性，不证明语义判分正确。完整 6.1 与干净的 without-Skill 全量仍待补；Claude Code 已检查安装，1.3 跳过实机行为测试。详见[评测说明](../evals/skill-up/README.md)和[恢复边界](goal-recovery.md)。
 
-这些总分沿用报告中的历史冻结判分协议，包含现已标为 legacy 的确定性脚本，不是当前语义 Judge 的全量成绩。新语义重判和补回契约的小样本结果另列，原始输出、成绩及剩余失败均保留。
+**历史 5.6 结果**使用 skill-up 0.9.1：同一 Luna high 模型，without Skill 为 6/30，with Skill 为 24/30，基线另有一次超时 ERROR；Sol high with Skill 为 28/30。这些冻结成绩包含旧判分器，不代表当前 1.3 的完整复测。
 
-已记录的评测使用 `skill-up 0.9.1` 做了 30 个 case 的隔离回归。主对照统一使用 Codex `gpt-5.6-luna` high，同一批输入分别运行 with Skill 和 without Skill。with Skill 通过 24/30，without Skill 通过 6/30，后者另有 1 个超时 ERROR。最终补充的操作目标边界已做定向契约覆盖，但没有重新执行完整 A/B。新评测的运行方法见[评测说明](../evals/skill-up/README.md#run-the-evaluation)；历史分数仅对应当时的评测配置。
-
-![goal-prompt 的 30-case 同输入对照实测](../assets/eval-comparison-zh.png)
-
-在历史5.6批次的判分口径下，同一 Luna 模型启用 Skill 后从 6/30 提升到 24/30；Sol high with Skill 为 28/30。当时的基线校准分数来自对冻结响应重新执行修正后的确定性 Judge，排除了 3 个假绿。完整的隔离方法、逐项结果、失败分类和评测边界见 [skill-up 评测说明](../evals/skill-up/README.md)。
-
-按用户要求，1.3本次跳过Claude Code实机测试，不作为交付门槛；已有安装和静态兼容检查，运行行为仍未验证。capacity与恢复边界见[Goal恢复说明](goal-recovery.md)。
+![历史 GPT-5.6 评测，非 1.3 完整复测](../assets/eval-comparison-zh.png)
 
 ## 核心设计
 

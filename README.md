@@ -5,11 +5,16 @@
 [![License](https://img.shields.io/badge/license-Apache%202.0-D96C2C)](LICENSE)
 [![Agent Skills](https://img.shields.io/badge/Agent%20Skills-compatible-2E8B57)](https://agentskills.io/)
 
-`goal-prompt` quickly creates `/goal` prompts with a clear outcome, bounded scope, and verifiable completion criteria. It reads the task and repository, asks only questions that can change the goal, and returns a copy-pasteable prompt after confirmation. You can also skip investigation or confirmation explicitly, or delegate the remaining judgment to the agent.
-
-It adapts to the task's complexity and balances efficiency with quality.
+`goal-prompt` turns a task into a concise, verifiable `/goal` prompt. It reads the repository, resolves material questions, and confirms the outcome before rendering; you can explicitly skip investigation or confirmation, or delegate judgment. It generates the prompt and leaves execution to the consuming agent.
 
 ![How goal-prompt addresses common /goal problems](assets/overview-en.png)
+
+## New in 1.3
+
+- A smaller core Skill with explicit authorization, loop feedback and milestone-review contracts.
+- Reusable skill-up 0.14 evaluation tools and a capacity-retry test fixture. The fixture does not provide or enable Desktop auto-recovery.
+
+See the [release notes](CHANGELOG.md#13).
 
 ## Why use it?
 
@@ -25,7 +30,7 @@ Writing `/goal` by hand makes prompt size hard to judge:
 | Use an older open-source workflow | Some predate current `/goal` behavior; others require several SPEC files and a long setup | Create no extra files by default and give complex work the smallest useful state |
 | Generate once and execute immediately | Wrong assumptions flow straight into a long-running task | Investigate, ask, and confirm before generating the final `/goal` |
 | Stop after a small failure | A CI wait, permission gap, or failed item can mark the whole goal `blocked` | Keep doing independent work and stop only when all meaningful remaining work is jointly blocked |
-| Depend on chat history | Lessons disappear with the conversation, so the next run repeats the same mistakes | Deep state explicitly carries result assessment into the next action; [small targeted pairs](docs/luna-xhigh-trial.md) improve contract retention from 2/6 to 6/6, without certifying later execution |
+| Depend on chat history | Lessons disappear with the conversation, so the next run repeats the same mistakes | Deep state connects results, assessment and the next action; reusable lessons are optional |
 | Tie the workflow to one agent | Commands, paths, or instructions break when moving to another agent | Keep the instructions portable and adapt only the platform entrypoint |
 
 ## Quick Start
@@ -67,21 +72,18 @@ The agent can select the skill automatically when your request matches, or you c
 
 ## Evaluation
 
-The current development suite uses skill-up 0.14.0 and 31 cases. Results from different models and protocols are recorded separately; the 5.6 scores below remain historical.
+The current development suite uses skill-up 0.14.0 with 31 cases. Results remain separate by model, frozen Skill and grading protocol.
 
-**GPT-6.1 Sol high has already been tested.** The [6.1 targeted report](evals/skill-up/gpt61-refresh.md) records generation with `gpt-6.1-sol / high` and semantic judging with `gpt-6.1-terra / high`, covering 17 unique with-Skill cases. The primary 16-case cohort had 14 PASS / 2 FAIL / 0 ERROR; both FAILs were deterministic judge errors and passed replay of the same outputs. Two additional executions on the final bundle passed, with one case overlapping the primary cohort. These snapshots must not be presented as a single final-bundle 17/17 run. The full 31-case 6.1 run and its without-Skill control remain TODO.
+| Model | Evidence |
+| --- | --- |
+| GPT-6.1 Sol / high | [Targeted with-Skill tests](evals/skill-up/gpt61-refresh.md) cover 17 unique cases across snapshots. Judge errors were replayed on original outputs; this is not a single final-bundle 17/17 result. |
+| GPT-6 Luna / xhigh | [Isolated with/without cohorts and small version comparisons](docs/luna-xhigh-trial.md) retain original failures and local rejudges. Selected pairs improved loop-feedback contract retention; downstream execution remains untested. |
 
-The later [GPT-6 Luna xhigh trial](docs/luna-xhigh-trial.md) used 30 cases per group: original with-Skill 22 PASS / 8 FAIL and without 6 / 24; deterministic replay yielded 25 / 5 versus 7 / 23. Supplying Batch's required business artifact for a local rejudge yielded 26 / 4 versus 7 / 23. Original grades are retained; the without generation group was not rerun. This separate Docker-isolated cohort is not a full blind rerating or a direct model ranking against the earlier 6.1 targeted run.
+The migration semantic Judge remains `uncalibrated`; CI checks routing and receipt consistency, not semantic accuracy. Full 6.1 and clean without-Skill regression remain TODO. Claude Code installation is checked, but live runtime evaluation is skipped for 1.3. See the [evaluation guide](evals/skill-up/README.md) and [recovery boundaries](docs/goal-recovery.md).
 
-These aggregate scores retain their frozen historical grading protocols, including deterministic checkers now marked legacy; they are not current semantic-judge totals. Targeted semantic rejudges and restored-contract checks are recorded separately, preserving original outputs, grades and remaining failures.
+**Historical 5.6 results**, measured with skill-up 0.9.1: the same Luna high model passed 6/30 without Skill and 24/30 with Skill; the baseline also had one timeout ERROR. Sol high with Skill passed 28/30. These frozen scores include legacy checkers and do not measure the current 1.3 suite.
 
-The recorded evaluation used 30 isolated cases with `skill-up 0.9.1`. The paired run held the inputs and Codex `gpt-5.6-luna` high constant; the baseline also had one timeout ERROR. The final operation-target wording was added afterward and has focused contract coverage, not a new full A/B run. For new runs, see the [evaluation guide](evals/skill-up/README.md#run-the-evaluation); the historical scores describe the recorded configuration.
-
-![goal-prompt before and after evaluation](assets/eval-comparison-en.png)
-
-On the historical 5.6 grading scale, the same Luna model rose from 6/30 to 24/30 after enabling the Skill; Sol high with Skill reached 28/30. That run's calibrated baseline comes from replaying the frozen responses after closing three deterministic Judge false positives. See the [skill-up evaluation guide](evals/skill-up/README.md) for the isolation protocol, case results, failure analysis, and evaluation limits.
-
-Claude Code live evaluation is intentionally skipped for 1.3 at the user's request. Installation and static compatibility checks remain; runtime behavior is unverified. Capacity recovery boundaries are documented in [Goal recovery](docs/goal-recovery.md).
+![Historical GPT-5.6 evaluation, not a full 1.3 rerun](assets/eval-comparison-en.png)
 
 ## Core design
 
