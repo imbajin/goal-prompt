@@ -22,6 +22,12 @@ def verify_calibration_receipt(source, samples):
     digest = lambda value: hashlib.sha256(json.dumps(value, ensure_ascii=False,
         sort_keys=True, separators=(',', ':')).encode()).hexdigest()
     receipt = json.loads((source/'semantic-calibration-receipt.json').read_text())
+    # Archived calibration froze xhigh; case YAML pins the model, not effort.
+    identity = (receipt.get('configured_model'), receipt.get('configured_reasoning_effort'))
+    if (not isinstance(identity[0], str) or not identity[0]
+            or identity != (receipt.get('observed_model'), receipt.get('observed_reasoning_effort'))
+            or identity[1] != 'xhigh'):
+        raise ValueError('calibration identity disagrees with the frozen xhigh protocol')
     contracts = {name: hashlib.sha256((source.parents[1]/name).read_bytes()).hexdigest()
                  for name in CONTRACT_FILES}
     if receipt['source_contract_sha256'] != contracts:
@@ -33,6 +39,8 @@ def verify_calibration_receipt(source, samples):
         judges = [j for j in case['judges'] if j['type'] == 'agent_judge']
         if len(judges) != 1:
             raise ValueError(f'{case_id}: update calibration for the new Judge plan')
+        if identity[0] != judges[0]['engine']['model']['name']:
+            raise ValueError(f'{case_id}: calibration model differs from the pinned Judge')
         subset = sorted(({k: s[k] for k in ('id', 'expected', 'response', 'files')}
                          for s in samples if s['case_id'] == case_id), key=lambda s: s['id'])
         saved = receipt['cases'][case_id]
@@ -122,6 +130,13 @@ def contract_judge_smoke(binary, root):
         except ValueError:
             return
         raise AssertionError('corrupt calibration receipt was accepted')
+    for field in ('observed_model', 'observed_reasoning_effort', 'configured_model', 'configured_reasoning_effort'):
+        changed = json.loads(json.dumps(original))
+        changed[field] = 'unrelated-model' if field.endswith('model') else 'low'
+        rejects(changed)
+    changed = json.loads(json.dumps(original))
+    changed['observed_model'] = changed['configured_model'] = 'unrelated-model'
+    rejects(changed)
     for field in ('criteria_passed', 'candidate_sha256', 'snapshot_sha256', 'grading_sha256'):
         changed = json.loads(json.dumps(original))
         del changed['cases'][CALIBRATION_CASES[0]]['verdicts'][0][field]
