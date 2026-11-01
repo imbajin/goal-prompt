@@ -70,7 +70,8 @@
       ],
       "local_evidence_archive": ".eval-work/luna-semantic-boundaries-v3-20261031/calibration",
       "trial_results_sha256": "16d40ec30cfcdc1dc36038215202e84106f8baab8ee0c1bb9fb33cde229d5e70",
-      "request_outcomes_sha256": "d867199ecf35f73c87d8cc41d5af32d239e4ebba13c50916cd18749ed641c282"
+      "request_outcomes_sha256": "d867199ecf35f73c87d8cc41d5af32d239e4ebba13c50916cd18749ed641c282",
+      "calibration_status": "calibrated"
     },
     "stage2-migration": {
       "case_definition_sha256": "b0661fac6c04c3bcd5bf5b3ee62c6ebc695ea47c4c9ca0bb28b2d4444e0a1690",
@@ -135,7 +136,8 @@
       ],
       "local_evidence_archive": ".eval-work/luna-r5-comment-validation-v1-20261031/calibration",
       "trial_results_sha256": "e5c54627b267c218ab82b96672dff3876be2b5944e6871a001eef06f3de00f34",
-      "request_outcomes_sha256": "8b8ba94281433bea9154641555ccbe9cbf225830dd0b1baca38cb40eb1605f7c"
+      "request_outcomes_sha256": "8b8ba94281433bea9154641555ccbe9cbf225830dd0b1baca38cb40eb1605f7c",
+      "calibration_status": "uncalibrated"
     },
     "compaction-checkpoint": {
       "case_definition_sha256": "cbc99b502177b046ad0c9f1ba624491b91fe0ddf7270bbcfc7f8ac32161f0507",
@@ -200,7 +202,13 @@
       ],
       "local_evidence_archive": ".eval-work/luna-semantic-boundaries-v3-20261031/calibration",
       "trial_results_sha256": "16d40ec30cfcdc1dc36038215202e84106f8baab8ee0c1bb9fb33cde229d5e70",
-      "request_outcomes_sha256": "d867199ecf35f73c87d8cc41d5af32d239e4ebba13c50916cd18749ed641c282"
+      "request_outcomes_sha256": "d867199ecf35f73c87d8cc41d5af32d239e4ebba13c50916cd18749ed641c282",
+      "calibration_status": "calibrated"
     }
-  }
+  },
+  "source_contract_sha256": {
+    "skills/goal-prompt/SKILL.md": "36ca107e554877f43790829fad963f9d8a2a7c9fd03cd3a9a82b6674d1200096",
+    "skills/goal-prompt/references/long-goal-execution.md": "1c75f385e6d47611eca4a714b8dae78c206b772d07f1e5620a9b8e58c773e3ca"
+  },
+  "contract_alignment_note": "These hashes bind the reviewed rubric-to-Skill alignment, not model input or a new calibration run. Contract changes require alignment review; recorded observations remain unchanged."
 }

@@ -56,7 +56,6 @@
                 "Completion requires implementation evidence, all applicable validation gates, independent review, and re-review after fixes.",
                 "Recoverable CI or external waits are marked waiting or deferred and cause reprioritization rather than setting the overall goal to blocked.",
                 "After each milestone the prompt requires completed and remaining work with evidence and one next primary action; it preserves an explicitly requested format.",
-                "The rendered prompt requires a brief assessment of each productive loop's results to guide whether to retain or adjust the next action, without requiring a learning file; a state.md path alone is not evidence of this requirement.",
                 "A progress percentage is used only for a verified fixed denominator; otherwise the prompt reports completed work and remaining evidence without an estimated percentage, reserving 100% for all completion gates passing."
             ]
         },

@@ -329,7 +329,14 @@ class PreparationPreflight(unittest.TestCase):
     def test_stable_sources_prepare_with_matching_frozen_inventories(self):
         config = json.loads(self.config.read_text())
         config["cases"] = {"defaults": {}, "retry_policy": {}}
+        config["judge"] = {"type": "agent_judge", "model": "openai/global-sol"}
         self.config.write_text(json.dumps(config))
+        # Match the migrated cases: the list overrides the global Judge model.
+        case = json.loads(self.case.read_text())
+        semantic = case.pop("judge")
+        semantic["engine"]["model"] = {"provider": "openai", "name": "gpt-6-luna"}
+        case["judges"] = [{"type": "script", "script_path": "skill-up/fixtures/marker.txt"}, semantic]
+        self.case.write_text(json.dumps(case))
         self.yaml.safe_dump = lambda value, **kwargs: json.dumps(value)
         self.yaml.__version__ = "offline-fixture"
         codex = self.root / "codex"
@@ -356,6 +363,11 @@ class PreparationPreflight(unittest.TestCase):
         self.assertEqual(RUNNER.file_inventory(self.fixture.parent), RUNNER.file_inventory(snapshot / "skill-up/fixtures"))
         manifest = json.loads((self.output / "manifest.json").read_text())
         self.assertEqual(manifest["snapshot_sha256"], RUNNER.file_inventory(snapshot))
+        plan = manifest["case_judges"]["pinned"]
+        self.assertEqual(plan["selection"], "case.judges")
+        self.assertEqual([member["type"] for member in plan["members"]], ["script", "agent_judge"])
+        self.assertEqual(plan["members"][1]["engine"], {
+            "name": "codex", "version": "0.164.0", "model": {"provider": "openai", "name": "gpt-6-luna"}})
 
 
 class PreparedSnapshotPolicy(unittest.TestCase):

@@ -6,11 +6,14 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import tempfile
 
 
 CALIBRATION_CASES = ('preauthorized-permissions', 'stage2-migration', 'compaction-checkpoint')
+CONTRACT_FILES = ('skills/goal-prompt/SKILL.md',
+                  'skills/goal-prompt/references/long-goal-execution.md')
 
 
 def verify_calibration_receipt(source, samples):
@@ -19,6 +22,10 @@ def verify_calibration_receipt(source, samples):
     digest = lambda value: hashlib.sha256(json.dumps(value, ensure_ascii=False,
         sort_keys=True, separators=(',', ':')).encode()).hexdigest()
     receipt = json.loads((source/'semantic-calibration-receipt.json').read_text())
+    contracts = {name: hashlib.sha256((source.parents[1]/name).read_bytes()).hexdigest()
+                 for name in CONTRACT_FILES}
+    if receipt['source_contract_sha256'] != contracts:
+        raise ValueError('Skill contracts changed; review rubric alignment before updating the receipt')
     if {s['case_id'] for s in samples} != set(CALIBRATION_CASES) or set(receipt['cases']) != set(CALIBRATION_CASES):
         raise ValueError('calibration case coverage changed; update the explicit calibration plan')
     for case_id in CALIBRATION_CASES:
@@ -39,10 +46,32 @@ def verify_calibration_receipt(source, samples):
         if (len(verdicts) != len(expected) or {v['sample_id'] for v in verdicts} != set(expected)
                 or any(v['status'] not in ('PASS', 'FAIL') or v['expected'] != expected[v['sample_id']] for v in verdicts)):
             raise ValueError(f'{case_id}: saved calibration is incomplete or has changed labels')
+        def require_hash(value):
+            if not isinstance(value, str) or len(value) != 64 or any(c not in '0123456789abcdef' for c in value):
+                raise ValueError(f'{case_id}: missing or malformed evidence hash')
+        for field in ('trial_results_sha256', 'request_outcomes_sha256'):
+            require_hash(saved.get(field))
+        if not isinstance(saved.get('local_evidence_archive'), str) or not saved['local_evidence_archive']:
+            raise ValueError(f'{case_id}: missing evidence archive index')
+        responses = {s['id']: s['response'] for s in subset}
+        for verdict in verdicts:
+            for field in ('grading_sha256', 'candidate_sha256', 'snapshot_sha256'):
+                require_hash(verdict.get(field))
+            if verdict['candidate_sha256'] != hashlib.sha256(responses[verdict['sample_id']].encode()).hexdigest():
+                raise ValueError(f'{case_id}: candidate differs from the calibration response')
+            criteria = verdict.get('criteria_passed')
+            if (not isinstance(criteria, list) or len(criteria) != len(judges[0]['criteria'])
+                    or any(type(passed) is not bool for passed in criteria)
+                    or verdict['status'] != ('PASS' if all(criteria) else 'FAIL')):
+                raise ValueError(f'{case_id}: incomplete or inconsistent criterion verdicts')
         agreement = all(v['status'] == v['expected'] for v in verdicts)
         if (saved['all_labels_agree'] != agreement or saved['required_agreement'] != len(expected)
                 or saved['observed_agreement'] != sum(v['status'] == v['expected'] for v in verdicts)):
             raise ValueError(f'{case_id}: calibration agreement is misreported')
+        status = 'calibrated' if agreement else 'uncalibrated'
+        if saved.get('calibration_status') != status:
+            raise ValueError(f'{case_id}: calibration status is misreported')
+        print(f"{case_id}: {status.upper()} ({saved['observed_agreement']}/{saved['required_agreement']}); receipt check only")
 
 
 def contract_judge_smoke(binary, root):
@@ -74,6 +103,38 @@ def contract_judge_smoke(binary, root):
         pass
     else:
         raise AssertionError('removed calibration case silently reduced coverage')
+    # Exercise corrupt receipts without touching tracked source or raw archives.
+    probe = root/'receipt-integrity'
+    local_source = probe/'evals/skill-up'
+    repo = source.parents[1]
+    for path in [source/'semantic-calibration-receipt.json',
+                 *(source/'cases'/f'{case}.yaml' for case in CALIBRATION_CASES),
+                 *(repo/name for name in CONTRACT_FILES)]:
+        destination = probe/path.relative_to(repo)
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(path, destination)
+    receipt_path = local_source/'semantic-calibration-receipt.json'
+    original = json.loads(receipt_path.read_text())
+    def rejects(receipt):
+        receipt_path.write_text(json.dumps(receipt))
+        try:
+            verify_calibration_receipt(local_source, samples)
+        except ValueError:
+            return
+        raise AssertionError('corrupt calibration receipt was accepted')
+    for field in ('criteria_passed', 'candidate_sha256', 'snapshot_sha256', 'grading_sha256'):
+        changed = json.loads(json.dumps(original))
+        del changed['cases'][CALIBRATION_CASES[0]]['verdicts'][0][field]
+        rejects(changed)
+    changed = json.loads(json.dumps(original))
+    changed['cases'][CALIBRATION_CASES[0]]['verdicts'][0]['candidate_sha256'] = '0'*64
+    rejects(changed)
+    changed = json.loads(json.dumps(original))
+    changed['cases']['stage2-migration']['calibration_status'] = 'calibrated'
+    rejects(changed)
+    contract = probe/CONTRACT_FILES[0]
+    contract.write_bytes(contract.read_bytes() + b'\nchanged contract')
+    rejects(original)
     for case_id in CALIBRATION_CASES:
         case = yaml.safe_load((source/'cases'/f'{case_id}.yaml').read_text())
         folder = root / case_id
