@@ -14,7 +14,7 @@
 - A smaller core Skill with explicit authorization, loop feedback and milestone-review contracts.
 - Reusable skill-up 0.14 evaluation tools and a capacity-retry test fixture. The fixture does not provide or enable Desktop auto-recovery.
 
-See the [release notes](CHANGELOG.md#13).
+See the [release notes](CHANGELOG.md).
 
 ## Why use it?
 

@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented in this file.
 
-## 1.3
+## 1.3 · 📅 2026-11-01
 
 - Shorten the core Skill while preserving authorization, safety, recovery and independent-review gates.
 - Fix repeated confirmation and missing loop feedback in deep state.

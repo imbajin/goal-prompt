@@ -14,7 +14,7 @@
 - 精简主 Skill，明确授权、循环反馈与里程碑审查等关键契约。
 - 提供可复用的 skill-up 0.14 评测工具和 capacity 退避测试 fixture；不提供或启用 Desktop 自动恢复。
 
-详见[更新说明](../CHANGELOG.md#13)。
+详见[更新说明](../CHANGELOG.md)。
 
 ## 为什么用它？
 
