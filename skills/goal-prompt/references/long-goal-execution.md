@@ -1,200 +1,103 @@
 # Long-Goal Execution Loop
 
-Use for deep work with remote CI, slow validation, external environments,
-multiple phases, cross-quota recovery, or durable recovery semantics such as
-checkpoint/resume, idempotency, replay, rollback, or partial-failure recovery.
-Put the full contract in
-`.goal-task/<task-slug>/state.md`; keep only its entrypoint and completion gates
-in `/goal`.
+For deep, multi-phase, remote-wait or durable recovery work, put this contract
+in `.goal-task/<task-slug>/state.md`; the final goal keeps its verified entrypoint
+and conjunctive completion gates. Adapt native tool names to the current host;
+Codex and Claude Code need not expose the same goal/status/wakeup mechanisms.
 
-## Initialization and state ownership
+## State and checkpoints
 
-Deep mode always creates a non-empty `state.md` containing:
+Create a non-empty state.md with baseline revision/environment, active-truth
+index/authority, phases/gate evidence, review/validation, dependencies/recovery,
+next action and applicable execution rules. Reuse authoritative specs/designs.
+Use todo.md only for a large/changing list; when present it alone owns item-level
+status/waits, while state keeps counts and dependencies. Design and lessons files
+have their own purposes, never duplicate daily status.
 
-- current baseline revision and environment;
-- active-truth index and authority order;
-- phases, current gate state, and priority;
-- validation and reviewer evidence;
-- waiting/deferred summary, recovery state, and dependencies;
-- next primary action and resume entrypoint;
-- applicable progress, retry, review, commit, and learning rules.
+Before context compaction, quota wait or handoff, checkpoint completed/remaining
+work, latest commit, uncommitted changes, validation/review evidence, active waits,
+recovery conditions and one next action. Report a percentage only for a defined
+denominator. Resume by checking state against the current checkout and evidence,
+not by reconstructing conversation history. Recheck initialization only when
+scope, baseline, design or environment materially changes. Remove completed
+Initialization TODO steps, retaining relevant results or constraints.
 
-## Compaction-safe checkpoints
+## Authorization and capability
 
-Before context compaction, quota wait, or session handoff, update `state.md` with
-the current gate percentage, completed and remaining items, latest commit,
-validation evidence, active waits or deferrals, and one next action. After every
-major milestone commit, the next progress report must include the commit and a
-short summary of what is complete now. A later session must be able to resume
-from `state.md` without reconstructing progress from conversation history.
+Use the in-scope pre-authorization, target resolution and credential safety
+contract in SKILL.md; include it explicitly in the final goal. Preflight actual
+write/command/network/subagent/Git/connector/wakeup capabilities once, naming any
+real missing capability, affected gate and safe alternative. Authorization does
+not create tools, credentials or sessions or override host rules. Keep unmet gates
+open and continue independent work; do not re-ask authorization already granted.
 
-Split content only when responsibility is genuinely independent:
+## Batches, waits and retries
 
-- large or frequently changing items go to `todo.md`;
-- confirmed durable design decisions go to `design.md`;
-- evidence-backed reusable lessons go to `lessons.md`.
+Batch by module, root cause or validation surface. Freeze a batch, run affected
+tests/checks, then broader integration/package/browser gates at phase boundaries
+or when a new concern warrants them. Preserve assertions, thresholds, exit codes
+and honest evidence. Split high-risk or unlocalized failures from independent
+work. A generated requirement or a historical green run is not current execution
+proof.
 
-When `todo.md` exists, maintain item-level state and waiting/deferred markers
-only there. Keep counts, dependency summary, and its link in `state.md`.
+During useful waits continue non-conflicting work such as the next module's
+read-only inventory, separately owned implementation, evidence/state maintenance,
+failure analysis or acceptance preparation. Do not invent busywork or let workers
+write the same files; use the parallel reference when lanes are independent.
 
-Put one-time preparation that cannot be completed in advance under
-"Initialization TODO" in `state.md`, including action, authorization state,
-completion condition, and current result. After completion, remove the steps and
-retain only environment results or constraints that still matter.
+Unless the user specifies otherwise, try an item at most three times. Record
+error/evidence/recovery/dependencies, mark the item waiting/deferred/needs input,
+move it and dependents behind independent work, and recheck when its unblock
+condition changes or at a phase boundary. This does not waive its completion gate.
+First failures, queues, repairable tests, quota or optional dependency gaps do not
+by themselves stop the overall goal. Under resource pressure reduce concurrency
+and batch size or use authorized available alternatives.
 
-At initialization, audit the revision, existing materials, and execution
-permissions once. Refresh incrementally only when scope, baseline, key design, or
-environment materially changes.
+Item retries and native goal status are separate. Follow the current host's
+status contract; do not hard-code a tool's accepted status values or assume a
+status API exists. In Codex, three retries in one turn do not satisfy a blocked
+audit requiring the same blocker across consecutive goal turns. Overall blocked
+requires both the host audit and all meaningful remaining work jointly depending
+on the same verified mandatory external dependency, safety boundary or logical
+conflict after recovery, alternatives and independent work are exhausted. A user
+pause is handled under the host pause rule, never inferred from a quota wait.
 
-## Authorization, capability, and environment preflight
+## Progress, review and commits
 
-In the first loop, verify only the write, command, network, subagent, Git,
-connector, and wakeup capabilities this task may use. Immediately flag a gap
-that could affect a later phase:
+After each productive loop report completed work with evidence, remaining gates
+and one primary next action. Briefly reflect on what worked, failed or should
+change next, even without lessons.md; write there only when evidence-backed
+reusable lessons warrant a learning record. Give a percentage only when the
+denominator is clear, never 100% before all gates pass. After a milestone commit
+include the commit and what is now complete. Keep item-level status in todo.md
+when present.
 
-- the exact missing capability;
-- affected work or gate;
-- the adjustment the user can make.
+For deep/major behavior-change milestones use 3 independent read-only reviewers
+by default; preserve the user's explicit count. All scan the integrated diff and
+evidence, then large changes may split correctness/tests, design/boundaries and
+security/maintainability. Implementers do not count as independent reviewers.
+Fix findings and re-review affected changes; at most three fix/re-review rounds
+by default, then defer unresolved work without claiming completion. Pure docs,
+research and audit use 1 independent evidence reviewer unless otherwise required.
+If reviewers are unavailable, finish review-independent work, record the unmet
+gate and recovery condition; do not replace review with worker self-review.
 
-All user-authorizable operations required inside the confirmed task scope are
-pre-authorized by default, including Chrome uploads, entering credentials
-already available to the agent, local and environment changes, Git and worktree
-operations, pushes, PR actions, tests, and review responses. Do not ask again,
-wait, defer, or set the overall goal `blocked` merely because an operation
-normally presents a permission or authorization prompt.
-
-Pre-authorization does not fabricate credentials, sessions, tools, or system
-capabilities and does not override higher-priority host instructions or safety
-boundaries. If a real capability is unavailable, use safe available
-alternatives, keep the unmet gate active, and continue every independent lane.
-Work outside the confirmed scope remains unauthorized. Never expose or persist
-credential values in logs, screenshots, transcripts, state files, commits, PRs,
-or other evidence; record only the redacted action and outcome.
-
-Worktree or branch changes, dependency installation, configuration changes,
-destructive actions, and remote mutations must remain inside the confirmed
-scope. For destructive actions and remote mutations, record the exact target
-and impact in that confirmed scope before execution. Resolve credential and
-remote targets from evidence as defined by the core interaction contract; ask
-only when multiple materially distinct targets remain. Once those boundaries
-are confirmed, do not ask again merely for authorization.
-
-## Batch and validation cadence
-
-Batch low-risk changes by shared page, module, root cause, or validation surface.
-After freezing a batch, run affected tests and targeted lint/checks. Run full
-builds, package checks, broad browser matrices, and aggregate review at phase
-boundaries or after the final diff freezes.
-
-Split an item out when risk rises, a public contract changes, or a failure cannot
-be localized safely. Never weaken assertions, skip mandatory checks, ignore exit
-codes, or fabricate green results.
-
-## Independent work while waiting
-
-During a meaningful build, test, CI, download, or environment-startup wait, open
-a non-conflicting useful lane when one exists:
-
-- read-only inventory of the next module;
-- implementation with separate file ownership;
-- evidence and state maintenance;
-- failure-log analysis;
-- acceptance preparation.
-
-Do not create busywork. Concurrent implementers cannot edit the same files. Use
-a worktree only when authorized and when isolation materially reduces conflict
-or bias.
-
-## Retry, deferral, and stopping
-
-Unless the user specifies otherwise, try one item at most three times. If it
-still fails:
-
-1. record the error, evidence, attempted recovery, and dependencies;
-2. mark it waiting or deferred;
-3. move it and its dependents behind independent work;
-4. continue the highest-value in-scope task;
-5. recheck at a phase boundary or when its unblock condition changes.
-
-Transient network errors, CI queues, first failures, repairable test errors, API
-adjustments, quota waits, and missing optional dependencies are not terminal
-conditions.
-
-Under resource pressure, reduce concurrency, shrink batches, change validation
-cadence, then use authorized alternative resources. If still impossible, defer
-the item without waiving its completion gate.
-
-Record an item as `needs input`, waiting, or deferred without changing the native
-overall goal status. Codex's native `update_goal` accepts only `complete` or
-`blocked`; its blocked audit concerns the same condition across at least three
-consecutive goal turns, not three retries of one item. Set the overall goal
-`blocked` only when the user explicitly defines that rule, or when that native
-audit is satisfied and all meaningful remaining work, after bounded recovery,
-authorized alternatives, splitting, reprioritization, and completion of all
-independent work, still jointly depends on the same logical conflict, safety
-boundary, or verified mandatory external dependency.
-
-## Loop and milestone progress
-
-After each productive loop, and when a major milestone review or commit spans its
-own loop, report:
-
-```text
-Progress [██████░░░░] 60% (3/5 gates)
-This loop: <completed work and key evidence>; Remaining: <main open work>.
-Next: <one primary action>.
-```
-
-Base percentage on scoped milestones, deliverables, and gates. Use an exact
-value for a fixed denominator; otherwise label a coarse evidence-based value
-`estimate`. Never report `100%` before all gates pass. Combine review and commit
-when they occur in the same loop.
-
-## Independent review
-
-### Behavior changes
-
-Use exactly 3 independent read-only reviewers at the final major milestone and
-at intermediate major milestones in deep work.
-
-- Large change: all reviewers first scan global risk, then focus respectively on
-  correctness/tests, design/boundaries, and security/maintainability.
-- Small change: all 3 independently review the complete change.
-- Re-review affected changes after fixes.
-- Run at most 3 fix/re-review rounds by default. If review still fails, record
-  and defer affected work; do not claim completion.
-
-### Documentation and research
-
-Use 1 independent reviewer by default for pure documentation, read-only research,
-and analysis. The user or repository policy may increase the count.
-
-If required reviewers are unavailable, raise an early high-risk warning, finish
-review-independent work, and remain `needs input`. Do not substitute worker
-self-review or automatically set the whole goal `blocked`.
-
-## Milestone commits
-
-When a major milestone produces persistent repository changes, create a local
-commit promptly after applicable validation and review pass. Do not create empty
-commits for read-only work. Do not push by default.
-
-Fix high-severity findings, test failures, and unmet gates first. If current
-changes are a required baseline, an intermediate checkpoint commit may record
-the risks and unmet gates; it does not mean review passed or complete the gates.
+Commit persistent milestones locally after applicable validation/review pass;
+no empty commits or push by default. A necessary intermediate checkpoint may
+record unmet gates explicitly, but cannot claim those gates passed. Never drop
+high-severity findings or mandatory validators to create a milestone.
 
 ## Quota and session continuity
 
-Before quota-sensitive work, verify native checkpoints, non-blocking
-wait/wakeup, and same-goal resume behavior. On quota exhaustion:
+Before quota-sensitive work verify actual checkpoint, non-blocking wait/wakeup
+and same-goal resume capabilities. Capacity/quotas and host pause behavior are
+platform constraints, not things a Skill can repair or promise to control.
+On exhaustion checkpoint state, current waits/failures, evidence, uncommitted
+changes, a verified reset time if available, and the exact next action. Do not
+invent a reset time, resume command or automatic wakeup.
 
-1. update `state.md` with status, evidence, completed work, current wait or
-   failure, validation, uncommitted changes, reset time, and next action;
-2. verify reset time from an authoritative surface when available;
-3. wait non-blockingly and resume the same goal after reset;
-4. do not create a duplicate goal, treat quota pause as failure, busy-poll, or
-   hold a long foreground sleep.
-
-Only when native recovery is insufficient may a local helper be created. It must
-support dry-run, explicit timezone, idempotent checkpoints, and a verified
-wakeup mechanism. Never invent a product resume command.
+Use native non-blocking recovery only when verified available. Otherwise retain
+a manual resume entrypoint and unmet gates; continue independent work where
+possible. Do not duplicate the goal, busy-poll or use long foreground sleeps.
+Create a helper only if needed, authorized, and its dry-run, timezone,
+idempotent checkpoints and real wakeup mechanism can all be verified.

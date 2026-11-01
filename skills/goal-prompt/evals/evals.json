@@ -55,8 +55,8 @@
                 "The prompt uses .goal-task/auth-migration/state.md and does not use a Codex-specific state path.",
                 "Completion requires implementation evidence, all applicable validation gates, independent review, and re-review after fixes.",
                 "Recoverable CI or external waits are marked waiting or deferred and cause reprioritization rather than setting the overall goal to blocked.",
-                "The prompt requires a three-line progress bar summary after every milestone, including percentage, completed and remaining items, and one next primary action.",
-                "The progress percentage is based on scoped milestones or gates, labels estimates when the denominator is not fixed, and reserves 100% for all completion gates passing."
+                "After each milestone the prompt requires completed and remaining work with evidence and one next primary action; it preserves an explicitly requested format.",
+                "A progress percentage is used only for a verified fixed denominator; otherwise the prompt reports completed work and remaining evidence without an estimated percentage, reserving 100% for all completion gates passing."
             ]
         },
         {
@@ -68,7 +68,7 @@
                 "A single waiting shard is recorded as waiting or deferred and does not set the overall goal to blocked while independent migration or validation work remains.",
                 "Bounded recovery, authorized alternatives, task splitting, and reprioritization occur before any exceptional all-work-blocked state.",
                 "The confirmed shard set and completion gates cannot be removed without renewed user confirmation.",
-                "Each phase boundary requires a concise three-line progress bar summary with percentage, completed and remaining work, and one next primary action.",
+                "Each phase boundary reports completed and remaining work with evidence and one next primary action; a percentage is used only when its denominator is defined.",
                 "The response contains one copy-pasteable /goal prompt and does not ask for confirmation again."
             ]
         },
@@ -118,11 +118,11 @@
         },
         {
             "id": 11,
-            "prompt": "/goal-prompt Prepare a goal for uploading the release artifact with the only signed-in staging account, then push the release-v1.2 branch to origin and open its PR. Inspect the repository first.",
+            "prompt": "/goal-prompt Prepare a goal for uploading the release artifact with the only signed-in staging account, then push the release-v1.3 branch to origin and open its PR. Inspect the repository first.",
             "expected_output": "Returns a Stage 1 brief that records the single evidence-backed account, remote, and branch without asking for target or permission again.",
             "files": [],
             "expectations": [
-                "The brief records staging, origin, and release-v1.2 as resolved operation targets.",
+                "The brief records staging, origin, and release-v1.3 as resolved operation targets.",
                 "The response does not ask which account, remote, or branch to use and does not ask whether the operations are permitted.",
                 "No final /goal is produced before the remaining goal brief is confirmed."
             ]

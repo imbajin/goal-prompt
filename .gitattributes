@@ -1,0 +1,2 @@
+# Preserve upstream unified patch syntax.
+evals/skill-up/scripts/without-only.patch -whitespace

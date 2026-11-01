@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented in this file.
 
+## 1.3
+
+- Shorten the core Skill while preserving authorization, safety, recovery and independent-review gates.
+- Fix repeated confirmation and missing loop feedback in deep state.
+- Upgrade to skill-up 0.14 with isolated runs, semantic judging and replayable evidence.
+- Add capacity-retry test fixtures; Desktop auto-recovery remains unavailable.
+
 ## 1.2 · 📅 2026-09-02
 
 - Tighten the confirmation protocol so Stage 1 cannot leak a final goal and

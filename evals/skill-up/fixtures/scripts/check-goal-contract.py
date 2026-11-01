@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-"""Deterministically check that a generated goal names required execution gates.
+"""Legacy phrase heuristics retained for offline historical tests only.
 
-This is intentionally a structural gate, not a quality or correctness judge. It
-checks that the output makes the relevant contract visible; the execution goal
-and its normal tests still need separate semantic and runtime verification.
+No current case uses this script. Its known false positives and false negatives
+do not certify contract meaning; use the declared semantic Judges instead.
 """
 
 from __future__ import annotations
@@ -13,6 +12,7 @@ import os
 import re
 import sys
 from pathlib import Path
+from fractions import Fraction
 
 
 def read_source(args: argparse.Namespace) -> tuple[str, str]:
@@ -121,15 +121,6 @@ def checks_for(profile: str) -> list[tuple[str, tuple[str, ...]]]:
     if profile == "long":
         return [
             (
-                "progress bar and gate-based percentage",
-                (
-                    r"progress\s*\[[^\n\]]*\]\s*\d+%",
-                    r"进度条.{0,100}\d+%",
-                    r"进度.{0,100}\d+%.{0,40}(?:\d+\s*/\s*\d+|gates?/总|estimate|估计|粗粒度)",
-                    r"进度.{0,100}(百分比|百分数|gates?/总)",
-                ),
-            ),
-            (
                 "milestone commit",
                 (
                     r"(?:milestone|里程碑).{0,160}(?:commit|提交)",
@@ -236,6 +227,115 @@ def checks_for(profile: str) -> list[tuple[str, tuple[str, ...]]]:
     raise SystemExit(f"unknown profile: {profile!r}; expected long, parallel, or ui")
 
 
+def invalid_progress_percentages(text: str) -> bool:
+    """A displayed progress percentage needs an explicit, non-estimated denominator.
+
+    Progress prose is sufficient; do not require a bar or a percentage. Only
+    inspect clauses containing a progress label, not performance/coverage goals.
+    This checks structure, not whether the underlying evidence is truthful.
+    """
+    # Split all punctuation in one depth-aware pass. A semicolon or period
+    # inside the denominator's parentheses still qualifies that progress claim.
+    clauses = []
+    start = depth = 0
+    for index, char in enumerate(text):
+        if char in "(（[【":
+            depth += 1
+        elif char in ")）]】":
+            depth = max(0, depth - 1)
+        elif depth == 0 and (
+            char in ",，。；;\n"
+            or (char == "." and not (
+                index > 0 and index + 1 < len(text)
+                and text[index - 1].isdigit() and text[index + 1].isdigit()
+            ))
+        ):
+            clauses.append(text[start:index])
+            start = index + 1
+    clauses.append(text[start:])
+    qualifier = re.compile(r"\bestimat(?:e|ed|ion)\b|coarse|估计|粗粒度|未知分母", re.IGNORECASE)
+    coordination = re.compile(r"\b(?:and|but|while|whereas)\b|并且?|同时|而", re.IGNORECASE)
+    for clause in clauses:
+        for displayed in re.finditer(
+            r"(?:(?:overall|current)\s+)?(?:\b(?:progress|completion)(?![a-z_])|进度|完成度|完成率)"
+            r"(?:条|百分比)?\s*(?:\[[^\]\n]*\]\s*)?[:：]?\s*"
+            r"(?P<qualifier>(?:(?:当前|大约|约|为|估计|粗粒度|[~≈]|is|estimated|about|approximately)\s*)*)"
+            r"[:：]?\s*(?P<percentage>\d+(?:\.\d+)?)\s*[%％]", clause, re.IGNORECASE,
+        ):
+            # Rules forbidding a claim are not claims of measured progress.
+            # Restrict this to the adjacent reporting predicate, so a separate
+            # "never estimate" cannot exempt a later actual percentage.
+            if re.search(
+                r"(?:\b(?:never|do\s+not|must\s+not|don['’]t)\s+(?:report|show|display|claim)\s*(?:(?:estimated|coarse)\s+)?"
+                r"|(?:不得|不要|禁止|不应|不可)(?:报告|显示|声称|宣称)\s*)$",
+                clause[:displayed.start()], re.IGNORECASE,
+            ):
+                continue
+            # A coordinated performance estimate is a separate claim. Keep
+            # conjunctions inside the progress denominator's brackets intact.
+            end = len(clause)
+            depth = 0
+            for index in range(displayed.end(), len(clause)):
+                char = clause[index]
+                if char in "(（[【":
+                    depth += 1
+                elif char in ")）]】":
+                    depth = max(0, depth - 1)
+                elif depth == 0 and coordination.match(clause, index):
+                    end = index
+                    break
+            progress = clause[displayed.start():end]
+            # Equivalent explicit counts are accepted; notation is not a
+            # contract. Prefer one local completed/total pair, never combine
+            # separate performance or work claims to invent a denominator.
+            ratio = re.search(r"(\d+)\s*(?:/|(?:out\s+of|of)\b)\s*(\d+)", progress, re.IGNORECASE)
+            if ratio:
+                numerator, denominator = int(ratio[1]), int(ratio[2])
+            else:
+                counts = re.search(r"共\s*(\d+)\s*项[，,、\s]*(?:已)?完成\s*(\d+)\s*项", progress)
+                if not counts:
+                    counts = re.search(r"(\d+)\s*项中(?:已)?完成\s*(\d+)\s*项", progress)
+                if not counts:
+                    return True
+                denominator, numerator = int(counts[1]), int(counts[2])
+            if not 0 <= numerator <= denominator or denominator == 0:
+                return True
+            percentage_text = displayed['percentage']
+            percentage = Fraction(percentage_text)
+            rounding_tolerance = Fraction(1, 2 * 10 ** len(percentage_text.partition('.')[2]))
+            if not 0 <= percentage <= 100 or abs(percentage - Fraction(100 * numerator, denominator)) > rounding_tolerance:
+                return True
+            if percentage == 100 and numerator != denominator:
+                return True
+            # Only an adjacent prefix modifies this label; an earlier
+            # performance estimate in the clause must not contaminate it.
+            prefix_estimate = re.search(
+                r"(?:\bestimat(?:e|ed|ion)\b|coarse|估计|粗粒度)\s*$",
+                clause[:displayed.start()], re.IGNORECASE,
+            )
+            # An explicit estimated denominator remains a progress qualifier,
+            # even when coordinated after the numeric progress phrase.
+            denominator_estimate = re.match(
+                r"(?:and|but|并且?|同时|而)\s*(?:(?:an?|the)\s+)?"
+                r"(?:estimated\s+(?:denominator|total)\b"
+                r"|(?:denominator|total)\s+is\s+(?:an?\s+)?estimat(?:e|ed)\b"
+                r"|(?:估计|未知)(?:的)?(?:分母|总数)"
+                r"|(?:分母|总数)(?:为|是)(?:估计|未知))",
+                clause[end:], re.IGNORECASE,
+            )
+            approximate = (
+                re.search(r"[~≈]|大?约|\b(?:about|approximately)\b", displayed['qualifier'], re.IGNORECASE)
+                # A count qualifier can occur before or after the ratio in
+                # the same bounded claim. Do not cross its conjunction into
+                # an independent performance estimate; compact about2/4 also
+                # needs a letter boundary rather than a digit word boundary.
+                or re.search(r"[~≈]|大约|\b(?:about|approximat(?:e|ely))(?![a-z_])", progress, re.IGNORECASE)
+            )
+            if approximate or prefix_estimate or qualifier.search(progress) or denominator_estimate:
+                return True
+    return False
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--profile", required=True, choices=("long", "parallel", "ui"))
@@ -251,6 +351,9 @@ def main() -> int:
         except ValueError as error:
             print(str(error), file=sys.stderr)
             return 1
+    if args.profile == "long" and invalid_progress_percentages(text):
+        print("FAIL progress percentage needs a defined denominator; do not estimate unknown totals", file=sys.stderr)
+        return 1
     negated = negated_requirements(args.profile, text)
     if negated:
         print(f"FAIL goal contract ({args.profile}; source: {source})", file=sys.stderr)

@@ -93,6 +93,21 @@ expect_pass "check-goal-char-limit-case.py" \
 expect_fail "check-goal-char-limit-case.py" \
   $'Requirements: payments ledger reconciliation reporting public API webhook state.md 12 单元测试 契约测试 性能 5% 数据一致 回滚演练 CI 安全 5 reviewer 复审 迁移文档 运维手册 4 阶段 回退。\n```markdown\n/goal Migrate the system.\n```'
 char_case_body="payments ledger reconciliation reporting migration preserves public API and webhook contracts. state.md is the entrypoint. Unit tests, contract tests, and performance regression within 5%. Data consistency and rollback rehearsed. 12 gates, CI and security pass. 5 reviewers approve and re-review fixes. Migration docs and operations manual complete. 4 stages with rollback conditions."
+# 接受“门槛，共12/12项”的等价计数方向；不接受11/12或13/13。
+expect_pass "check-goal-char-limit-case.py" \
+  "/goal ${char_case_body/12 gates/gates total 12/12}"
+expect_fail "check-goal-char-limit-case.py" \
+  "/goal ${char_case_body/12 gates/gates total 11/12}"
+expect_fail "check-goal-char-limit-case.py" \
+  "/goal ${char_case_body/12 gates/gates total 13/13}"
+expect_fail "check-goal-char-limit-case.py" \
+  "/goal ${char_case_body/12 gates/gates total 11 / 12}"
+expect_pass "check-goal-char-limit-case.py" \
+  "/goal ${char_case_body/12 gates/十二 gates}"
+expect_fail "check-goal-char-limit-case.py" \
+  "/goal ${char_case_body/12 gates/二十二 gates}"
+expect_fail "check-goal-char-limit-case.py" \
+  "/goal ${char_case_body/12 gates/十二十二 gates}"
 char_case_padding="$(printf 'x%.0s' $(seq 1 $((3999 - ${#char_case_body}))))"
 expect_pass "check-goal-char-limit-case.py" \
   $'/goal\n'"$char_case_body$char_case_padding"
@@ -233,6 +248,24 @@ expect_fail "check-frontend-ui.sh" \
 
 expect_pass "check-confirmation-brief.sh" \
   "请决定是否确认这个 brief；范围和完成证据仍待验证。"
+# Skill 路径与命令不同；保留实际 pilot 触发的路径误判回归。
+expect_pass "check-confirmation-brief.sh" \
+  "当前只有 .codex/skills/goal-prompt/；范围与完成证据待确认，请确认。"
+# Frozen Luna output refused to render /goal; mentioning that refusal is valid.
+expect_pass "check-confirmation-brief.sh" \
+  '调查结论与范围、完成证据仍需你决定；这一轮先不写最终 `/goal`。'
+expect_pass "check-confirmation-brief.sh" \
+  'Please confirm scope and validation evidence. I will not generate a final `/goal`.'
+expect_fail "check-confirmation-brief.sh" \
+  '范围与完成证据待确认。这一轮先不写最终 `/goal`。但可复制命令是 `/goal`。'
+expect_fail "check-confirmation-brief.sh" \
+  '范围与证据待确认，不输出最终 /goal do migration now。'
+expect_fail "check-confirmation-brief.sh" \
+  '范围与完成证据待确认。这一轮先不写最终 `/goal`，把认证中间件迁移为Bearer。请你确认。'
+expect_fail "check-confirmation-brief.sh" \
+  'Please confirm scope and evidence. I will not generate a final `/goal`, do migration now.'
+expect_fail "check-confirmation-brief.sh" \
+  '范围与证据待确认，请确认；可复制命令是 `/goal`。'
 expect_fail "check-confirmation-brief.sh" \
   "Proposed goal brief. /goal do migration now. Scope is pending and evidence is pending. Please confirm."
 expect_fail "check-confirmation-brief.sh" \
@@ -248,7 +281,7 @@ expect_contract_pass "long" \
   "/goal 当前进度 50%（2/4 gates）。本轮完成事项；剩余两项；下一步继续验证。每个里程碑提交 commit；压缩前把完成事项和下一步写入 state.md。"
 expect_contract_fail "long" \
   "/goal 当前进度 50%。本轮完成事项；剩余两项；下一步继续验证。每个里程碑提交 commit；压缩前把完成事项和下一步写入 state.md。"
-expect_contract_pass "long" \
+expect_contract_fail "long" \
   "/goal Progress [░░░░] 0%。This loop: 已创建并验证 state.md；Remaining: 核实仓库；Next: 执行 baseline。里程碑 commit。compaction 前将完成项写入 state.md。"
 expect_contract_pass "long" \
   "/goal Progress [██░░] 50%（2/4 gates）。This loop: 完成本轮事项，当前完成内容已记录；Remaining: 两项；Next: 继续验证。Do not skip the milestone commit; do not omit an independent reviewer; do not omit the state.md checkpoint；compaction 前写入 state.md。"
@@ -357,6 +390,16 @@ expect_pass "check-preauthorized-permissions.sh" \
   "/goal 范围内操作已预授权，包括 Chrome 上传和输入已有凭据。不得因此再次询问或暂停；真实能力缺失时继续所有独立工作。不能虚构凭据，也不能覆盖更高优先级安全边界。不得回显或持久化凭据。"
 expect_pass "check-preauthorized-permissions.sh" \
   "/goal 范围内操作已预授权，包括 Chrome 上传和输入已有密码。不得因此再次询问、等待或 blocked；能力缺失时继续独立工作。预授权不代表可以虚构密码或会话，也不能越过安全边界。不得记录或截图密码。"
+expect_pass "check-preauthorized-permissions.sh" \
+  "/goal 范围内操作已预授权，包括 Chrome 上传和输入已有密码。不得因授权提示再次询问、等待或 blocked；继续独立工作。此授权不创造工具、会话、凭据或权限，不覆盖宿主安全边界。不得回显、截图或持久化密码。"
+expect_pass "check-preauthorized-permissions.sh" \
+  "/goal 范围内操作已预授权，包括 Chrome 上传和输入已有密码。不得因此重复请求许可、等待、延期或标记 blocked；继续所有独立工作。不得伪造凭据，也不能越过更高优先级安全边界。不得记录或截图密码。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "/goal 范围内操作已预授权，包括 Chrome 上传和输入已有密码。可以因此重复请求许可、等待、延期或标记 blocked；继续所有独立工作。不得伪造凭据，也不能越过更高优先级安全边界。不得记录或截图密码。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "/goal 范围内操作已预授权，包括 Chrome 上传和输入已有密码。不得因此重复请求许可、等待、延期或标记 blocked；但可以再次请求许可。继续所有独立工作。不得伪造凭据，也不能越过更高优先级安全边界。不得记录或截图密码。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "/goal 范围内操作已预授权，包括 Chrome 上传和输入已有密码。不得因授权提示再次询问、等待或 blocked；继续独立工作。此授权可以创造工具、会话、凭据或权限，不覆盖宿主安全边界。不得回显、截图或持久化密码。"
 expect_fail "check-preauthorized-permissions.sh" \
   "/goal Chrome 上传和输入密码前必须询问用户确认；权限不足就停止任务并标记 blocked。"
 expect_fail "check-preauthorized-permissions.sh" \
@@ -496,3 +539,453 @@ expect_pass "check-research-brief.sh" \
 ## 需要你决定的偏好
 - 速度还是成本。
 不把“行为变更 reviewer”设为默认门槛。"
+
+# 否定提及后的确认条件仍然是说明；后接任务正文不能伪装成说明。
+expect_pass "check-confirmation-brief.sh" \
+  '范围与完成证据待你确认；不会直接给最终可复制的 `/goal`。'
+expect_pass "check-confirmation-brief.sh" \
+  '范围与完成证据待确认，先不生成最终 `/goal`，等你确认。'
+expect_pass "check-confirmation-brief.sh" \
+  'Please confirm scope and evidence. I will not generate a final /goal until you confirm.'
+expect_pass "check-confirmation-brief.sh" \
+  'Please confirm scope and evidence. I will not provide the final `/goal` before the user decides this plan.'
+expect_fail "check-confirmation-brief.sh" \
+  '范围与证据待确认，不会直接给最终可复制的 `/goal`，把旧实现迁移到新实现。'
+expect_fail "check-confirmation-brief.sh" \
+  'Please confirm scope and evidence. I will not generate a final /goal until you confirm, migrate the service now.'
+expect_fail "check-confirmation-brief.sh" \
+  '范围与证据待确认，先不生成最终 `/goal`，等你确认后执行数据库迁移。'
+expect_fail "check-confirmation-brief.sh" \
+  $'范围与证据待确认，不会直接给最终可复制的 `/goal`。\n```text\n/goal migrate the service now\n```'
+
+# 独立推进的工作是独立工作的同义，不放松真实阻塞和空正文反例。
+expect_pass "check-stage2-migration.sh" \
+  '/goal 使用 .goal-task/auth-migration/state.md，保持兼容；所有测试与 CI 必须通过。3名独立 review，修复后复审。遇到等待时继续可独立推进的工作；只有所有剩余工作共同依赖同一真实阻塞时才 blocked。'
+expect_fail "check-stage2-migration.sh" \
+  '/goal 使用 .goal-task/auth-migration/state.md，保持兼容；所有测试与 CI 必须通过。3名独立 review，修复后复审。遇到等待就停止推进，只有所有剩余门槛存在阻塞时才 blocked。'
+
+# 已有凭据与创建PR等并列动作不构成造凭据；真实造假和泄露仍拒绝。
+expect_pass "check-preauthorized-permissions.sh" \
+  '/goal 任务范围内 Chrome 上传、输入已有密码、代码/依赖修改、Git 操作、推送、创建 PR 均已获授权；不要重复询问或因等待授权而暂停，能力缺失时继续独立工作。不得编造凭据、会话或工具，不得记录、展示、截图、提交或发布密码；授权不能覆盖更高优先级安全边界。'
+expect_pass "check-preauthorized-permissions.sh" \
+  '/goal In-scope Chrome upload, entering existing credentials, code changes, and creating PRs are pre-authorized. Do not ask again; permission cannot block work. Continue independent work. This cannot fabricate credentials and cannot override safety boundaries. Never expose, log, or persist credential values.'
+expect_fail "check-preauthorized-permissions.sh" \
+  '/goal 任务范围内 Chrome 上传、输入已有密码、代码修改、创建 PR 均已获授权；不要重复询问或因等待授权而暂停，继续独立工作。不得编造凭据、会话或工具，也不能覆盖安全边界；不得记录密码。但是缺少凭据时允许编造测试密码。'
+expect_fail "check-preauthorized-permissions.sh" \
+  '/goal 任务范围内 Chrome 上传、输入已有密码、创建 PR 均已获授权；不要重复询问或因等待授权而暂停，继续独立工作。不得编造凭据，也不能覆盖安全边界，不得记录密码。但密码可在日志中输出。'
+expect_fail "check-preauthorized-permissions.sh" \
+  '/goal 任务范围内 Chrome 上传、输入已有密码、创建 PR 均已获授权；不要重复询问或因等待授权而暂停，继续独立工作。不得记录密码，也不能覆盖安全边界。允许创建临时密码来替代缺失的测试凭据。'
+expect_pass "check-preauthorized-permissions.sh" \
+  '/goal 任务范围内 Chrome 上传、创建 PR、输入已有密码均已获授权；无需询问，权限不会阻塞，继续独立工作。不能编造凭据，也不能覆盖安全边界。不得记录密码。'
+expect_fail "check-preauthorized-permissions.sh" \
+  '/goal 任务范围内 Chrome 上传、输入已有密码、创建 PR 均已获授权；无需询问，权限不会阻塞，继续独立工作。不能编造凭据，也不能覆盖安全边界。不得记录密码。但调试时记录用户名、密码。'
+expect_fail "check-preauthorized-permissions.sh" \
+  '/goal 任务范围内 Chrome 上传、输入已有密码、创建 PR 均已获授权；无需询问，权限不会阻塞，继续独立工作。不能编造凭据，也不能覆盖安全边界。不得记录密码。但允许提交用户名、密码。'
+
+# Chinese progress is equivalent; removing the progress requirement must fail.
+compaction_chinese='/goal 每轮报告进度条、This loop、Remaining 和 Next，本轮完成内容要写清。里程碑验证后 commit。compaction 前把完成项与下一步写入 state.md。'
+expect_pass check-compaction-checkpoint.sh "$compaction_chinese"
+expect_fail check-compaction-checkpoint.sh "${compaction_chinese/进度条/状态}"
+
+# 继续独立工作必须是正向要求；不要停止推进表达相反含义，应保留。
+migration_contract='/goal 使用 .goal-task/auth-migration/state.md，保持兼容；所有测试与 CI 必须通过。3名独立 review，修复后复审。'
+migration_stop_gate='只有所有剩余工作共同依赖同一真实阻塞时才 blocked。'
+expect_fail "check-stage2-migration.sh" \
+  "$migration_contract 遇到等待时不应继续独立推进的工作；$migration_stop_gate"
+expect_fail "check-stage2-migration.sh" \
+  "$migration_contract 遇到等待时不要推进其余独立工作；$migration_stop_gate"
+expect_fail "check-stage2-migration.sh" \
+  "$migration_contract 遇到等待时暂停其余独立工作；$migration_stop_gate"
+expect_fail "check-stage2-migration.sh" \
+  "$migration_contract 遇到等待时，独立工作不要继续；$migration_stop_gate"
+expect_pass "check-stage2-migration.sh" \
+  "$migration_contract 遇到等待时不要停止推进其余独立工作；$migration_stop_gate"
+expect_pass "check-stage2-migration.sh" \
+  "$migration_contract 遇到等待时不应暂停独立推进的工作；$migration_stop_gate"
+expect_pass "check-stage2-migration.sh" \
+  "$migration_contract 遇到等待时继续独立工作，不要推进受阻部分；$migration_stop_gate"
+expect_fail "check-stage2-migration.sh" \
+  "$migration_contract While waiting, do not continue independent work; $migration_stop_gate"
+expect_pass "check-stage2-migration.sh" \
+  "$migration_contract While waiting, do not stop independent work; $migration_stop_gate"
+expect_pass "check-stage2-migration.sh" \
+  "$migration_contract Continue independent work while waiting. Only when all remaining work depends on the same verified blocker may the whole task stop and be marked blocked."
+
+# 已授权流程的“停下/停摆”与停止同义；事实核实不是向用户索取批准。
+preauth_base='/goal 范围内所有操作均已预授权，包括Chrome上传、输入已有密码、代码修改及创建PR。继续独立工作。不得编造凭据，不得记录密码，授权不能覆盖更高优先级安全边界。'
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_base 不得因授权再次询问或停下。"
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_base 不得因权限问题停摆；无需再次确认。"
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_base 不得因授权停下或再次询问。先从实际仓库证据确认导入契约、测试环境、remote和PR目标。"
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞；无需再次询问。先依据配置确认上传目的地；从已有文档中确认PR目标。"
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞；无需先询问用户确认上传。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞；无需再次询问。先从仓库证据确认目标，然后必须请求批准才能上传。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞；无需先询问用户确认上传。但是必须等待用户批准才能上传。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞；无需再次询问。不得不先请求用户批准后上传。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞；无需再次询问。不要跳过询问用户批准后上传的步骤。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞；无需再次询问。权限不足就应该blocked，等批准再上传。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞；无需再次询问。上传前必须得到用户批准。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞；无需再次询问。权限不足就停摆，等批准再继续。"
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不足不得停摆；无需再次询问。"
+# 确认存在多个目标时的范围选择，并非再次索取操作许可。
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞；无需再次询问。多个实质不同目标无法从证据判断时，不要跳过询问用户确认目标仓库。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞；无需再次询问。不要跳过询问用户确认是否允许上传的步骤。"
+
+# 否定请求只作用于相邻宾语，不得跨无标点的转折/必须/第二个请求动作。
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞。无需再次询问但必须请求用户批准才能上传。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞。无需先询问用户确认但必须申请批准后上传。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞。无需再次询问不过上传前必须得到用户批准。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞。无需先询问但必须先请求用户批准才上传。"
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞。无需先询问用户确认上传但仍需核实仓库目标。"
+preauth_english='/goal In-scope actions are pre-authorized including Chrome upload and entering available credentials. Do not ask again; permission cannot block work. Continue independent work. This cannot fabricate credentials or override safety boundaries. Never expose, log, or persist credential values.'
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_english Do not wait for approval before upload."
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_english Do not wait for approval but must obtain user approval before upload."
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_english No need to ask again but must obtain approval before upload."
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_english Do not skip requesting approval before upload."
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_english Never avoid seeking user permission before upload."
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞；无需再次询问。无需先征求用户的额外许可上传。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞；无需再次询问。不要省略申请额外授权上传的步骤。"
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_english Do not wait for the user's prior approval before upload."
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_english Do not wait for the user's prior approval but must obtain an additional approval before upload."
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_english Do not not ask for approval before upload."
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_english Don't avoid requesting the user's prior permission before upload."
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞。无需再次询问但请求用户批准才能上传。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞。无需先询问用户确认然后请求用户批准才能上传。"
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞；无需再次询问。不会再直接请求用户批准上传。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_english No need to ask again but request user approval before upload."
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_english Do not ask the user for prior approval before upload."
+
+# Shared finite grammar matrix: direct prohibition vs prohibition of omission.
+# Permission phrase, operator and modal vary independently; no model is called.
+for modal in 'do not' 'must not' 'should not' 'cannot' "don't" "shouldn't" "can't" 'shouldn’t'; do
+  for permission_action in 'ask for approval' 'asking for approval' 'request user permission'; do
+    expect_pass "check-preauthorized-permissions.sh" \
+      "$preauth_english You $modal $permission_action before upload."
+    for omission_action in skip avoid omit; do
+      expect_fail "check-preauthorized-permissions.sh" \
+        "$preauth_english You $modal $omission_action $permission_action before upload."
+    done
+  done
+  for omission_action in skip avoid omit; do
+    expect_pass "check-preauthorized-permissions.sh" \
+      "$preauth_english You $modal $omission_action not requesting user approval before upload."
+  done
+done
+for modal in 不要 不得 不应 不能; do
+  for permission_action in 询问用户批准 请求许可; do
+    expect_pass "check-preauthorized-permissions.sh" \
+      "$preauth_base 权限不会阻塞；无需再次询问。${modal}${permission_action}后上传。"
+    for omission_action in 跳过 避免; do
+      expect_fail "check-preauthorized-permissions.sh" \
+        "$preauth_base 权限不会阻塞；无需再次询问。${modal}${omission_action}${permission_action}后上传。"
+    done
+  done
+  for omission_action in 跳过 避免; do
+    expect_pass "check-preauthorized-permissions.sh" \
+      "$preauth_base 权限不会阻塞；无需再次询问。${modal}${omission_action}不请求许可后上传。"
+  done
+done
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞；无需再次询问。不要询问或请求用户批准上传。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞；无需再次询问。不要询问用户批准但请求用户批准才能上传。"
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_english Do not ask for or request user approval before upload."
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_english Do not ask for user approval but request user approval before upload."
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_english You should not skip asking for approval before upload."
+
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_english Do not wait for the user’s prior approval before upload."
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_english You shouldn’t skip asking for the user’s approval before upload."
+
+# Scope qualification belongs to one request, never to the whole goal.
+for outside_work in 'For out-of-scope changes' 'For changes outside the confirmed scope' 'Out-of-scope work'; do
+  expect_pass "check-preauthorized-permissions.sh" \
+    "$preauth_english $outside_work, ask for approval before proceeding."
+  expect_fail "check-preauthorized-permissions.sh" \
+    "$preauth_english $outside_work ask for approval but for in-scope work request approval before upload."
+  expect_fail "check-preauthorized-permissions.sh" \
+    "$preauth_english $outside_work ask for approval in-scope work request approval before upload."
+  expect_fail "check-preauthorized-permissions.sh" \
+    "$preauth_english $outside_work ask for approval request approval before upload."
+done
+for outside_work in 范围外变更 对于范围外工作 针对超出已确认范围的新任务; do
+  expect_pass "check-preauthorized-permissions.sh" \
+    "$preauth_base 权限不会阻塞；无需再次询问。${outside_work}请求用户批准后再处理。"
+  expect_fail "check-preauthorized-permissions.sh" \
+    "$preauth_base 权限不会阻塞；无需再次询问。${outside_work}请求用户批准但任务内操作请求批准才上传。"
+  expect_fail "check-preauthorized-permissions.sh" \
+    "$preauth_base 权限不会阻塞；无需再次询问。${outside_work}请求用户批准范围内工作请求批准才上传。"
+done
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_english Ask for approval for out-of-scope changes."
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_english Ask for approval for out-of-scope changes but request approval before upload."
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_english For in-scope work ask for approval before upload."
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞；无需再次询问。任务内操作请求批准才上传。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_english For out-of-scope changes such as Chrome upload, ask for approval."
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_english For out-of-scope changes such as push, ask for approval."
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞；无需再次询问。对于范围外工作如Chrome上传，请求批准。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞；无需再次询问。对于范围外工作如推送，请求批准。"
+# Same operation type in a clearly different target is still outside the task;
+# it cannot change authorization of the original target or a later request.
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_english For out-of-scope changes such as a PR in another repository, ask for approval."
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_english For out-of-scope changes such as Chrome upload to production, ask for approval."
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞；无需再次询问。对于范围外工作如推送到其他仓库，请求批准。"
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_english For out-of-scope changes such as a PR in another repository ask for approval but for in-scope changes request approval."
+# Actions must be whole words: 'task for approval' is not 'ask for approval'.
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_english Do not create an extra task for approval."
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_english Create a task then ask for approval before upload."
+
+# Approval applications share the same local polarity/scope contract as asks.
+for permission_action in 'apply for approval' 'applies for permission' 'applying for authorization'; do
+  expect_fail "check-preauthorized-permissions.sh" \
+    "$preauth_english For in-scope work, you must $permission_action before upload."
+  expect_pass "check-preauthorized-permissions.sh" \
+    "$preauth_english You must not $permission_action before upload."
+  expect_fail "check-preauthorized-permissions.sh" \
+    "$preauth_english You must not skip $permission_action before upload."
+done
+for outside_work in 'To handle changes outside the confirmed scope' 'To process out-of-scope work' 'To address actions outside the task scope'; do
+  expect_pass "check-preauthorized-permissions.sh" \
+    "$preauth_english $outside_work, request approval before proceeding."
+  expect_pass "check-preauthorized-permissions.sh" \
+    "$preauth_english $outside_work, apply for approval before proceeding."
+  expect_fail "check-preauthorized-permissions.sh" \
+    "$preauth_english $outside_work, request approval but for in-scope work apply for approval before upload."
+done
+# A fronted outside-scope qualifier cannot override an explicit in-scope target
+# in the same approval condition; a separate following sentence stays separate.
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_english For out-of-scope changes, ask for approval before the in-scope Chrome upload."
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_english To handle changes outside the confirmed scope, apply for approval before the in-scope Chrome upload."
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_base 权限不会阻塞；无需再次询问。对于范围外工作，请求批准后再做任务内Chrome上传。"
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_english For out-of-scope changes, do not ask for approval before the in-scope Chrome upload."
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_english For out-of-scope changes, ask for approval before proceeding. Continue in-scope work."
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_english For out-of-scope changes, ask for approval before proceeding; continue in-scope work."
+expect_fail "check-preauthorized-permissions.sh" \
+  "$preauth_english Ask for approval for out-of-scope changes and in-scope work before upload."
+expect_pass "check-preauthorized-permissions.sh" \
+  "$preauth_english Ask for approval for out-of-scope changes. Continue in-scope work."
+
+# R1: comma-separated credential objects stay attached to their action; a new
+# explicit permission after a comma cannot borrow the preceding prohibition.
+r1_preauth='/goal 任务内操作默认已授权，包括 Chrome 文件上传和输入已有测试密码；无需再次询问确认，权限不得导致等待或 blocked。真实能力缺失时继续所有独立工作。预授权不得虚构密码、会话或工具，也不能覆盖更高优先级安全边界。不得记录、截图或保存密码。'
+expect_fail check-preauthorized-permissions.sh "$r1_preauth 允许记录用户名, 密码。"
+expect_fail check-preauthorized-permissions.sh "$r1_preauth 允许记录用户名，密码。"
+expect_pass check-preauthorized-permissions.sh "$r1_preauth 不得记录用户名, 密码。"
+expect_fail check-preauthorized-permissions.sh "$r1_preauth 不得记录用户名, 允许记录密码。"
+expect_pass check-preauthorized-permissions.sh "$r1_preauth 范围内预授权覆盖输入已有密码,代码修改,创建PR。"
+# Absence of approval is allowed; prohibiting an authorized action in its
+# absence requires renewed approval. Outside-scope approval remains applicable.
+expect_fail check-preauthorized-permissions.sh "$r1_preauth 不要在没有征求用户同意的情况下推送。"
+expect_fail check-preauthorized-permissions.sh "$r1_preauth 不得在未申请批准的情况下上传。"
+expect_fail check-preauthorized-permissions.sh "$r1_preauth Do not push without obtaining approval."
+expect_fail check-preauthorized-permissions.sh "$r1_preauth Never upload without first asking for permission."
+expect_fail check-preauthorized-permissions.sh "$r1_preauth Do not proceed without approval."
+expect_pass check-preauthorized-permissions.sh "$r1_preauth Push without obtaining approval."
+expect_pass check-preauthorized-permissions.sh "$r1_preauth Proceed without approval."
+expect_pass check-preauthorized-permissions.sh "$r1_preauth Do not ask again. Push without obtaining approval."
+expect_pass check-preauthorized-permissions.sh "$r1_preauth For out-of-scope changes in another repository, do not proceed without obtaining approval."
+expect_fail check-preauthorized-permissions.sh "$r1_preauth For out-of-scope changes in another repository, do not proceed without approval; for in-scope work do not push without obtaining approval."
+# R1: directly negated stopping is continuation, not a stop instruction.
+for wording in '其余工作不需要停止。' 'Independent work does not stop while CI waits.' "Independent work won't stop while CI waits." 'Independent work will not stop while CI waits.'; do
+  expect_pass check-stage2-migration.sh "$migration_contract 继续独立工作；$wording $migration_stop_gate"
+done
+for wording in '其余工作需要停止。' 'Independent work stops while CI waits.' 'Independent work does not continue while CI waits.'; do
+  expect_fail check-stage2-migration.sh "$migration_contract 继续独立工作；$wording $migration_stop_gate"
+done
+# R1: honest progress does not require a bar or percentage. Numeric progress
+# needs a defined denominator and cannot use a coarse/estimated unknown total.
+r1_long='/goal 每轮报告当前完成事项、剩余工作和下一步。每个里程碑验证后commit；compaction前将已完成、剩余与下一步写入state.md。'
+expect_contract_pass long "$r1_long"
+expect_contract_pass long "$r1_long 分母未知时不报告百分比，仅列已验证完成与待验证项。"
+expect_contract_pass long "$r1_long 当前进度50%（2/4 gates）。"
+expect_contract_fail long "$r1_long 当前进度估计50%。"
+expect_contract_fail long "$r1_long Progress [██░░] 50% (2/4 gates, coarse estimate)."
+expect_contract_fail long "$r1_long 当前进度50%（2/0 gates）。"
+expect_contract_fail long "$r1_long 当前进度50%（5/4 gates）。"
+expect_contract_fail long '/goal 每轮报告进度；每个里程碑commit；compaction前写入state.md。'
+expect_contract_pass long "$r1_long 报告进度及完成与剩余事项，性能改进目标50%。"
+# Estimate qualifiers belong to the same progress clause on either side of its
+# label; an independent sentence prohibiting estimates does not qualify it.
+expect_contract_fail long "$r1_long Estimated progress is 20% (2/10 items)."
+expect_contract_fail long "$r1_long 估计进度为20%（2/10项）。"
+expect_contract_fail long "$r1_long Progress is estimated 20% (2/10 items)."
+expect_contract_fail long "$r1_long 进度为估计20%（2/10项）。"
+expect_contract_pass long "$r1_long Progress 20% (2/10 verified items)."
+expect_contract_pass long "$r1_long Progress20%(2/10 verified items)."
+expect_contract_pass long "$r1_long performance improvement target50%."
+expect_contract_pass long "$r1_long 禁止估计。Progress20%(2/10 verified)."
+expect_contract_pass long "$r1_long Never estimate. Progress 20% (2/10 verified)."
+# Displayed progress must agree with its completed/total ratio at the shown
+# precision; rounding an incomplete task to 100% is never completion evidence.
+expect_contract_fail long "$r1_long Progress100%(2/4 gates)."
+expect_contract_fail long "$r1_long Progress 100% (996/1000 gates)."
+expect_contract_fail long "$r1_long Progress 20% (2/4 gates)."
+expect_contract_fail long "$r1_long Progress 33.4% (1/3 gates)."
+expect_contract_pass long "$r1_long Progress 33% (1/3 gates)."
+expect_contract_pass long "$r1_long Progress 33.3% (1/3 gates)."
+expect_contract_pass long "$r1_long Progress100%(4/4 verified gates)."
+expect_contract_pass long "$r1_long Progress 99.6% (996/1000 verified gates)."
+expect_contract_pass long "$r1_long Progress:20%(2/10 verified gates), performance improvement estimate50%."
+expect_contract_pass long "$r1_long performance improvement estimate50%, Progress:20%(2/10 verified gates)."
+expect_contract_pass long "$r1_long Progress:20%(2/10 verified gates), performance improvement estimate 50%."
+expect_contract_pass long "$r1_long performance improvement estimate 50%, Progress:20%(2/10 verified gates)."
+expect_contract_fail long "$r1_long Progress20%(2/10 gates, coarse estimate)."
+# Common auxiliary contractions share polarity, including straight and curly
+# apostrophes. Negating continuation must still fail for the same family.
+for auxiliary in "doesn't" 'doesn’t' "don't" 'don’t' "didn't" "mustn't" "shouldn't" 'shouldn’t' "wouldn't" "couldn't" "can't" 'can’t' "won't" 'won’t'; do
+  expect_pass check-stage2-migration.sh "$migration_contract 继续独立工作；Independent work $auxiliary stop while CI waits. $migration_stop_gate"
+  expect_fail check-stage2-migration.sh "$migration_contract 继续独立工作；Independent work $auxiliary continue while CI waits. $migration_stop_gate"
+done
+
+# R2: outside-scope labels cannot conceal a required operation after approval.
+expect_fail check-preauthorized-permissions.sh "$r1_preauth For out-of-scope changes, obtain approval before Chrome upload."
+expect_fail check-preauthorized-permissions.sh "$r1_preauth 对于范围外工作，必须请求批准才能进行Chrome上传。"
+expect_pass check-preauthorized-permissions.sh "$r1_preauth For out-of-scope changes, do not ask for approval before Chrome upload."
+expect_pass check-preauthorized-permissions.sh "$r1_preauth For out-of-scope changes, obtain approval before Chrome upload to production."
+expect_pass check-preauthorized-permissions.sh "$r1_preauth 对于范围外工作，必须请求批准才能进行生产环境的Chrome上传。"
+# One blocked item may be deferred while other work continues; directly
+# deferring independent work is still a contract violation.
+for wording in 'While waiting, defer the blocked item and continue independent work.' '遇到等待时将受阻项搁置并继续其余独立工作。' 'Defer the blocked item and do not stop independent work.'; do
+  expect_pass check-stage2-migration.sh "$migration_contract $wording $migration_stop_gate"
+done
+for wording in 'While waiting, defer independent work and continue the blocked item.' '遇到等待时将其余独立工作搁置并继续受阻项。' 'Defer the blocked item and do not continue independent work.'; do
+  expect_fail check-stage2-migration.sh "$migration_contract $wording $migration_stop_gate"
+done
+# Estimate qualification follows the progress claim, including parentheses
+# containing punctuation. Coordinated performance estimates are independent.
+expect_contract_pass long "$r1_long Progress 20% (2/10 verified items) and an estimated performance gain of 50%."
+expect_contract_pass long "$r1_long An estimated performance gain of 50% and Progress 20% (2/10 verified items)."
+expect_contract_pass long "$r1_long 进度20%（2/10项）并估计性能提升50%。"
+expect_contract_fail long "$r1_long Progress 20% (2/10 items) and an estimated denominator."
+expect_contract_fail long "$r1_long Progress 20% (2/10 items) and Estimated progress 50% (2/4 items)."
+for separator in ';' '.' '；' '。'; do
+  expect_contract_fail long "$r1_long Progress 50% (2/4 gates$separator coarse estimate)."
+  expect_contract_fail long "$r1_long 进度50%（2/4项$separator 粗粒度估计）。"
+  expect_contract_pass long "$r1_long Progress 50% (2/4 verified gates)$separator performance improvement estimate 50%."
+done
+
+# R2 repair review: an explicit denominator/total estimate also qualifies
+# progress when written as a subject and predicate after a conjunction.
+for wording in 'and the denominator is estimated' 'but the denominator is estimated' 'and the total is estimated'; do
+  expect_contract_fail long "$r1_long Progress20%(2/10 items) $wording."
+done
+expect_contract_fail long "$r1_long 进度20%（2/10项）并且分母是估计的。"
+expect_contract_fail long "$r1_long 进度20%（2/10项）而总数为估计值。"
+expect_contract_pass long "$r1_long Progress20%(2/10 items) and the performance gain is estimated."
+expect_contract_pass long "$r1_long Progress20%(2/10 items) but the performance gain is estimated."
+expect_contract_pass long "$r1_long 进度20%（2/10项）而性能增益为估计值。"
+# A while-clause can introduce independent work as its own subject.
+for wording in 'Defer the blocked item while independent work continues.' '将受阻项搁置而其余独立工作继续。' '将受阻项搁置同时其余独立工作继续。'; do
+  expect_pass check-stage2-migration.sh "$migration_contract $wording $migration_stop_gate"
+done
+for wording in 'Defer independent work while the blocked item continues.' '将其余独立工作搁置而受阻项继续。' 'Defer the blocked item while independent work stops.'; do
+  expect_fail check-stage2-migration.sh "$migration_contract $wording $migration_stop_gate"
+done
+
+
+# R3: an approval gate is a gate regardless of the authorized operation verb.
+for operation in '创建 PR' 合并 输入密码 推送; do
+  expect_fail check-preauthorized-permissions.sh "$r1_preauth 不要在没有征求用户同意的情况下${operation}。"
+done
+expect_pass check-preauthorized-permissions.sh "/goal Without approval, finish in-scope uploads. ${r1_preauth#/goal }"
+expect_pass check-preauthorized-permissions.sh "$r1_preauth 无需再次询问。可以在没有征求用户同意的情况下创建 PR。"
+# Shared objects survive coordinated verbs; an explicit different object does
+# not inherit independent-work scope from the following conjunct.
+for connector in and or nor; do
+  expect_fail check-stage2-migration.sh "$migration_contract Do not continue $connector proceed with independent work. $migration_stop_gate"
+done
+expect_pass check-stage2-migration.sh "$migration_contract Do not continue the blocked item and proceed with independent work. $migration_stop_gate"
+for wording in 'Independent work is not paused while CI waits.' "Independent work isn't paused while CI waits." 'Independent work need not stop.' 'Continue independent work rather than stop.' 'Continue independent work instead of stopping.' '独立工作不得被搁置。' '不处理生产数据的独立工作照常推进。'; do
+  expect_pass check-stage2-migration.sh "$migration_contract $wording $migration_stop_gate"
+done
+expect_fail check-stage2-migration.sh "$migration_contract Independent work is paused while CI waits. $migration_stop_gate"
+# Natural completed/total notation has the same fixed-denominator meaning.
+for wording in 'Progress 60% (3 of 5 gates).' 'Progress 60% (3 out of 5 gates).' '进度60%（共5项，已完成3项）。' '进度60%（5项中完成3项）。'; do
+  expect_contract_pass long "$r1_long $wording"
+done
+expect_contract_fail long "$r1_long Progress 60% (3 of 6 gates)."
+for wording in 'Progress ~50%.' 'Progress: ~50% (2/4 gates).' 'Completion 60% (estimated).' 'Estimated overall progress 20% (2/10 gates).' '进度大约50%（2/4项）。' '进度50％（2/4项，估计）。'; do
+  expect_contract_fail long "$r1_long $wording"
+done
+expect_contract_pass long "$r1_long Completion 60% (3 of 5 verified gates)."
+expect_contract_pass long "$r1_long 进度50％（2/4项）。"
+# Prohibiting an unearned percentage is a rule, not a measured claim.
+for wording in 'Never report progress 100% before all gates pass.' 'Do not report estimated overall progress 100% before all gates pass.' '全部门槛通过前不得报告进度 100%。'; do
+  expect_contract_pass long "$r1_long $wording"
+done
+expect_contract_fail long "$r1_long Never report progress 100% before all gates pass. Progress 100% (2/4 gates)."
+
+
+# R3 repair review: approximation can qualify the denominator locally, before
+# or after its ratio; an independent performance approximation stays unrelated.
+for wording in 'Progress50%(about2/4gates)' 'Progress50%(approximately2/4gates)' 'Progress50%(2/4gates,approximately)' '进度50％（大约2/4项）' '进度50％（2/4项，大约）' 'Progress50%(2/4gates;approximate)'; do
+  expect_contract_fail long "$r1_long $wording"
+done
+expect_contract_pass long "$r1_long Progress50%(2/4 verified gates) and approximately50% performance gain."
+expect_contract_pass long "$r1_long Progress50%(2/4 verified gates), about50% performance gain."
+expect_contract_pass long "$r1_long 进度50％（2/4验证项）并且性能增益大约50%。"
+
+
+# A short coordinator modifier does not change which verbs share an object.
+for modifier in also then; do
+  expect_fail check-stage2-migration.sh "$migration_contract Do not continue and $modifier proceed with independent work. $migration_stop_gate"
+  expect_pass check-stage2-migration.sh "$migration_contract Do not continue the blocked item and $modifier proceed with independent work. $migration_stop_gate"
+done

@@ -1,0 +1,214 @@
+{
+  "schema_version": 1,
+  "purpose": "Source binding for recorded live calibration, not a semantic-accuracy certificate. CI checks source drift and receipt consistency without calling a model.",
+  "configured_model": "gpt-6-luna",
+  "configured_reasoning_effort": "xhigh",
+  "observed_model": "gpt-6-luna",
+  "observed_reasoning_effort": "xhigh",
+  "source_scope": "Per-case composite evidence; unchanged two cases reuse R4 holdout, migration uses R5. Historical predictions/labels are preserved, including disagreement.",
+  "cases": {
+    "preauthorized-permissions": {
+      "case_definition_sha256": "687985f0e95b713a9501888c5c559fffdd9eb1e40d553426670bb104b5b8384e",
+      "judge_config_sha256": "07d461d3a2aa7be438da818660f8a5d2c5a4eb4a28747b62968477064657d3f2",
+      "fixture_subset_sha256": "0c9e6a031143fb4f9ed7a9ba868905163cbbae7fcdc24a11e93123ca455c2a72",
+      "required_agreement": 4,
+      "observed_agreement": 4,
+      "all_labels_agree": true,
+      "verdicts": [
+        {
+          "sample_id": "h05",
+          "expected": "PASS",
+          "status": "PASS",
+          "grading_sha256": "92e4311ba1336ea561a92c9fcb8352d4882a7ec2a821fe3f7dabc92d47170048",
+          "candidate_sha256": "1f98950eeb63de1e1a734bac8b250be4c32699d15fa98d3fa159120e02a40ca0",
+          "snapshot_sha256": "c3079789a7a4f5629e6da2fd713c641d9f0faaa35c7e413f6b37c2a8132b84d8",
+          "criteria_passed": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "sample_id": "h06",
+          "expected": "FAIL",
+          "status": "FAIL",
+          "grading_sha256": "e83f1afcae578d3a886eec8eac25cf010e2d92cffdb4799b93b928c6759e67bb",
+          "candidate_sha256": "6fa327509821e5f85816344dc8e3c39f0c97caad4aa391efa6317aab96658c55",
+          "snapshot_sha256": "a418d78da16c3a7e20e4bdf638ad304d0c7eccdc7d8d60d488644980df253442",
+          "criteria_passed": [
+            true,
+            false,
+            true
+          ]
+        },
+        {
+          "sample_id": "h07",
+          "expected": "PASS",
+          "status": "PASS",
+          "grading_sha256": "92e4311ba1336ea561a92c9fcb8352d4882a7ec2a821fe3f7dabc92d47170048",
+          "candidate_sha256": "abe094b0845f5ae0235a5e18bc2a32446bb80e4610deb97acc67faa0f4c85d9a",
+          "snapshot_sha256": "c820337acdb24dc10ff9eeac56441422e789ea702c54f3fcb8865767139b7fc0",
+          "criteria_passed": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "sample_id": "h08",
+          "expected": "FAIL",
+          "status": "FAIL",
+          "grading_sha256": "4dc643246ec7fb312cb75244d22cf6ff51c7ca601d333c76387799e202e7acc2",
+          "candidate_sha256": "a9f088bfae716be99d7b65ab969581100815fd680e4586dc63146ec84bce0c5c",
+          "snapshot_sha256": "270113c917eb9a19e26c93263ac46f5c6817f48f3bab2593e06d27dfa48ff5b7",
+          "criteria_passed": [
+            false,
+            true,
+            true
+          ]
+        }
+      ],
+      "local_evidence_archive": ".eval-work/luna-semantic-boundaries-v3-20261031/calibration",
+      "trial_results_sha256": "16d40ec30cfcdc1dc36038215202e84106f8baab8ee0c1bb9fb33cde229d5e70",
+      "request_outcomes_sha256": "d867199ecf35f73c87d8cc41d5af32d239e4ebba13c50916cd18749ed641c282",
+      "calibration_status": "calibrated"
+    },
+    "stage2-migration": {
+      "case_definition_sha256": "b0661fac6c04c3bcd5bf5b3ee62c6ebc695ea47c4c9ca0bb28b2d4444e0a1690",
+      "judge_config_sha256": "66851c45bcb81b945dd0dfcb46c56b57d28c141d583daea20406f03b2a3dd364",
+      "fixture_subset_sha256": "a052bde12b2ec87ba891fc6366e82dba2da04bf072fe8591ccb0413cf9f04214",
+      "required_agreement": 4,
+      "observed_agreement": 3,
+      "all_labels_agree": false,
+      "verdicts": [
+        {
+          "sample_id": "m01",
+          "expected": "PASS",
+          "status": "PASS",
+          "grading_sha256": "2de95243722689c2b832339c89331831c30acb5240447d52366d7087a4c272cd",
+          "candidate_sha256": "d6f19c82dfc5248ed5c2828bebc4981e80c6e462b34dba39646cca3fa2ac1148",
+          "snapshot_sha256": "7f644401ebcd3994569a682257fdd2292a0b172f6d08829679581ad7b11e8df7",
+          "criteria_passed": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "sample_id": "m02",
+          "expected": "FAIL",
+          "status": "FAIL",
+          "grading_sha256": "11df519d75a1668d771383a90c7ec36da7452411aaa049986ae69ffad48d4407",
+          "candidate_sha256": "2ab397d7f0e6c476138f30f815736cf6557bf39eb3af5cea6d2d67cad1d3e486",
+          "snapshot_sha256": "6a39bff8cbc52db464ff56a75b0034d43af722734a486c9158766ffed4a4a6dd",
+          "criteria_passed": [
+            true,
+            false,
+            false
+          ]
+        },
+        {
+          "sample_id": "m03",
+          "expected": "PASS",
+          "status": "FAIL",
+          "grading_sha256": "7d1bf9eb46465123b9418a5b3546b8c389a6bb0d913c741d249b895fe1e5feca",
+          "candidate_sha256": "e7d29395e570c5d05a5a28b78f2e437f98f2a22bcab3525ba24948970ce62f6a",
+          "snapshot_sha256": "106f07395b818fece9dbbaeb4d6984128082bc86fd79cd0cea1f6b5c5d9b1003",
+          "criteria_passed": [
+            true,
+            true,
+            false
+          ]
+        },
+        {
+          "sample_id": "m04",
+          "expected": "FAIL",
+          "status": "FAIL",
+          "grading_sha256": "315c4ad9b3c73f945a32716a3995ae9b0bab8365c98d287774251b18a5d82faf",
+          "candidate_sha256": "99b9cca648a8d67165e0c679ea7421be3b70fd7da6107038eaa96a9c3635d1f7",
+          "snapshot_sha256": "57f8e7cd1d64dfef79d58bdc554a3ac3b5cd6cc4c3bd2d6c11f190abc6b206bb",
+          "criteria_passed": [
+            true,
+            true,
+            false
+          ]
+        }
+      ],
+      "local_evidence_archive": ".eval-work/luna-r5-comment-validation-v1-20261031/calibration",
+      "trial_results_sha256": "e5c54627b267c218ab82b96672dff3876be2b5944e6871a001eef06f3de00f34",
+      "request_outcomes_sha256": "8b8ba94281433bea9154641555ccbe9cbf225830dd0b1baca38cb40eb1605f7c",
+      "calibration_status": "uncalibrated"
+    },
+    "compaction-checkpoint": {
+      "case_definition_sha256": "cbc99b502177b046ad0c9f1ba624491b91fe0ddf7270bbcfc7f8ac32161f0507",
+      "judge_config_sha256": "3b6fb17b9ac7651d616db6ac47f4692515b37ddfffacb4d10077b9aa0cb2dd85",
+      "fixture_subset_sha256": "c9af7ebfd5c635faee784f7da8aeeeda58c6ae1cc0652f4dad684768df9a7bf6",
+      "required_agreement": 4,
+      "observed_agreement": 4,
+      "all_labels_agree": true,
+      "verdicts": [
+        {
+          "sample_id": "h09",
+          "expected": "PASS",
+          "status": "PASS",
+          "grading_sha256": "9869500181df4ac097e517615decbdccbcd00cb149910c21317211cf21d87ec3",
+          "candidate_sha256": "f3dd2c38f8c9b57336f9ba8a5b3ed662b102a0f8720247d237da17e435c3e257",
+          "snapshot_sha256": "4a10c04e81876469792d9f412835c8f1a21ed39e5ecc78433f75521bff7edb06",
+          "criteria_passed": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "sample_id": "h10",
+          "expected": "FAIL",
+          "status": "FAIL",
+          "grading_sha256": "cb52202da93de396f3684e7be041829694419c45211bc9faa8ed442de385c090",
+          "candidate_sha256": "20e4b1c820f0c9aac30b33cb942ee3f9bbcdc56b3a3aedac15974b8408681b0e",
+          "snapshot_sha256": "67d48b27653572a45cfdb68b3827fa76f1348e009a91883730897581507b5c5a",
+          "criteria_passed": [
+            false,
+            true,
+            true
+          ]
+        },
+        {
+          "sample_id": "h11",
+          "expected": "PASS",
+          "status": "PASS",
+          "grading_sha256": "9869500181df4ac097e517615decbdccbcd00cb149910c21317211cf21d87ec3",
+          "candidate_sha256": "96ffd2b368cb65005f8e4d7dfcfc822a6263428fc640b744a47b4185658ada79",
+          "snapshot_sha256": "d5689795811831b7bdfdbef84b9af007de06085b3d67ebde255963d101b6dd6a",
+          "criteria_passed": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "sample_id": "h12",
+          "expected": "FAIL",
+          "status": "FAIL",
+          "grading_sha256": "413b2f93719083e89f9f484285232855f27e9d37e51f4bae93cef5de0743ecf7",
+          "candidate_sha256": "c4ccbe27c66a56ad4423c9c9ff85c751faca6371cfd63c1f27d7db18accc84d4",
+          "snapshot_sha256": "1d7243cc191c908e3bd54e259f8cadad035e3c4ab7561bec75e12cca3090d387",
+          "criteria_passed": [
+            true,
+            true,
+            false
+          ]
+        }
+      ],
+      "local_evidence_archive": ".eval-work/luna-semantic-boundaries-v3-20261031/calibration",
+      "trial_results_sha256": "16d40ec30cfcdc1dc36038215202e84106f8baab8ee0c1bb9fb33cde229d5e70",
+      "request_outcomes_sha256": "d867199ecf35f73c87d8cc41d5af32d239e4ebba13c50916cd18749ed641c282",
+      "calibration_status": "calibrated"
+    }
+  },
+  "source_contract_sha256": {
+    "skills/goal-prompt/SKILL.md": "36ca107e554877f43790829fad963f9d8a2a7c9fd03cd3a9a82b6674d1200096",
+    "skills/goal-prompt/references/long-goal-execution.md": "1c75f385e6d47611eca4a714b8dae78c206b772d07f1e5620a9b8e58c773e3ca"
+  },
+  "contract_alignment_note": "These hashes bind the reviewed rubric-to-Skill alignment, not model input or a new calibration run. Contract changes require alignment review; recorded observations remain unchanged."
+}

@@ -1,0 +1,29 @@
+id: host-recovery-boundary
+title: 宿主恢复能力未知时保存入口且不承诺自动恢复
+description: 检查精简后仍区分任务重排、宿主额度与暂停机制，并用独立结构和语义 Judge 评估同一次输出。
+input:
+  prompt: |
+    我已确认深度模式、范围和初始化方案，请直接生成最终 /goal。
+    目标是分阶段整理 api、worker 两模块的兼容性证据，不修改业务代码。
+    worker 的真实外部验证正等待额度，api 的静态证据和报告可独立完成。
+    当前宿主是否有自动唤醒工具、额度重置时间都尚未核实，也不要假设存在状态 API。
+    用 .goal-task/compat-evidence/state.md 保存状态；明确如何继续 api、在压缩或交接前检查点，
+    自动恢复能力未证实时保留人工恢复入口，不实现或承诺未经验证的自动恢复。
+    没有明确分母就不报百分比；默认仅本地提交。目标控制在 4000 字符以内。
+expect:
+  must_contain: ["/goal", "state.md", "api", "worker"]
+  exit_code: 0
+judges:
+  - id: rendered-length
+    type: script
+    script_path: skill-up/fixtures/scripts/check-goal-char-limit.py
+    timeout_seconds: 30
+  - id: host-and-recovery
+    type: agent_judge
+    model: gpt-6.1-terra
+    criteria:
+      - "生成最终目标，不重复索取已给授权；保留只读范围和 api 可独立推进，worker 等待不取消其真实验证门槛。"
+      - "检查点保存完成与剩余、证据、等待、下一步和人工恢复入口；不发明额度重置时间、状态 API、自动唤醒能力或将其实现设为目标。"
+      - "整体 blocked 必须所有有意义剩余工作共同受阻且满足当前宿主规则，不能将单项重试或额度等待视为整体 blocked；没有明确分母不强制百分比。"
+      - "保持真实报告证据与独立报告审查、默认本地提交边界，未把只读报告变成代码修改或三人行为审查任务。"
+    pass_threshold: 1.0

@@ -53,6 +53,7 @@ def main() -> int:
         print(f"goal body has {len(goal)} characters; must be below 4000", file=sys.stderr)
         return 1
 
+    exact_twelve = r"(?<![\d/零〇一二三四五六七八九十百千万亿两])(?:12(?:/12)?|十二)(?![\d/零〇一二三四五六七八九十百千万亿两])"
     checks = {
         "four modules": r"payments.*ledger.*reconciliation.*reporting",
         "public contracts": r"(?:public|公开).{0,40}API.{0,80}webhook",
@@ -60,16 +61,18 @@ def main() -> int:
         "module tests and performance": r"(?:单元测试|unit tests?).{0,160}(?:契约测试|contract tests?).{0,160}(?:性能|performance).{0,80}5%",
         "data consistency": r"(?:数据一致|data consistency)",
         "rehearsed rollback": r"(?:回滚|rollback).{0,80}(?:演练|rehears)",
-        "twelve sub-gates": r"(?:12|十二).{0,30}(?:门槛|gates?)",
+        "twelve sub-gates": rf"(?:{exact_twelve}.{{0,30}}(?:门槛|gates?)|(?:门槛|gates?)[^\d]{{0,30}}{exact_twelve})",
         "CI and security": r"CI.{0,80}(?:安全|security)",
         "five reviewers and re-review": r"(?:5|五).{0,40}(?:reviewer|评审|审查).{0,120}(?:复审|re-?review)",
         "migration and operations docs": r"(?:迁移文档|migration docs?).{0,100}(?:运维手册|operations? manual|runbook)",
         "four-stage rollout and rollback": r"(?:4|四).{0,30}(?:阶段|stages?).{0,120}(?:回退|rollback)",
     }
+    # 只对契约匹配规范化分数两侧空白，长度仍以原始正文计算。
+    contract_text = re.sub(r"\s*/\s*", "/", goal)
     missing = [
         label
         for label, pattern in checks.items()
-        if not re.search(pattern, goal, re.IGNORECASE | re.DOTALL)
+        if not re.search(pattern, contract_text, re.IGNORECASE | re.DOTALL)
     ]
     if missing:
         print("goal body is missing: " + ", ".join(missing), file=sys.stderr)

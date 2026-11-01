@@ -1,0 +1,21 @@
+--- a/internal/evaluator/plan.go
++++ b/internal/evaluator/plan.go
+@@ -2,6 +2,7 @@
+ 
+ import (
+ 	"fmt"
++	"os"
+ 
+ 	"github.com/alibaba/skill-up/internal/config"
+ )
+@@ -38,6 +39,10 @@
+ 
+ // BuildPlan deterministically expands cases, iterations, and configurations.
+ func BuildPlan(cases []*config.CaseConfig, startIteration, iterationCount int, configurations []string) Plan {
++	// Task-local selector: run only the native without_skill variant.
++	if os.Getenv("SKILL_UP_WITHOUT_SKILL_ONLY") == "1" {
++		configurations = []string{ConfigurationWithoutSkill}
++	}
+ 	if startIteration < 1 {
+ 		startIteration = 1
+ 	}

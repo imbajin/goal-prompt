@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Legacy phrase checker for archived scores; current cases use semantic Judges.
 set -euo pipefail
 message="${EVAL_FINAL_MESSAGE:-}"
 goal_count="$(printf '%s\n' "$message" | grep -Ec '^[[:space:]]*/goal([[:space:]]|$)' || true)"

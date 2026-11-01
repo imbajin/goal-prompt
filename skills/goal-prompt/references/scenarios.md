@@ -37,8 +37,10 @@ skips confirmation or delegates the remaining judgment.
 - Keep per-item detail in `todo.md`, `state.md`, or a formal evidence artifact,
   not in `/goal`.
 - Create a separate `todo.md` only for a large or frequently changing list.
-- Use exact percentages for a fixed denominator. When membership can change, use
-  a coarse evidence-based value labeled `estimate`.
+- Use percentages only for a verified, fixed denominator. If membership is
+  unknown or changing, report completed items and remaining evidence instead;
+  do not invent a total or an estimated percentage. Freeze the set before using
+  quantitative progress.
 - Define what happens when an item disappears, changes, or cannot be reproduced.
 - Form batches by shared module, root cause, or validation surface, not an
   arbitrary item count.
